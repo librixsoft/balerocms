@@ -2,6 +2,8 @@
 // lang/es/admin.php
 return [
     'settings'     => 'Configuración',
+    'pages' => 'Páginas',
+    'blocks' => 'Blocks',
     'language'     => 'Idioma',
     'theme'        => 'Tema',
     'title'        => 'Título',

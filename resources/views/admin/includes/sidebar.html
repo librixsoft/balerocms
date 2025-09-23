@@ -3,24 +3,24 @@
         <ul class="nav flex-column nav-pills bg-white">
             <%-- @if activeMenu == "settings" -->
             <li class="nav-item w-100">
-                <a class="nav-link active w-100" href="./admin/settings">Dashboard</a>
+                <a class="nav-link active w-100" href="./admin/settings">{admin.settings}</a>
             </li>
             <%-- @else -->
             <li class="nav-item w-100">
-                <a class="nav-link w-100" href="./admin/settings">Dashboard</a>
+                <a class="nav-link w-100" href="./admin/settings">{admin.settings}</a>
             </li>
             <%-- @endif -->
 
             <%-- @if activeMenu == "all_pages" -->
             <li class="nav-item w-100">
                 <a class="nav-link active w-100" href="./admin/pages">
-                    <span class="badge bg-danger float-end">{pages_count}</span>Pages
+                    <span class="badge bg-danger float-end">{pages_count}</span>{admin.pages}
                 </a>
             </li>
             <%-- @else -->
             <li class="nav-item w-100">
                 <a class="nav-link w-100" href="./admin/pages">
-                    <span class="badge bg-danger float-end">{pages_count}</span> Pages
+                    <span class="badge bg-danger float-end">{pages_count}</span>{admin.pages}
                 </a>
             </li>
             <%-- @endif -->
@@ -28,13 +28,13 @@
             <%-- @if activeMenu == "all_blocks" -->
             <li class="nav-item w-100">
                 <a class="nav-link active w-100" href="./admin/blocks">
-                    <span class="badge bg-danger float-end">{blocks_count}</span>Blocks
+                    <span class="badge bg-danger float-end">{blocks_count}</span>{admin.blocks}
                 </a>
             </li>
             <%-- @else -->
             <li class="nav-item w-100">
                 <a class="nav-link w-100" href="./admin/blocks">
-                    <span class="badge bg-danger float-end">{blocks_count}</span>Blocks
+                    <span class="badge bg-danger float-end">{blocks_count}</span>{admin.blocks}
                 </a>
             </li>
             <%-- @endif -->

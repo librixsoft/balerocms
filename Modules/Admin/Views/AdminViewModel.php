@@ -75,6 +75,9 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
+
+            'mod_name' =>__('admin.pages'),
+
             'lbl_title' => 'Title',
             'current_date' => date('Y-m-d H:i:s'),
             'new_page' => 'New page',
@@ -95,6 +98,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
+            'mod_name' =>__('admin.pages'),
             'activeMenu' => 'all_pages',
         ]);
 
@@ -125,6 +129,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
+            'mod_name' =>__('admin.blocks'),
             'lbl_blocks' => 'Blocks',
             'lbl_new_block' => 'New Block',
             'activeMenu' => 'all_blocks',
