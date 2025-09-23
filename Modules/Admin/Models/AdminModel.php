@@ -142,6 +142,7 @@ class AdminModel extends Model
         $this->configSettings->description = $data['description'] ?? '';
         $this->configSettings->keywords = $data['keywords'] ?? '';
         $this->configSettings->theme = $data['theme'] ?? '';
+        $this->configSettings->language = $data['language'] ?? '';
         $this->configSettings->footer = $data['footer'] ?? '';
     }
 

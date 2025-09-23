@@ -21,7 +21,7 @@ class AdminViewModel
     {
         $viewModel = $this->createViewModel();
 
-        $currentLang = $_SESSION['lang'] ?? $this->config->language ?? 'en';
+        $currentLang = $this->config->language ?? 'en';
 
         $viewModel->addAll([
 
