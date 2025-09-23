@@ -1,0 +1,30 @@
+{
+    "config": {
+        "database": {
+            "dbhost": "127.0.0.1",
+            "dbuser": "root",
+            "dbpass": "",
+            "dbname": "balero_cms"
+        },
+        "admin": {
+            "username": "admin",
+            "passwd": "$2a$07$8apUNk0BOT7ZEOBGztAbS.VeS5f77ebhYX3jVyXjhE4CQEZH0qTHa",
+            "firstname": "Balero",
+            "lastname": "CMS",
+            "email": "hola@librixsoft.com"
+        },
+        "system": {
+            "installed": "no"
+        },
+        "site": {
+            "language": "en",
+            "title": "Balero CMS",
+            "url": "http:\/\/www.balerocms.com\/",
+            "description": "Description...",
+            "keywords": "content, management, system",
+            "basepath": "http:\/\/localhost:8080\/",
+            "theme": "default",
+            "footer": "© {year} Your Company. All rights reserved.\n"
+        }
+    }
+}

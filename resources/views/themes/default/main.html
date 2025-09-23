@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="{basepath}">
+    <meta charset="UTF-8"/>
+    <link href="favicon.ico" rel="shortcut icon">
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>{title}</title>
+    <meta content="{description}" name="description"/>
+    <meta content="{keywords}" name="keywords"/>
+
+    <!-- Bootstrap CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link href="assets/css/all.min.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="assets/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Bundle JS (con Popper incluido) -->
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom styles -->
+    <link href="assets/themes/{theme}/style.css" rel="stylesheet"/>
+
+</head>
+<body>
+
+<!-- Navbar estático -->
+<nav class="navbar navbar-expand-md">
+    <div class="container">
+        <a class="navbar-brand" href="{basepath}">{title}</a>
+        <button aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
+                data-bs-target="#navbarMain" data-bs-toggle="collapse" type="button">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{basepath}">Home</a>
+                </li>
+                <%-- @foreach virtual_pages as page -->
+                <li class="nav-item">
+                    <a class="nav-link" href="./page/{page.url}">{page.virtual_title}</a>
+                </li>
+                <%-- @endforeach -->
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Header con degradado azul -->
+<header class="hero-header">
+    <div class="hero-content">
+        <h1>{title}</h1>
+        <p class="slogan">Aquí va tu slogan inspirador</p>
+    </div>
+</header>
+
+
+<!-- Main dinámico de páginas -->
+<main class="container my-5">
+    <%-- @foreach blocks as block -->
+    <p>{block.content}</p>
+    <%-- @endforeach -->
+</main>
+
+<!-- Footer -->
+<footer class="text-center">
+    <p>{footer}</p>
+    <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+    </div>
+</footer>
+
+</body>
+</html>

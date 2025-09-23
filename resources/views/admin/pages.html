@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <title>Admin Home Page - {mod_name}</title>
+    <!-- basepath -->
+    <base href="{basepath}">
+    <link href="favicon.ico" rel="shortcut icon">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+
+    <!-- Bootstrap 5 -->
+    <link href="public/assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles -->
+    <link href="public/assets/css/dashboard.css" media="screen" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link href="public/assets/css/all.min.css" rel="stylesheet">
+
+    <!-- Summernote CSS -->
+    <link href="public/assets/css/summernote.min.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="public/assets/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Bundle JS (con Popper incluido) -->
+    <script src="public/assets/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Summernote JS -->
+    <script src="public/assets/js/summernote.min.js"></script>
+
+</head>
+<body>
+
+<%-- @include "admin/includes/navbar.html" -->
+
+<div class="container-fluid">
+    <div class="row">
+
+        <%-- @include "admin/includes/sidebar.html" -->
+
+        <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
+            <div class="row mb-3">
+
+                <!-- block -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Edit Page</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered align-middle">
+                                <thead class="table-light">
+                                <tr>
+                                    <th>{lbl_title}</th>
+                                    <th>{lbl_action}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <%-- @foreach pages as page -->
+                                <tr>
+                                    <td>{page.virtual_title}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-info" href="./admin/pages/edit/{page.id}">
+                                            <i class="fas fa-pencil-alt"></i> {lbl_edit}
+                                        </a>
+
+                                        <form action="./admin/pages/delete/{page.id}" method="post"
+                                              onsubmit="return confirm('{lbl_confirm_delete}')"
+                                              style="display:inline;">
+                                            <button class="btn btn-sm btn-danger" type="submit">
+                                                <i class="fas fa-trash"></i> {lbl_delete}
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <%-- @endforeach -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Botón New Page abajo a la derecha -->
+                        <div class="text-end mt-3">
+                            <a class="btn btn-sm btn-info" href="./admin/new-page">
+                                <i class="fas fa-plus"></i> New Page
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- /block -->
+
+                <script>
+                    $(document).ready(function () {
+                        $('.summernote').summernote({
+                            height: 350,
+                            callbacks: {
+                                onImageUpload: function (files) {
+                                    sendFile(files[0]);
+                                }
+                            }
+                        });
+
+                        function sendFile(file) {
+                            var data = new FormData();
+                            data.append("file", file);
+                            $.ajax({
+                                data: data,
+                                type: "POST",
+                                url: "{basepath}admin/uploader",
+                                cache: false,
+                                contentType: false,
+                                processData: false,
+                                success: function (url) {
+                                    $('.summernote').summernote('insertImage', url);
+                                }
+                            });
+                        }
+                    });
+                </script>
+
+            </div>
+        </main>
+    </div>
+    <hr>
+    <footer>
+        <p>Powered by <a href="#">Balero CMS</a>.</p>
+    </footer>
+</div>
+
+<script src="public/assets/js/scripts.js"></script>
+</body>
+</html>

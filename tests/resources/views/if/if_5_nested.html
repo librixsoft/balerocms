@@ -1,0 +1,25 @@
+<%-- @if theme == 'active' AND mode == 'dark' -->
+Level 1: Active Dark Theme
+<%-- @if admin == 'yes' -->
+Level 2: Admin Access
+<%-- @if installed == 'yes' OR version == '2.0' -->
+Level 3: Installed or Version 2.0
+<%-- @if beta == 'no' -->
+Level 4: Not Beta
+<%-- @if premium == 'yes' -->
+Level 5: Premium User
+<%-- @else -->
+Level 5: Regular User
+<%-- @endif -->
+<%-- @else -->
+Level 4: Beta User
+<%-- @endif -->
+<%-- @else -->
+Level 3: Not Installed and Not Version 2.0
+<%-- @endif -->
+<%-- @else -->
+Level 2: No Admin Access
+<%-- @endif -->
+<%-- @else -->
+Level 1: Inactive Theme
+<%-- @endif -->

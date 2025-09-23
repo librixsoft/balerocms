@@ -1,0 +1,179 @@
+/* ===== Cairo local ===== */
+@font-face {
+    font-family: 'Cairo';
+    src: url('./fonts/Cairo-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Cairo';
+    src: url('./fonts/Cairo-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Cairo';
+    src: url('./fonts/Cairo-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* ===== Tipografía global ===== */
+body, p, a, li {
+    font-family: 'Cairo', sans-serif;
+    color: #343a40;
+    font-weight: 400;
+    line-height: 1.8;
+    font-size: 1.1rem; /* un poco más grande */
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 500; /* ajustable según jerarquía */
+    color: #1e3c72; /* azul elegante para encabezados */
+    margin-bottom: 1.2rem;
+}
+
+h1 {
+    font-size: 3.8rem;
+}
+
+h2 {
+    font-size: 2.8rem;
+}
+
+h3 {
+    font-size: 2.2rem;
+}
+
+h4 {
+    font-size: 1.8rem;
+}
+
+h5 {
+    font-size: 1.5rem;
+}
+
+h6 {
+    font-size: 1.3rem;
+}
+
+/* ===== Navbar transparente y estático ===== */
+.navbar {
+    background: transparent !important;
+}
+
+.navbar .nav-link,
+.navbar .navbar-brand {
+    color: #343a40 !important; /* gris oscuro */
+    font-weight: 500;
+    transition: color 0.3s;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.15rem;
+}
+
+.navbar .nav-link:hover {
+    color: #0d6efd !important; /* azul al pasar el mouse */
+}
+
+/* ===== Hero Header con degradado azul ===== */
+header.hero-header {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    text-align: center;
+    padding: 140px 20px; /* un poco más alto */
+    position: relative;
+}
+
+header.hero-header::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+header.hero-header .hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+header.hero-header h1,
+header.hero-header p.slogan {
+    color: #ffffff !important; /* título y slogan blancos */
+    font-family: 'Cairo', sans-serif;
+    z-index: 2;
+}
+
+header.hero-header h1 {
+    font-size: 4rem; /* más grande */
+    font-weight: 600;
+}
+
+header.hero-header p.slogan {
+    font-size: 1.8rem; /* más grande */
+    font-weight: 400;
+    margin-top: 15px;
+}
+
+/* ===== Sección de tres bloques sin borde ni sombra ===== */
+.features .card {
+    border: none !important;
+    box-shadow: none !important;
+    text-align: center !important;
+    transition: none !important;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.1rem;
+}
+
+.features .card h5,
+.features .card p {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-family: 'Cairo', sans-serif;
+}
+
+/* ===== Main dinámico limpio ===== */
+main.container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.1rem;
+}
+
+main.container h2,
+main.container p {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin-bottom: 1.2rem !important;
+    font-family: 'Cairo', sans-serif;
+}
+
+/* ===== Footer ===== */
+footer {
+    background: #f8f9fa;
+    padding: 50px 20px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1.1rem;
+}
+
+footer .social-icons a {
+    color: #495057;
+    margin: 0 12px;
+    font-size: 1.3rem;
+    transition: color 0.3s;
+    font-family: 'Cairo', sans-serif;
+}
+
+footer .social-icons a:hover {
+    color: #0d6efd;
+}

@@ -1,0 +1,19 @@
+RewriteEngine On
+Options -Indexes
+
+# -----------------------------
+# Permitir acceso a assets
+# -----------------------------
+RewriteRule ^assets/ - [L]
+
+# -----------------------------
+# Rutas limpias hacia index.php
+# -----------------------------
+RewriteCond %{REQUEST_URI} !^/index\.php$ [NC]
+RewriteRule ^([a-zA-Z0-9_-]+)$ index.php?module=$1 [QSA,L]
+RewriteRule ^([a-zA-Z0-9_-]+)/(.*)$ index.php?module=$1&target=$2 [QSA,L]
+
+# -----------------------------
+# Todo lo demás a index.php
+# -----------------------------
+RewriteRule ^(.*)$ index.php [L]

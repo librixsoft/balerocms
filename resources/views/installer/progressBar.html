@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="{basepath}">
+    <meta charset="UTF-8">
+    <title>Installing...</title>
+    <link href="{basepath}favicon.ico" rel="shortcut icon">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f4fb;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: sans-serif;
+        }
+
+        .cloud {
+            width: 220px;
+            height: auto;
+            margin-bottom: 30px;
+        }
+
+        .progress-container {
+            width: 260px;
+            height: 12px;
+            background: #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #007BFF;
+            animation: load 5s linear forwards;
+        }
+
+        @keyframes load {
+            to {
+                width: 100%;
+            }
+        }
+
+        .message {
+            color: #444;
+            font-size: 1.2rem;
+        }
+    </style>
+
+    <script>
+        setTimeout(() => {
+            window.location.href = "index.php";
+        }, 5000);
+    </script>
+</head>
+<body>
+
+<img alt="Cloud" class="cloud" src="public/assets/images/installer/cloud.png">
+
+<div class="progress-container">
+    <div class="progress-bar"></div>
+</div>
+
+<div class="message">Mounting system...</div>
+
+</body>
+</html>

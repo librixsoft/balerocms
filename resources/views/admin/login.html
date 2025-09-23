@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content="no-cache, no-store, must-revalidate" http-equiv="cache-control"/>
+    <meta content="0" http-equiv="expires"/>
+    <meta content="no-cache" http-equiv="pragma"/>
+
+    <title>Login - {mod_name}</title>
+    <base href="{basepath}">
+    <link href="favicon.ico" rel="shortcut icon">
+
+    <!-- Bootstrap CSS -->
+    <link href="public/assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles -->
+    <link href="public/assets/css/login.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link href="public/assets/css/all.min.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="public/assets/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Bundle (incluye Popper) -->
+    <script src="public/assets/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-light" style="min-height:100vh; padding-top:50px;">
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+
+            <div class="card shadow-sm">
+                <div class="card-header text-center">
+                    <img class="logo img-fluid" src="public/assets/images/admin/logo.png" style="max-height:80px;">
+                </div>
+                <div class="card-body">
+
+                    <form action="./login" method="POST">
+                        <div class="mb-3">
+                            <input class="form-control" id="username" name="usr" placeholder="{login.username}"
+                                   type="text">
+                        </div>
+
+                        <div class="mb-3">
+                            <input class="form-control" id="password" name="pwd" placeholder="{login.password}"
+                                   type="password">
+                        </div>
+
+                        <%-- @if login_error -->
+                        <div class="alert alert-danger alert-dismissible fade show" id="alert-login_error" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> {login_error}
+                            <button class="btn-close" data-bs-dismiss="alert" onclick="deleteMessage('login_error')"
+                                    type="button"></button>
+                        </div>
+                        <%-- @endif -->
+
+                        <div class="d-grid">
+                            <button class="btn btn-primary" name="login" type="submit">
+                                <i class="fas fa-sign-in-alt"></i> {login.submit}
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+
+                <div class="card-footer text-center small">
+                    <a href="./">{login.back}</a>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="public/assets/js/notification.js"></script>
+
+</body>
+</html>

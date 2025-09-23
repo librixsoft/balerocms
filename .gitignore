@@ -1,0 +1,12 @@
+.git
+.directory
+.settings
+.buildpath
+.project
+public/images
+.DS_Store
+.idea
+*.iml
+node_modules/
+/vendor/
+.phpunit.result.cache
