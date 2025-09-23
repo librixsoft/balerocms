@@ -181,3 +181,5 @@ Now you can run the scanner and it will authenticate with SonarQube using your t
 
 GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
 
+Mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git
+](https://balerocms@bitbucket.org/librixsoft/balerocms.git)
