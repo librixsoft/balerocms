@@ -5,7 +5,7 @@ return [
     'settings'       => 'Configuración',
     'pages'          => 'Páginas',
     'blocks'         => 'Bloques',
-    'language'       => 'Idioma',
+    'language'       => 'Idioma Del Sistema',
     'theme'          => 'Tema',
 
     // Labels y botones
@@ -25,5 +25,5 @@ return [
 
     // Mensajes y placeholders
     'upload_error'   => 'Error al subir el archivo',
-    'powered_by'     => 'Desarrollado por',
+    'logout'     => 'Salir',
 ];

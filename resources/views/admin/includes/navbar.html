@@ -16,7 +16,8 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
+                <!-- Dropdown Preview -->
                 <li class="nav-item dropdown">
                     <a
                             aria-expanded="false"
@@ -32,8 +33,19 @@
                         <li><a class="dropdown-item" href="./" target="_blank">Front-End</a></li>
                     </ul>
                 </li>
+
+                <!-- Selector de idioma junto a Preview -->
+                <li class="nav-item ms-3">
+                    <form class="d-flex m-0" method="get">
+                        <select class="form-select form-select-sm" id="lang" name="lang" onchange="this.form.submit()">
+                            <option value="en" {lang_selected_en}>English</option>
+                            <option value="es" {lang_selected_es}>Español</option>
+                        </select>
+                    </form>
+                </li>
             </ul>
 
+            <!-- Dropdown usuario a la derecha -->
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                 <li class="nav-item dropdown">
                     <a
@@ -47,7 +59,7 @@
                         <i class="fas fa-user"></i> {username} ({email})
                     </a>
                     <ul aria-labelledby="userDropdown" class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="./login/logout">Logout</a></li>
+                        <li><a class="dropdown-item" href="./login/logout">{admin.logout}</a></li>
                     </ul>
                 </li>
             </ul>
