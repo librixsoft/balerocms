@@ -177,6 +177,8 @@ class AdminController extends Controller
 
         $params = $this->viewModel->getNewBlockParams([
             'next_sort_order' => $nextSort,
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->render("admin/blocks/new_block.html", $params, false);
@@ -200,6 +202,8 @@ class AdminController extends Controller
     {
         $params = $this->viewModel->getEditBlockParams([
             'block' => $this->model->getBlockById($id),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->render("admin/blocks/edit_block.html", $params, false);

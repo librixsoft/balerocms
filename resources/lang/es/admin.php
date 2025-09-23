@@ -36,6 +36,16 @@ return [
     "lbl_content"           => 'Content',
     "lbl_date"           => 'Date',
 
+    // Blocks
+    "order"           => 'Orden',
+    "actions"           => 'Acciones',
+    "new_block"           => 'Nuevo Bloque',
+
+    // New/Edit Block
+    "edit_block"           => 'Editar Bloque',
+    "name"           => 'Nombre',
+    "create"           => 'Crear',
+
     // Mensajes y placeholders
     'upload_error'   => 'Error al subir el archivo',
     'slug_generated' => 'Slug generado automáticamente',

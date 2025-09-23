@@ -24,29 +24,29 @@
             <div class="row mb-3">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">New Block</h5>
+                        <h5 class="mb-0">{admin.new_block}</h5>
                     </div>
                     <div class="card-body">
                         <form action="./admin/blocks/new" method="post">
                             <div class="mb-3">
-                                <label class="form-label" for="block_name">Name</label>
+                                <label class="form-label" for="block_name">{admin.name}</label>
                                 <input class="form-control" id="block_name" name="name" required type="text" value="">
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="sort_order">Sort Order</label>
+                                <label class="form-label" for="sort_order">{admin.order}</label>
                                 <input class="form-control" id="sort_order" name="sort_order" required
                                        type="number" value="{next_sort_order}">
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="block_content">Content</label>
+                                <label class="form-label" for="block_content">{admin.content}</label>
                                 <textarea class="form-control summernote" id="block_content" name="content"></textarea>
                             </div>
 
                             <div class="text-end">
                                 <button class="btn btn-sm btn-success" type="submit">
-                                    <i class="fas fa-plus"></i> Create
+                                    <i class="fas fa-plus"></i> {admin.create}
                                 </button>
                             </div>
                         </form>

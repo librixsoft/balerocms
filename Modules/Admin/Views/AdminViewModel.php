@@ -148,7 +148,7 @@ class AdminViewModel
 
         $viewModel->addAll([
             'lbl_new_block' => 'New Block',
-            'activeMenu' => 'blocks',
+            'activeMenu' => 'all_blocks',
         ]);
 
         if (!empty($extraParams)) {
@@ -164,7 +164,7 @@ class AdminViewModel
 
         $viewModel->addAll([
             'lbl_edit_block' => 'Edit Block',
-            'activeMenu' => 'blocks',
+            'activeMenu' => 'all_blocks',
         ]);
 
         if (!empty($extraParams)) {
