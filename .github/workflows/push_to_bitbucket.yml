@@ -1,0 +1,43 @@
+name: Push all branches & tags to Bitbucket via SSH
+
+on:
+  push:
+    branches:
+      - '*'  # cualquier rama dispara el workflow
+  workflow_dispatch:   # habilita ejecución manual desde la interfaz
+
+jobs:
+  push-to-bitbucket:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BITBUCKET_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
+
+      - name: Add Bitbucket remote
+        run: |
+          git remote remove bitbucket || true
+          git remote add bitbucket git@bitbucket.org:librixsoft/balerocms.git
+
+      # ✅ Checkout temporal para no bloquear fetch
+      - name: Checkout temporary branch
+        run: git checkout --detach
+
+      - name: Fetch all GitHub branches
+        run: git fetch origin '+refs/heads/*:refs/heads/*'
+
+      - name: Push all branches
+        run: git push bitbucket --all --force
+
+      - name: Push all tags
+        run: git push bitbucket --tags --force
