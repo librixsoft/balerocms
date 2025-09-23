@@ -11,6 +11,6 @@ class Constant
     public const LANG_HELPER = self::LOCAL_BASEPATH . '/Framework/I18n/lang_helper.php';
     public const LANG_PATH = self::LOCAL_BASEPATH . '/resources/lang';
     public const UPLOADS_PATH = self::LOCAL_BASEPATH . '/public/assets/images/uploads/'; // Local path
-    public const REMOTE_UPLOADS_PATH = '/public/assets/images/uploads/'; // Remote path
+    public const REMOTE_UPLOADS_PATH = '/assets/images/uploads/'; // Remote path
 
 }
