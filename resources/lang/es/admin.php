@@ -1,11 +1,13 @@
 <?php
-
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
+// lang/es/admin.php
 return [
-    'settings' => 'Propiedades',
+    'settings'     => 'Configuración',
+    'language'     => 'Idioma',
+    'theme'        => 'Tema',
+    'title'        => 'Título',
+    'keywords'     => 'Palabras clave',
+    'description'  => 'Descripción',
+    'footer'       => 'Pie de página',
+    'save_changes' => 'Guardar cambios',
+    'cancel'       => 'Cancelar',
 ];

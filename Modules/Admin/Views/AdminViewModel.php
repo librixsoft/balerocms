@@ -24,6 +24,9 @@ class AdminViewModel
         $currentLang = $_SESSION['lang'] ?? $this->config->language ?? 'en';
 
         $viewModel->addAll([
+
+            'mod_name' =>__('admin.settings'),
+
             'core_version' => _CORE_VERSION,
             'defaultTheme' => $this->config->theme,
             'themes' => $this->themesReader->getThemes(),

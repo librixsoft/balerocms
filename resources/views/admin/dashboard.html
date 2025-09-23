@@ -56,7 +56,7 @@
 
                         <form action="./admin/settings" method="POST">
                             <fieldset>
-                                <legend>{lbl_settings}</legend>
+                                <legend>{admin.settings}</legend>
 
                                 <div class="row mb-3">
                                     <label for="core" class="col-sm-3 col-form-label text-end">Core</label>
@@ -66,7 +66,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="language" class="col-sm-3 col-form-label text-end">{lbl_language}</label>
+                                    <label for="language" class="col-sm-3 col-form-label text-end">{admin.language}</label>
                                     <div class="col-sm-9">
                                         <select class="form-select" id="language" name="language">
                                             <%-- @foreach languages as code => name -->
@@ -81,7 +81,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="theme" class="col-sm-3 col-form-label text-end">{lbl_theme}</label>
+                                    <label for="theme" class="col-sm-3 col-form-label text-end">{admin.theme}</label>
                                     <div class="col-sm-9">
                                         <select class="form-select" id="theme" name="theme">
                                             <%-- @foreach themes as t -->
@@ -96,7 +96,7 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="typeahead" class="col-sm-3 col-form-label text-end">{lbl_title}</label>
+                                    <label for="typeahead" class="col-sm-3 col-form-label text-end">{admin.title}</label>
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control" id="typeahead" name="title"
                                                data-provide="typeahead" value="{txt_title}">
@@ -104,21 +104,21 @@
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="keywords" class="col-sm-3 col-form-label text-end">{lbl_keywords}</label>
+                                    <label for="keywords" class="col-sm-3 col-form-label text-end">{admin.keywords}</label>
                                     <div class="col-sm-9">
                                         <input type="text" class="form-control" id="keywords" name="keywords" value="{txt_keywords}">
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="description" class="col-sm-3 col-form-label text-end">{lbl_description}</label>
+                                    <label for="description" class="col-sm-3 col-form-label text-end">{admin.description}</label>
                                     <div class="col-sm-9">
                                         <textarea class="form-control" id="description" name="description" style="height:200px;">{txt_description}</textarea>
                                     </div>
                                 </div>
 
                                 <div class="row mb-3">
-                                    <label for="footer" class="col-sm-3 col-form-label text-end">{lbl_footer}</label>
+                                    <label for="footer" class="col-sm-3 col-form-label text-end">{admin.footer}</label>
                                     <div class="col-sm-9">
                                         <textarea class="form-control" id="footer" name="footer" style="height:200px;">{txt_footer}</textarea>
                                     </div>
@@ -126,8 +126,8 @@
 
                                 <div class="row mb-3">
                                     <div class="offset-sm-3 col-sm-9">
-                                        <button class="btn btn-primary" name="submit" type="submit">Save changes</button>
-                                        <button class="btn btn-secondary" name="cancel" type="reset">Cancel</button>
+                                        <button class="btn btn-primary" name="submit" type="submit">{admin.save_changes}</button>
+                                        <button class="btn btn-secondary" name="cancel" type="reset">{admin.cancel}</button>
                                     </div>
                                 </div>
                             </fieldset>
