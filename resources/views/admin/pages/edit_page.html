@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="no-js">
 <head>
-    <title>Admin Edit Page - {mod_name}</title>
+    <title>{admin.edit_page} - {admin.mod_name}</title>
     <base href="{basepath}">
     <link href="favicon.ico" rel="shortcut icon">
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
@@ -33,13 +33,13 @@
             <div class="mb-3">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">{lbl_edit_page}</h5>
+                        <h5 class="mb-0">{admin.edit_page}</h5>
                     </div>
                     <div class="card-body">
                         <form action="./admin/pages/edit/{page.id}" method="POST">
                             <fieldset>
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label" for="virtual_title">{lbl_title}</label>
+                                    <label class="col-sm-2 col-form-label" for="virtual_title">{admin.title}</label>
                                     <div class="col-sm-10">
                                         <input class="form-control" id="virtual_title" name="virtual_title" required
                                                type="text" value="{page.virtual_title}">
@@ -47,16 +47,16 @@
                                 </div>
 
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label" for="static_url">{lbl_static_url}</label>
+                                    <label class="col-sm-2 col-form-label" for="static_url">{admin.static_url}</label>
                                     <div class="col-sm-10">
                                         <input class="form-control" id="static_url" name="static_url" readonly
                                                style="background-color: #e9ecef; cursor: not-allowed;" type="text"
-                                               value="{page.static_url}">
+                                               value="{page.static_url}" title="{admin.readonly_field}">
                                     </div>
                                 </div>
 
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label" for="virtual_content">{lbl_content}</label>
+                                    <label class="col-sm-2 col-form-label" for="virtual_content">{admin.content}</label>
                                     <div class="col-sm-10">
                                         <textarea class="summernote"
                                                   name="virtual_content">{page.virtual_content}</textarea>
@@ -64,29 +64,29 @@
                                 </div>
 
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label" for="visible">{lbl_visible}</label>
+                                    <label class="col-sm-2 col-form-label" for="visible">{admin.visible}</label>
                                     <div class="col-sm-10">
                                         <select class="form-select w-auto" id="visible" name="visible">
-                                            <option value="1" {page.visible_selected}>{enabled}</option>
-                                            <option value="0" {page.hidden_selected}>{disabled}</option>
+                                            <option value="1" {page.visible_selected}>{admin.enabled}</option>
+                                            <option value="0" {page.hidden_selected}>{admin.disabled}</option>
                                         </select>
                                     </div>
                                 </div>
 
                                 <div class="mb-3 row">
-                                    <label class="col-sm-2 col-form-label" for="created_at">{lbl_date}</label>
+                                    <label class="col-sm-2 col-form-label" for="created_at">{admin.date}</label>
                                     <div class="col-sm-10">
                                         <input class="form-control" id="created_at" name="created_at" readonly
                                                style="background-color: #e9ecef; cursor: not-allowed;" type="text"
-                                               value="{page.created_at}">
+                                               value="{page.created_at}" title="{admin.readonly_field}">
                                     </div>
                                 </div>
 
                                 <div class="d-flex justify-content-start">
                                     <button class="btn btn-primary me-2" name="submit" type="submit">
-                                        <i class="fas fa-check"></i> {btn_save}
+                                        <i class="fas fa-check"></i> {admin.save}
                                     </button>
-                                    <a class="btn btn-secondary" href="{basepath}admin/pages">Cancel</a>
+                                    <a class="btn btn-secondary" href="{basepath}admin/pages">{admin.cancel}</a>
                                 </div>
 
                             </fieldset>
@@ -98,7 +98,7 @@
     </div>
     <hr>
     <footer>
-        <p>Powered by <a href="#">Balero CMS</a>.</p>
+        <p>{admin.powered_by} <a href="#">Balero CMS</a>.</p>
     </footer>
 </div>
 

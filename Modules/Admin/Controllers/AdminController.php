@@ -75,6 +75,7 @@ class AdminController extends Controller
     {
         $params = $this->viewModel->getPagesParams([
             'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->render("admin/pages/new_page.html", $params, false);
@@ -113,6 +114,7 @@ class AdminController extends Controller
         $params = $this->viewModel->getEditPageParams([
             'page' => $this->model->getPageById($id),
             'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->render("admin/pages/edit_page.html", $params, false);
@@ -200,7 +202,7 @@ class AdminController extends Controller
             'block' => $this->model->getBlockById($id),
         ]);
 
-        return $this->render("admin/blocks&edit_block.html", $params, false);
+        return $this->render("admin/blocks/edit_block.html", $params, false);
     }
 
     #[Post('/blocks/edit/{id}')]
