@@ -7,6 +7,9 @@ use Framework\Static\Constant;
 
 class View
 {
+
+    private string $viewsPath = LOCAL_DIR . '/resources/views';
+
     /**
      * Carpeta base de todas las vistas (sin "themes/")
      * Ej: /path/to/balerocms/resources/views/
@@ -22,7 +25,7 @@ class View
         $this->templateEngine = $templateEngine;
 
         // Solo la carpeta base de vistas, sin temas ni default
-        $this->baseDir = $this->normalizePath(Constant::VIEWS_PATH);
+        $this->baseDir = $this->normalizePath($this->getViewsPath());
 
         // Cargar settings y setear baseDir en el template engine
         $this->configSettings->LoadSettings();
@@ -123,4 +126,13 @@ class View
         $params = $this->getDefaultParams($extraParams);
         return $this->templateEngine->processTemplate($text, $params);
     }
+
+    /**
+     * @return string
+     */
+    public function getViewsPath(): string
+    {
+        return $this->viewsPath;
+    }
+
 }

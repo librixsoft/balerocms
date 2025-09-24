@@ -5,6 +5,10 @@ namespace Tests\Framework\Core;
 use Framework\Core\View;
 use PHPUnit\Framework\TestCase;
 
+if (!defined('LOCAL_DIR')) {
+    define('LOCAL_DIR', sys_get_temp_dir());
+}
+
 class ViewTest extends TestCase
 {
     public function testNormalizePath(): void
