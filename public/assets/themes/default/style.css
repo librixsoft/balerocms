@@ -20,6 +20,16 @@
     font-style: normal;
 }
 
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 /* ===== Tipografía global ===== */
 body, p, a, li {
     font-family: 'Cairo', sans-serif;
