@@ -3,10 +3,12 @@
 namespace Framework\Core;
 
 use Exception;
-use Framework\Static\Constant;
 
 class ConfigSettings
 {
+
+    private string $configPath = LOCAL_DIR . '/resources/config/balero.config.json';
+
     private array $fields = [
         // Database
         'dbhost' => '/config/database/dbhost',
@@ -43,14 +45,10 @@ class ConfigSettings
 
     /**
      * Constructor flexible
-     * @param string|null $file Ruta del JSON de configuración (opcional)
      */
-    public function __construct(?string $file = null)
+    public function __construct()
     {
-        // Usar JSONHandler como handler por defecto
-        $this->handler = new JSONHandler($file ?? Constant::CONFIG_PATH);
-
-        // Cargar todos los valores del JSON
+        $this->handler = new JSONHandler($this->getConfigPath());
         $this->loadSettings();
     }
 
@@ -109,6 +107,22 @@ class ConfigSettings
         }
 
         return $scheme . '://' . $host . $port . $dir;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConfigPath(): string
+    {
+        return $this->configPath;
+    }
+
+    /**
+     * @param string $configPath
+     */
+    public function setConfigPath(string $configPath): void
+    {
+        $this->configPath = $configPath;
     }
 
 }

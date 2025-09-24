@@ -3,17 +3,11 @@
 namespace Framework\Core;
 
 use Framework\Rendering\TemplateEngine;
-use Framework\Static\Constant;
 
 class View
 {
 
     private string $viewsPath = LOCAL_DIR . '/resources/views';
-
-    /**
-     * Carpeta base de todas las vistas (sin "themes/")
-     * Ej: /path/to/balerocms/resources/views/
-     */
     private string $baseDir;
 
     private ConfigSettings $configSettings;
@@ -127,12 +121,37 @@ class View
         return $this->templateEngine->processTemplate($text, $params);
     }
 
+
     /**
      * @return string
      */
     public function getViewsPath(): string
     {
         return $this->viewsPath;
+    }
+
+    /**
+     * @param string $viewsPath
+     */
+    public function setViewsPath(string $viewsPath): void
+    {
+        $this->viewsPath = $viewsPath;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBaseDir(): string
+    {
+        return $this->baseDir;
+    }
+
+    /**
+     * @param string $baseDir
+     */
+    public function setBaseDir(string $baseDir): void
+    {
+        $this->baseDir = $baseDir;
     }
 
 }

@@ -104,12 +104,13 @@ class Context
             new ProcessorForEach($flatten, $ifBlocks)
         );
 
+        $config = new ConfigSettings();
+
         $container->registerSingletonInstance(
             ConfigSettings::class,
-            new ConfigSettings(Constant::CONFIG_PATH)
+            $config
         );
 
-        $config = new ConfigSettings(Constant::CONFIG_PATH);
         $container->registerSingletonInstance(ConfigSettings::class, $config);
 
         /**
