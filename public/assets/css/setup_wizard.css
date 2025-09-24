@@ -1,7 +1,16 @@
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     margin-top: 30px !important;
 }
-
 
 /* Ajuste de labels e inputs */
 .row.align-items-center {

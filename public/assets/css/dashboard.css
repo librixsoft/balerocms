@@ -1,3 +1,13 @@
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+.container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 /** Home Page **/
 body {
     padding-top: 0;
