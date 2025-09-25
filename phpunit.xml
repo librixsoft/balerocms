@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php"
-         cacheResult="false"
-         executionOrder="default"
-         colors="true">
-
+<phpunit
+        bootstrap="vendor/autoload.php"
+        cacheResult="false"
+        executionOrder="default"
+        colors="true"
+        failOnDeprecation="true"
+        failOnWarning="true"
+        failOnPhpunitDeprecation="true"
+        displayDetailsOnTestsThatTriggerDeprecations="true"
+        displayDetailsOnTestsThatTriggerWarnings="true"
+        displayDetailsOnPhpunitDeprecations="true"
+>
     <testsuites>
         <testsuite name="Balerocms Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-
 </phpunit>

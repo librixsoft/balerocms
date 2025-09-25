@@ -101,7 +101,7 @@ class ErrorConsole
         }
     }
 
-    private static function renderConsole($mainMessage, Throwable $e = null)
+    private static function renderConsole(string $mainMessage, ?Throwable $e = null)
     {
         static $rendered = false;
         if ($rendered) return;
