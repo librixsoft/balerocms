@@ -4,33 +4,33 @@ namespace Framework\Rendering\Conditions;
 
 class NotEqualsCondition implements ConditionInterface
 {
-    private string $var1;
-    private string $var2;
-    private bool $isLiteral;
+    private ?string $var1 = null;
+    private ?string $var2 = null;
+    private bool $isLiteral = false;
 
-    public function __construct(string $var1, string $var2, bool $isLiteral = false)
+    // Constructor vacío compatible con DI
+    public function __construct()
     {
-        $this->var1 = $var1;
-        $this->var2 = $var2;
-        $this->isLiteral = $isLiteral;
     }
 
-    public static function supports(string $expression): bool
+    // Método de instancia para verificar si la expresión aplica
+    public function supports(string $expression): bool
     {
         return preg_match('/^[\w\.]+\s*!=\s*[\'"]?[\w\.]+[\'"]?$/', $expression) === 1;
     }
 
-    public static function fromExpression(string $expression): ConditionInterface
+    // Inicializa la instancia a partir de la expresión
+    public function fromExpression(string $expression): self
     {
         if (!preg_match('/^([\w\.]+)\s*!=\s*([\'"]?)([\w\.]+)\2$/', $expression, $matches)) {
             throw new \InvalidArgumentException("Expresión no válida para NotEqualsCondition: $expression");
         }
 
-        $var1 = $matches[1];
-        $var2 = $matches[3];
-        $isLiteral = $matches[2] !== '';
+        $this->var1 = $matches[1];
+        $this->var2 = $matches[3];
+        $this->isLiteral = $matches[2] !== '';
 
-        return new self($var1, $var2, $isLiteral);
+        return $this;
     }
 
     public function evaluate(array $params): bool

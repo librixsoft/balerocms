@@ -57,47 +57,6 @@ class Context
     {
         $this->container = $container;
 
-        // Instancia prototipos
-        $container->set(OrCondition::class, new OrCondition());
-        $container->set(AndCondition::class, new AndCondition());
-
-        /** @var OrCondition $or */
-        $or = $container->get(OrCondition::class);
-        /** @var AndCondition $and */
-        $and = $container->get(AndCondition::class);
-
-        // ConditionFactory
-        $container->set(
-            ConditionFactory::class,
-            new ConditionFactory($or, $and)
-        );
-
-        /** @var ConditionFactory $conditionFactory */
-        $conditionFactory = $container->get(ConditionFactory::class);
-
-        // ProcessorIfBlocks
-        $container->set(
-            ProcessorIfBlocks::class,
-            new ProcessorIfBlocks($conditionFactory)
-        );
-
-        // ProcessorFlattenParams
-        $container->set(
-            ProcessorFlattenParams::class,
-            new ProcessorFlattenParams()
-        );
-
-        /** @var ProcessorFlattenParams $flatten */
-        $flatten = $container->get(ProcessorFlattenParams::class);
-        /** @var ProcessorIfBlocks $ifBlocks */
-        $ifBlocks = $container->get(ProcessorIfBlocks::class);
-
-        // ProcessorForEach
-        $container->set(
-            ProcessorForEach::class,
-            new ProcessorForEach($flatten, $ifBlocks)
-        );
-
         $config = new ConfigSettings();
         $container->set(ConfigSettings::class, $config);
 

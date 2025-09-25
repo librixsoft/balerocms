@@ -4,21 +4,24 @@ namespace Framework\Rendering\Conditions;
 
 class TruthyCondition implements ConditionInterface
 {
-    private string $key;
+    private ?string $key = null;
 
-    public function __construct(string $key)
+    // Constructor vacío compatible con DI
+    public function __construct()
     {
-        $this->key = $key;
     }
 
-    public static function supports(string $expression): bool
+    // Método de instancia para verificar si la expresión aplica
+    public function supports(string $expression): bool
     {
         return !empty($expression) && !preg_match('/[!=]/', $expression) && $expression[0] !== '!';
     }
 
-    public static function fromExpression(string $expression): self
+    // Inicializa la instancia a partir de la expresión
+    public function fromExpression(string $expression): self
     {
-        return new self($expression);
+        $this->key = $expression;
+        return $this;
     }
 
     public function evaluate(array $flatParams): bool
