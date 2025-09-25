@@ -45,7 +45,7 @@ docker-compose up -d
   * Port: `3307`
   * User: `root`
   * Database: `balero_cms`
-  * Password: `""` (empty)
+  * Password: `root`
 * **phpMyAdmin:** [http://localhost:8081](http://localhost:8081)
 
   * User: `root`
@@ -165,49 +165,6 @@ docker run --rm \
   3. Navigate to **My Account → Security**
   4. Generate and copy your token
   5. Replace it in the command above
-  
----
-
-## Stopping Docker Services
-
-To stop the services defined in `docker-compose.yml`:
-
-### 1️⃣ Stop only the containers (keep volumes and networks)
-
-```bash
-docker-compose stop
-```
-
-* Stops the containers but keeps volumes and networks.
-* Useful if you want to restart later without losing data.
-
-### 2️⃣ Stop and remove containers and networks
-
-```bash
-docker-compose down
-```
-
-* Stops the containers and removes associated networks.
-* Persistent volumes **are not deleted**.
-
-### 3️⃣ Stop and remove everything, including volumes
-
-```bash
-docker-compose down -v
-```
-
-* Additionally removes the volumes defined in `docker-compose.yml`.
-* Useful if you want to reset MySQL or clear temporary data.
-
-> 💡 For MySQL in memory (tmpfs), simply use `docker-compose down` and start the service again, as the database is deleted when the container stops.
-
----
-
-### Note about MySQL and phpMyAdmin
-
-* **MySQL in RAM (tmpfs):** data is lost when the container stops, ideal for quick tests.
-* **Persistent MySQL (volume):** data is stored on disk, recommended for production.
-* **phpMyAdmin:** use [http://localhost:8081](http://localhost:8081) with MySQL credentials.
 
 ---
 
@@ -215,3 +172,20 @@ docker-compose down -v
 
 * GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
 * Bitbucket mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git](https://balerocms@bitbucket.org/librixsoft/balerocms.git)
+
+---
+
+## Docker-Compose Configuration (Option 2: MySQL Separate Container)
+
+* **LAMP:** Apache + PHP only, MySQL in a separate container.
+* **MySQL:** Runs in its own container, can be RAM-based (tmpfs) or persistent (volume).
+* **phpMyAdmin:** Connects to MySQL container, accessible at [http://localhost:8081](http://localhost:8081).
+
+```yaml
+services:
+  lamp:
+    image: mattrayner/lamp:latest-2004-php8
+    container_name: lamp-app
+    ports:
+      - "8080:80"
+```

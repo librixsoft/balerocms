@@ -2,24 +2,27 @@ version: "3.9"
 
 services:
   # -----------------------------
-  # LAMP Stack (Apache + PHP + MySQL incluido)
+  # LAMP Stack (Apache + PHP, sin MySQL)
   # -----------------------------
   lamp:
     image: mattrayner/lamp:latest-2004-php8
     container_name: lamp-app
     ports:
       - "8080:80"       # Apache → http://localhost:8080
-      - "3307:3306"     # MySQL → localhost:3307
     volumes:
       - ./:/var/www/html
       - ./apache/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
+    restart: unless-stopped
+
+  # -----------------------------
+  # MySQL (contenedor independiente)
+  # -----------------------------
+  mysql:
+    image: mysql:8
+    container_name: mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: balero_cms
-      MYSQL_USER: root
-      MYSQL_PASSWORD: ""
-    restart: unless-stopped
-
     # -----------------------------
     # OPCIÓN 1: MySQL en RAM (tmpfs, datos efímeros)
     # -----------------------------
@@ -31,6 +34,9 @@ services:
     # -----------------------------
     # volumes:
     #   - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: unless-stopped
 
   # -----------------------------
   # PhpMyAdmin (administrador MySQL)
@@ -42,12 +48,12 @@ services:
     ports:
       - "8081:80"   # PhpMyAdmin → http://localhost:8081
     environment:
-      PMA_HOST: lamp
+      PMA_HOST: mysql
       PMA_PORT: 3306
       PMA_USER: root
       PMA_PASSWORD: root
     depends_on:
-      - lamp
+      - mysql
 
   # -----------------------------
   # SonarQube (análisis estático)
