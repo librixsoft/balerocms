@@ -14,8 +14,6 @@ chmod 755 ./resources/config/balero.config.json
 
 ---
 
-## BaleroCMS Docker Setup Guide
-
 ### Starting the environment
 
 * **First time or after changing Dockerfile/images:**
@@ -73,7 +71,11 @@ You can configure MySQL in two ways:
 
 In `docker-compose.yml` you can switch between these two options by commenting/uncommenting the relevant section.
 
+That's all, if you enter to [http://localhost:8080](http://localhost:8080) you will see the Balero CMS Setup Wizard!
+
 ---
+
+# Documentation only for developers or/and customization
 
 ## Update/Install Front-End Libs
 
