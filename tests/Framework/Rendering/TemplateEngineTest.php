@@ -26,7 +26,7 @@ class TemplateEngineTest extends TestCase
 
         $expected = 'Hola, Aníbal![Includes:/base/path/][ForEach][Variables][IfBlocks][KeyPath]';
 
-        $this->assertSame($expected, $output); // ✅ corregido para evitar deprecaciones
+        $this->assertSame($expected, $output);
     }
 
     private function createTemplateEngineWithMocks(): TemplateEngine
@@ -38,22 +38,12 @@ class TemplateEngineTest extends TestCase
         $processorVariables = $this->createMock(ProcessorVariables::class);
         $processorKeyPath = $this->createMock(ProcessorKeyPath::class);
 
-        // Simulaciones de comportamiento
-
-        $processorIncludes->method('process')->willReturnCallback(function ($content, $baseDir) {
-            return $content . '[Includes:' . ($baseDir ?? '') . ']';
-        });
-
+        // Comportamientos simulados
+        $processorIncludes->method('process')->willReturnCallback(fn($content, $baseDir) => $content . '[Includes:' . ($baseDir ?? '') . ']');
         $processorFlattenParams->method('process')->willReturnCallback(fn($params) => $params);
-
         $processorForEach->method('process')->willReturnCallback(fn($content, $params) => $content . '[ForEach]');
-
-        $processorVariables->method('process')->willReturnCallback(function ($content, $flatParams) {
-            return str_replace('{{ nombre }}', $flatParams['nombre'] ?? '', $content) . '[Variables]';
-        });
-
+        $processorVariables->method('process')->willReturnCallback(fn($content, $flatParams) => str_replace('{{ nombre }}', $flatParams['nombre'] ?? '', $content) . '[Variables]');
         $processorIfBlocks->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[IfBlocks]');
-
         $processorKeyPath->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[KeyPath]');
 
         return new TemplateEngine(
