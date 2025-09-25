@@ -94,13 +94,14 @@ composer install
 composer test
 ```
 
-## Generate code coverage local in PHPUnit
+## Generate code coverage with Docker + PHPUnit
 
 ```bash
-php -d xdebug.mode=coverage ./vendor/bin/phpunit \
--c phpunit.xml \
---coverage-clover build/logs/coverage.xml \
---coverage-filter Framework
+docker compose run --rm phpunit \
+  php -d xdebug.mode=coverage ./vendor/bin/phpunit \
+  -c phpunit.xml \
+  --coverage-clover build/logs/coverage.xml \
+  --coverage-filter Framework
 ```
 
 It will create: build/logs/coverage.xml

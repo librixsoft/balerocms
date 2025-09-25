@@ -2,6 +2,19 @@ version: "3.9"
 
 services:
   # -----------------------------
+  # PHP + PHPUnit + Xdebug
+  # -----------------------------
+  phpunit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: phpunit-app
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: tail -f /dev/null   # Mantener el container corriendo para ejecutar comandos
+
+  # -----------------------------
   # LAMP Stack (Apache + PHP, sin MySQL)
   # -----------------------------
   lamp:
@@ -86,6 +99,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  # Solo se usa si activas MySQL persistente
   mysql_data:
   postgres_data:
