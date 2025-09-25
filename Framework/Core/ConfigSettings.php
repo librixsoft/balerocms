@@ -46,9 +46,15 @@ class ConfigSettings
     /**
      * Constructor flexible
      */
-    public function __construct()
+    public function __construct(string $jsonFile = '')  // <-- CAMBIO: parámetro opcional agregado
     {
-        $this->handler = new JSONHandler($this->getConfigPath());
+        $this->configPath = $jsonFile ?: (LOCAL_DIR . '/resources/config/balero.config.json');
+
+        if (!file_exists($this->configPath)) {
+            throw new \Exception("Archivo no encontrado: {$this->configPath}");
+        }
+
+        $this->handler = new JSONHandler($this->configPath);
         $this->loadSettings();
     }
 

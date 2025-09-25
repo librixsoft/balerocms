@@ -10,10 +10,14 @@ final class ConfigSettingsTest extends TestCase
 
     public function setUp(): void
     {
-        // Ruta temporal para el JSON de prueba
-        $this->jsonFile = __DIR__ . '/../../resources/config/test_configsettings.json';
+        // Definir LOCAL_DIR si no está definido
+        if (!defined('LOCAL_DIR')) {
+            define('LOCAL_DIR', __DIR__ . '/../../'); // raíz del proyecto
+        }
 
-        // Creamos un JSON de prueba dinámicamente
+        // Crear un archivo JSON temporal para los tests
+        $this->jsonFile = sys_get_temp_dir() . '/test_configsettings.json';
+
         $jsonContent = [
             'config' => [
                 'database' => [
@@ -29,9 +33,7 @@ final class ConfigSettingsTest extends TestCase
                     'firstname' => 'Anibal',
                     'lastname' => 'Gomez',
                 ],
-                'system' => [
-                    'installed' => '1'
-                ],
+                'system' => ['installed' => '1'],
                 'site' => [
                     'title' => 'Mi CMS',
                     'description' => 'Descripción del sitio',
@@ -46,16 +48,12 @@ final class ConfigSettingsTest extends TestCase
             ]
         ];
 
-        // Crear directorio si no existe
-        if (!is_dir(dirname($this->jsonFile))) {
-            mkdir(dirname($this->jsonFile), 0777, true);
-        }
-
         file_put_contents($this->jsonFile, json_encode($jsonContent, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
 
     public function tearDown(): void
     {
+        // Borrar archivo temporal
         if (file_exists($this->jsonFile)) {
             unlink($this->jsonFile);
         }
@@ -77,25 +75,25 @@ final class ConfigSettingsTest extends TestCase
 
     public function testConfigSettingsGetAndSet(): void
     {
-        // Pasamos la ruta del JSON de prueba al constructor
+        // Pasar el archivo temporal al constructor
         $config = new ConfigSettings($this->jsonFile);
 
-        // Comprobamos lectura inicial
+        // Lectura inicial
         $this->assertEquals('localhost', $config->dbhost);
         $this->assertEquals('default', $config->theme);
         $this->assertEquals('admin', $config->username);
 
-        // Cambiamos valores usando magic setter
+        // Modificar valores usando magic setter
         $config->dbhost = '192.168.0.1';
         $config->theme = 'darkmode';
         $config->username = 'superadmin';
 
-        // Validamos cambios usando magic getter
+        // Validar cambios con magic getter
         $this->assertEquals('192.168.0.1', $config->dbhost);
         $this->assertEquals('darkmode', $config->theme);
         $this->assertEquals('superadmin', $config->username);
 
-        // Validar que también se modificó en el JSON
+        // Validar también en el JSON
         $json = new JSONHandler($this->jsonFile);
         $this->assertEquals('192.168.0.1', $json->get('/config/database/dbhost'));
         $this->assertEquals('darkmode', $json->get('/config/site/theme'));
