@@ -20,7 +20,9 @@ class ErrorConsole
 
     public static function register()
     {
-        ob_start();
+        if (!ob_get_level()) {
+            ob_start();
+        }
 
         if (self::isProduction()) {
             ini_set('display_errors', '0'); // Producción: no mostrar errores
@@ -72,6 +74,12 @@ class ErrorConsole
             } else {
                 $message = "Fatal Error: {$error['message']} in {$error['file']} on line {$error['line']}";
                 self::renderConsole($message);
+            }
+        }
+        else {
+            // Nada malo pasó → limpia el buffer abierto
+            if (ob_get_level()) {
+                ob_end_clean();
             }
         }
     }
