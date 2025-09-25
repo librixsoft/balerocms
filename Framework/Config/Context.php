@@ -34,7 +34,6 @@ use Framework\Rendering\ProcessorFlattenParams;
 use Framework\Rendering\ProcessorForEach;
 use Framework\Rendering\ProcessorIfBlocks;
 use Framework\Services\RedirectService;
-use Framework\Static\Constant;
 use Framework\Static\Redirect;
 
 class Context

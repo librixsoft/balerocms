@@ -4,7 +4,6 @@ namespace Modules\Installer\Views;
 
 use Framework\Core\ConfigSettings;
 use Framework\Core\ViewModel;
-use Framework\Static\Constant;
 
 class InstallerViewModel
 {

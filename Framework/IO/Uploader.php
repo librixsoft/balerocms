@@ -11,7 +11,6 @@ namespace Framework\IO;
 use Exception;
 use Framework\Core\ConfigSettings;
 use Framework\Core\ErrorConsole;
-use Framework\Static\Constant;
 
 class Uploader
 {

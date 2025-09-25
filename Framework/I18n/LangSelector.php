@@ -3,7 +3,6 @@
 namespace Framework\I18n;
 
 use Framework\Http\RequestHelper;
-use Framework\Static\Constant;
 
 class LangSelector
 {
