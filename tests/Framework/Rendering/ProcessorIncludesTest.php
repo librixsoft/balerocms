@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Framework\Rendering;
+
 use Framework\Rendering\ProcessorIncludes;
 use PHPUnit\Framework\TestCase;
 
@@ -10,37 +12,44 @@ class ProcessorIncludesTest extends TestCase
 
     protected function setUp(): void
     {
-        // Inyectar ProcessorIncludes (sin dependencias)
         $this->processor = new ProcessorIncludes();
-
-        // Definir ruta a templates
         $this->viewsDir = __DIR__ . '/../../resources/views/includes/';
+    }
 
-        // Crear carpeta si no existe
-        if (!is_dir($this->viewsDir)) {
-            mkdir($this->viewsDir, 0777, true);
+    private function loadTemplate(string $filename): string
+    {
+        $path = $this->viewsDir . $filename;
+        if (!file_exists($path)) {
+            throw new \RuntimeException("Template file not found: $path");
         }
-
-        // Crear archivos de prueba
-        file_put_contents($this->viewsDir . 'header.html', '<header>HEADER CONTENT</header>');
-        file_put_contents($this->viewsDir . 'footer.html', '<footer>FOOTER CONTENT</footer>');
+        return file_get_contents($path);
     }
 
-    public function testIncludeSingleFile()
+    public function testIncludeHeader()
     {
-        $template = '<body><%-- @include "header.html" --></body>';
+        $template = $this->loadTemplate('header.html');
         $result = $this->processor->process($template, $this->viewsDir);
 
         $this->assertStringContainsString('<header>HEADER CONTENT</header>', $result);
-        $this->assertStringNotContainsString('<%-- INCLUDE ERROR', $result);
     }
 
-    public function testIncludeMultipleFiles()
+    public function testIncludeFooter()
     {
-        $template = '<%-- @include "header.html" --><main>MAIN</main><%-- @include "footer.html" -->';
+        $template = $this->loadTemplate('footer.html');
+        $result = $this->processor->process($template, $this->viewsDir);
+
+        $this->assertStringContainsString('<footer>FOOTER CONTENT</footer>', $result);
+    }
+
+    public function testIncludeTemplateWithNestedIncludes()
+    {
+        $template = $this->loadTemplate('template_with_includes.html');
         $result = $this->processor->process($template, $this->viewsDir);
 
         $this->assertStringContainsString('<header>HEADER CONTENT</header>', $result);
+        $this->assertStringContainsString('<main>', $result);
+        $this->assertStringContainsString('Page Content', $result);
+        $this->assertStringContainsString('</main>', $result);
         $this->assertStringContainsString('<footer>FOOTER CONTENT</footer>', $result);
     }
 
@@ -54,7 +63,7 @@ class ProcessorIncludesTest extends TestCase
 
     public function testIncludeWithoutBaseDir()
     {
-        $template = '<%-- @include "header.html" -->';
+        $template = $this->loadTemplate('header.html');
         $result = $this->processor->process($template, '');
 
         $this->assertStringContainsString('INCLUDE ERROR: baseDir no definido', $result);

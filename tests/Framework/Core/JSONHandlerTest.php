@@ -1,5 +1,7 @@
 <?php
 
+namespace Tests\Framework\Core;
+
 use Framework\Core\JSONHandler;
 use PHPUnit\Framework\TestCase;
 
