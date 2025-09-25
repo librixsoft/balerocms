@@ -35,15 +35,21 @@
                 </li>
 
                 <!-- Selector de idioma junto a Preview -->
-                <li class="nav-item ms-3">
-                    <form class="d-flex m-0" method="get">
-                        <select class="form-select form-select-sm" id="lang" name="lang" onchange="this.form.submit()">
-                            <option value="">Idioma de sesion...</option>
+                <li class="nav-item ms-3 d-flex align-items-center">
+                    <label for="lang" class="me-2 mb-0">Idioma de sesión:</label>
+                    <form class="d-flex m-0">
+                        <select
+                                class="form-select form-select-sm"
+                                id="lang"
+                                name="lang"
+                                onchange="this.form.submit()"
+                        >
                             <option value="en" {lang_selected_en}>English</option>
                             <option value="es" {lang_selected_es}>Español</option>
                         </select>
                     </form>
                 </li>
+
             </ul>
 
             <!-- Dropdown usuario a la derecha -->

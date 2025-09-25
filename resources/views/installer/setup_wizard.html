@@ -28,9 +28,9 @@
 
     <!-- Idioma -->
     <div class="d-flex justify-content-end mb-3">
-        <form class="d-inline" method="get">
-            <select class="form-select form-select-sm" id="lang" name="lang" onchange="this.form.submit()">
-                <option value="">Idioma de sesion...</option>
+        <form class="d-inline-flex align-items-center m-0" method="get">
+            <label for="lang" class="me-2 mb-0">Idioma de sesión:</label>
+            <select class="form-select form-select-sm w-auto" id="lang" name="lang" onchange="this.form.submit()">
                 <option value="en" {lang_selected_en}>English</option>
                 <option value="es" {lang_selected_es}>Español</option>
             </select>
