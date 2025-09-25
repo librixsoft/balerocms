@@ -96,19 +96,24 @@ composer test
 
 ## Generate code coverage local in PHPUnit
 
+```bash
 php -d xdebug.mode=coverage ./vendor/bin/phpunit \
 -c phpunit.xml \
 --coverage-clover build/logs/coverage.xml \
 --coverage-filter Framework
+```
 
 It will create: build/logs/coverage.xml
 
 ## Execute sonar to view coverage
 
-php -d xdebug.mode=coverage ./vendor/bin/phpunit \
--c phpunit.xml \
---coverage-clover build/logs/coverage.xml \
---coverage-filter Framework
+```bash
+docker run --rm \
+  -e SONAR_HOST_URL="http://host.docker.internal:9000" \
+  -e SONAR_TOKEN="GENERATED_TOKEN" \
+  -v $(pwd):/usr/src \
+  sonarsource/sonar-scanner-cli
+```
 
 ---
 
