@@ -76,12 +76,6 @@ class ErrorConsole
                 self::renderConsole($message);
             }
         }
-        else {
-            // Nada malo pasó → limpia el buffer abierto
-            if (ob_get_level()) {
-                ob_end_clean();
-            }
-        }
     }
 
     private static function renderGeneric()
