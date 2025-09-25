@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   # -----------------------------
-  # LAMP Stack (Apache + PHP + MySQL)
+  # LAMP Stack (Apache + PHP + MySQL incluido)
   # -----------------------------
   lamp:
     image: mattrayner/lamp:latest-2004-php8
@@ -11,7 +11,7 @@ services:
       - "8080:80"       # Apache → http://localhost:8080
       - "3307:3306"     # MySQL → localhost:3307
     volumes:
-      - ./:/var/www/html                     # monta todo el proyecto
+      - ./:/var/www/html
       - ./apache/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -19,6 +19,35 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: ""
     restart: unless-stopped
+
+    # -----------------------------
+    # OPCIÓN 1: MySQL en RAM (tmpfs, datos efímeros)
+    # -----------------------------
+    tmpfs:
+      - /var/lib/mysql
+    # -----------------------------
+    # OPCIÓN 2: MySQL persistente en disco (modo producción)
+    # Descomenta estas líneas y comenta la sección tmpfs ↑
+    # -----------------------------
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
+
+  # -----------------------------
+  # PhpMyAdmin (administrador MySQL)
+  # -----------------------------
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"   # PhpMyAdmin → http://localhost:8081
+    environment:
+      PMA_HOST: lamp
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - lamp
 
   # -----------------------------
   # SonarQube (análisis estático)
@@ -51,4 +80,6 @@ services:
     restart: unless-stopped
 
 volumes:
+  # Solo se usa si activas MySQL persistente
+  mysql_data:
   postgres_data:

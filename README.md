@@ -2,184 +2,216 @@
 
 Docker version of Balero CMS.
 
-# Install
+---
 
+## Install
 
-Set write permissions to config file.
+Set write permissions to config file:
 
 ```bash
-$ chmod 755 ./resources/config/balero.config.json
+chmod 755 ./resources/config/balero.config.json
 ```
+
+---
 
 ## BaleroCMS Docker Setup Guide
 
 ### Starting the environment
 
-1. **First time or after changing Dockerfile/images**:
+* **First time or after changing Dockerfile/images:**
 
-```
+```bash
 docker-compose up -d --build
 ```
 
-- `-d` → run in background
-- `--build` → rebuild images before starting containers
+* `-d` → run in background
 
-2. **Just start existing containers**:
+* `--build` → rebuild images before starting containers
 
-```
+* **Just start existing containers:**
+
+```bash
 docker-compose up -d
 ```
 
 ---
 
-### Accessing services
+## Accessing services
 
-- **BaleroCMS:** http://localhost:8080
-- **MySQL:**
-    - Host: `localhost`
-    - Port: `3307`
-    - User: `root`
-    - Database: `balero_cms`
-    - Password: `""` (empty)
+* **BaleroCMS:** [http://localhost:8080](http://localhost:8080)
+* **MySQL:**
 
-- **SonarQube:** http://localhost:9000
-    - User: `admin`
-    - Password: `admin`
+  * Host: `localhost`
+  * Port: `3307`
+  * User: `root`
+  * Database: `balero_cms`
+  * Password: `""` (empty)
+* **phpMyAdmin:** [http://localhost:8081](http://localhost:8081)
+
+  * User: `root`
+  * Password: `root`
+* **SonarQube:** [http://localhost:9000](http://localhost:9000)
+
+  * User: `admin`
+  * Password: `admin`
+
+---
+
+## MySQL storage modes
+
+You can configure MySQL in two ways:
+
+1. **In-memory (RAM):**
+
+  * Data is lost when the container stops.
+  * Ideal for development and quick tests.
+
+2. **Persistent with volume:**
+
+  * Data is stored in a Docker volume.
+  * Recommended for production use.
+
+In `docker-compose.yml` you can switch between these two options by commenting/uncommenting the relevant section.
 
 ---
 
 ## Update/Install Front-End Libs
 
-Adjust your library version in `package.json` and execute:
+Update library versions in `package.json` and run:
 
 ```bash
-$ npm install
+npm install
 ```
-
-It will update your local front-end libraries.
 
 ---
 
 ## Run Unit Tests
 
-Create your tests in `tests/Framework` and execute:
+Create tests in `tests/Framework` and run:
 
 ```bash
-$ composer install
-$ composer test
+composer install
+composer test
 ```
 
 ---
 
-## Using Third-Party Libraries in Balerocms
+## Using Third-Party Libraries in BaleroCMS
 
-Balerocms is ready to use Composer for managing third-party libraries. Follow these steps to include and use external
-libraries in your CMS.
+BaleroCMS is ready to use Composer for dependencies.
 
-### 1. Install libraries
-
-Navigate to the root of your project (`balerocms-src/`) and run:
+* **Install dependencies:**
 
 ```bash
-$ composer install
+composer install
 ```
 
-### 1. Add a library with Composer
+* **Add a new library:**
 
 ```bash
-$ composer require vendor/package-name
+composer require vendor/package-name
 ```
 
-#### Example: Installing Guzzle for HTTP requests (third-party library)
+* **Example (Guzzle):**
 
 ```bash
-$ composer require guzzlehttp/guzzle
+composer require guzzlehttp/guzzle
 ```
 
-This will:
-
-- Download the library into `vendor/`.
-
----
-
-### 2. Include the library in the CMS
-
-Now you can use the library inside a controller. For example:
+After that, you can use the library in controllers:
 
 ```php
 <?php
 namespace Modules\Example\Controllers;
 
 use Framework\Core\Controller;
-use GuzzleHttp\Client; // Third-party library
+use GuzzleHttp\Client;
 
 class ExampleController extends Controller
 {
     public function fetchData()
     {
-        // Create Guzzle HTTP client
         $client = new Client();
-
-        // Send GET request
         $response = $client->get('https://api.example.com/data');
-
-        // Get response body
-        $body = $response->getBody()->getContents();
-
-        return $body;
+        return $response->getBody()->getContents();
     }
 }
 ```
 
-# Sonar
+---
 
-### Start SonarQube with Docker
+## SonarQube
 
+* **Start SonarQube:**
+
+```bash
+docker-compose up -d
 ```
-$ docker-compose up -d
-```
 
-### Run Sonar Scanner
+* **Run Sonar Scanner:**
 
-```
+```bash
 docker run --rm \
   -e SONAR_HOST_URL="http://host.docker.internal:9000" \
-  -e SONAR_TOKEN="sqa_3883c0bd01ccc056b9e62e5b1108674ceb1afde3" \
+  -e SONAR_TOKEN="your_generated_token_here" \
   -v $(pwd):/usr/src \
   sonarsource/sonar-scanner-cli
 ```
 
-### How to get your Sonar token from the dashboard
+* **Generate a Sonar token:**
 
-1. Open your browser and go to your SonarQube dashboard:
+  1. Go to [http://localhost:9000](http://localhost:9000)
+  2. Login as `admin/admin`
+  3. Navigate to **My Account → Security**
+  4. Generate and copy your token
+  5. Replace it in the command above
+  
+---
 
-```
-http://localhost:9000
-```
+## Stopping Docker Services
 
-2. Log in with your account (default admin/admin).
+To stop the services defined in `docker-compose.yml`:
 
-3. Click on your avatar in the top right corner → **My Account**.
+### 1️⃣ Stop only the containers (keep volumes and networks)
 
-4. Go to the **Security** tab.
-
-5. Under **Tokens**, click **Generate Token**.
-
-6. Give your token a name (e.g., `balero_project`) and click **Generate**.
-
-7. Copy the token immediately — this is your `SONAR_TOKEN` to use in the scanner command.
-
-8. Replace the token in your Docker command:
-
-```
--e SONAR_TOKEN="your_generated_token_here"
+```bash
+docker-compose stop
 ```
 
-Now you can run the scanner and it will authenticate with SonarQube using your token.
+* Stops the containers but keeps volumes and networks.
+* Useful if you want to restart later without losing data.
 
-# Reposiroty
+### 2️⃣ Stop and remove containers and networks
 
-GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
+```bash
+docker-compose down
+```
 
-Mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git
-](https://balerocms@bitbucket.org/librixsoft/balerocms.git)
+* Stops the containers and removes associated networks.
+* Persistent volumes **are not deleted**.
+
+### 3️⃣ Stop and remove everything, including volumes
+
+```bash
+docker-compose down -v
+```
+
+* Additionally removes the volumes defined in `docker-compose.yml`.
+* Useful if you want to reset MySQL or clear temporary data.
+
+> 💡 For MySQL in memory (tmpfs), simply use `docker-compose down` and start the service again, as the database is deleted when the container stops.
+
+---
+
+### Note about MySQL and phpMyAdmin
+
+* **MySQL in RAM (tmpfs):** data is lost when the container stops, ideal for quick tests.
+* **Persistent MySQL (volume):** data is stored on disk, recommended for production.
+* **phpMyAdmin:** use [http://localhost:8081](http://localhost:8081) with MySQL credentials.
+
+---
+
+## Repository
+
+* GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
+* Bitbucket mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git](https://balerocms@bitbucket.org/librixsoft/balerocms.git)

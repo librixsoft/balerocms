@@ -5,7 +5,6 @@ namespace Modules\Installer\Models;
 use Exception;
 use Framework\Core\ErrorConsole;
 use Framework\Core\Model;
-use Framework\Static\Constant;
 use Throwable;
 
 class InstallerModel extends Model
@@ -34,7 +33,7 @@ class InstallerModel extends Model
             $this->db->connect($host, $user, $pass, $dbname);
 
             // Cargar y ejecutar el archivo SQL
-            $sqlFile = Constant::TABLES_SQL_PATH;
+            $sqlFile = $this->getTablesSqlPath();
 
             if (!file_exists($sqlFile)) {
                 throw new Exception("Archivo SQL no encontrado: $sqlFile");
