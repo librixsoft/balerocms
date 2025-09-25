@@ -22,11 +22,16 @@ class InstallerViewModel
      */
     public function setInstallerParams(array $extraParams = []): array
     {
+
+        $session_lang = $_SESSION['lang'] ?? 'en';
+        $lang_selected_en = $session_lang === 'en' ? 'selected' : '';
+        $lang_selected_es = $session_lang === 'es' ? 'selected' : '';
+
         $this->viewModel->addAll([
 
             // Botones
-            'btn_save' => __('installer.save'),
-            'btn_install' => __('installer.install'),
+            'btn_save' => '{installer.save}',
+            'btn_install' => '{installer.install}',
 
             // Valores configurables
             'txt_dbhost' => $this->config->dbhost,
@@ -44,7 +49,10 @@ class InstallerViewModel
 
             // Setup Wizard
             'mod_rewrite_enabled' => function_exists('apache_get_modules') && in_array('mod_rewrite', apache_get_modules()),
-            'config_writeable' => is_writable(Constant::CONFIG_PATH),
+            'config_writeable' => is_writable($this->config->getConfigPath()),
+
+            'lang_selected_en' => $lang_selected_en,
+            'lang_selected_es' => $lang_selected_es,
 
         ]);
 
@@ -55,7 +63,7 @@ class InstallerViewModel
         // Estado del sistema
         $fieldsValid = $this->areFieldsValid($extraParams);
         $modRewrite = function_exists('apache_get_modules') && in_array('mod_rewrite', apache_get_modules());
-        $configWritable = is_writable(Constant::CONFIG_PATH);
+        $configWritable = is_writable($this->config->getConfigPath());
 
         // Agregar estado como flags
         $this->viewModel->addAll([

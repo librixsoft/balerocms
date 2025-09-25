@@ -3,54 +3,41 @@
 namespace Framework\Core;
 
 use Framework\Rendering\TemplateEngine;
+use Framework\I18n\LangManager;
 
 class View
 {
-
     private string $viewsPath = LOCAL_DIR . '/resources/views';
     private string $baseDir;
 
     private ConfigSettings $configSettings;
     private TemplateEngine $templateEngine;
+    private LangManager $langManager;
 
-    public function __construct(ConfigSettings $config, TemplateEngine $templateEngine)
+    public function __construct(ConfigSettings $config, TemplateEngine $templateEngine, LangManager $langManager)
     {
         $this->configSettings = $config;
         $this->templateEngine = $templateEngine;
+        $this->langManager = $langManager;
 
-        // Solo la carpeta base de vistas, sin temas ni default
         $this->baseDir = $this->normalizePath($this->getViewsPath());
 
-        // Cargar settings y setear baseDir en el template engine
         $this->configSettings->LoadSettings();
         $this->templateEngine->setBaseDir($this->baseDir);
     }
 
-    /**
-     * Normaliza un path para que termine con exactamente una sola barra.
-     */
     private function normalizePath(string $path): string
     {
         return rtrim($path, '/') . '/';
     }
 
-    /**
-     * Renderiza una plantilla.
-     *
-     * @param string $templatePath Path relativo dentro de views o themes.
-     * @param array $params Parámetros dinámicos a pasar a la plantilla.
-     * @param bool $useTheme Si es true, buscará en themes/{theme}/, fallback a themes/default/.
-     *                       Si es false, buscará directamente en la carpeta base de vistas.
-     */
     public function render(string $templatePath, array $params = [], bool $useTheme = true): string
     {
         try {
-            // Determinar path final según si se usa theme o no
             if ($useTheme) {
                 $themeDir = $this->baseDir . "themes/" . $this->configSettings->theme . "/";
                 $templateFullPath = $themeDir . ltrim($templatePath, '/');
 
-                // Fallback a default si no existe en theme activo
                 if (!file_exists($templateFullPath)) {
                     $fallbackPath = $this->baseDir . "themes/default/" . ltrim($templatePath, '/');
                     if (file_exists($fallbackPath)) {
@@ -60,31 +47,22 @@ class View
                     }
                 }
             } else {
-                // Render directo, **sin theme ni fallback**
                 $templateFullPath = $this->baseDir . ltrim($templatePath, '/');
-
                 if (!file_exists($templateFullPath)) {
                     throw new \RuntimeException("Plantilla no encontrada en vistas base: $templateFullPath");
                 }
             }
 
-            // Leer contenido de la plantilla
             $content = file_get_contents($templateFullPath);
             if ($content === false) {
                 throw new \RuntimeException("No se pudo leer la plantilla: $templateFullPath");
             }
 
-            // Merge de parámetros por defecto + dinámicos
             $params = $this->getDefaultParams($params);
 
-            // Procesar plantilla con template engine
             $output = $this->templateEngine->processTemplate($content, $params);
 
-            /**
-             * Pasar el resultado final otra vez por parsePlaceholders
-             *     Esto asegura que si hay placeholders dentro del contenido dinámico
-             *     (ej: posts guardados con {year}), también se reemplazan.
-             */
+            // Aquí se reemplazan placeholders faltantes con LangManager
             return $this->parsePlaceholders($output, $params);
 
         } catch (\Throwable $e) {
@@ -93,10 +71,6 @@ class View
         }
     }
 
-    /**
-     * Devuelve los parámetros por defecto de todas las vistas
-     * y mezcla con parámetros dinámicos si se pasan.
-     */
     public function getDefaultParams(array $params = []): array
     {
         return array_merge([
@@ -111,47 +85,46 @@ class View
         ], $params);
     }
 
-    /**
-     * Método global para procesar cualquier texto dinámico
-     *     (ej: contenido de posts con placeholders como {year}, {title}, etc.)
-     */
     public function parsePlaceholders(string $text, array $extraParams = []): string
     {
         $params = $this->getDefaultParams($extraParams);
-        return $this->templateEngine->processTemplate($text, $params);
+
+        // Primero pasar por template engine
+        $text = $this->templateEngine->processTemplate($text, $params);
+
+        // Luego buscar claves {modulo.llave} que queden sin reemplazar y usar LangManager
+        return preg_replace_callback(
+            '/\{([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)\}/',
+            function ($matches) use ($params) {
+                $fullKey = $matches[1] . '.' . $matches[2];
+
+                if (isset($params[$fullKey])) {
+                    return $params[$fullKey];
+                }
+
+                return $this->langManager->get($fullKey, $matches[0]);
+            },
+            $text
+        );
     }
 
-
-    /**
-     * @return string
-     */
     public function getViewsPath(): string
     {
         return $this->viewsPath;
     }
 
-    /**
-     * @param string $viewsPath
-     */
     public function setViewsPath(string $viewsPath): void
     {
         $this->viewsPath = $viewsPath;
     }
 
-    /**
-     * @return string
-     */
     public function getBaseDir(): string
     {
         return $this->baseDir;
     }
 
-    /**
-     * @param string $baseDir
-     */
     public function setBaseDir(string $baseDir): void
     {
         $this->baseDir = $baseDir;
     }
-
 }

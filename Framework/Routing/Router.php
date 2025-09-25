@@ -13,7 +13,6 @@ use Framework\Core\Boot;
 use Framework\Core\ConfigSettings;
 use Framework\Core\ErrorConsole;
 use Framework\Http\RequestHelper;
-use Framework\Static\Constant;
 use Framework\Static\Redirect;
 use Modules\Admin\AdminElements;
 use Throwable;
@@ -43,6 +42,7 @@ class Router
         $this->configSettings = $configSettings;
         $this->request = $request;
 
+        $this->initSessionLang();
         $this->checkInstallerRedirect();
     }
 
@@ -82,8 +82,6 @@ class Router
 
     public function initBalero(): self
     {
-        // Cargar helpers
-        require_once Constant::LANG_HELPER;
 
         // Resolver application
         $module = $this->request->get(self::PARAM_MODULE);
@@ -111,6 +109,18 @@ class Router
         }
 
         Boot::loadController($controllerClass);
+    }
+
+    private function initSessionLang(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        // Solo inicializa si no existe
+        if (!isset($_SESSION['lang'])) {
+            $_SESSION['lang'] = $this->configSettings->language ?? 'en';
+        }
     }
 
 }

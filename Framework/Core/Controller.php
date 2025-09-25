@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Framework\Core;
 
 use Framework\Http\Get;
@@ -33,6 +27,8 @@ class Controller
     #[Inject]
     protected LoginManager $loginManager;
 
+    #[Inject]
+    protected LangSelector $langSelector; // Inyectamos LangSelector
 
     /**
      * Construye la plantilla base de los controllers de Balero CMS
@@ -101,7 +97,6 @@ class Controller
 
     private function runMethod(string $methodName, array $params = []): void
     {
-
         $this->initLanguage();
 
         $result = $this->{$methodName}(...$params);
@@ -120,16 +115,16 @@ class Controller
     protected function initLanguage(): void
     {
         if ($this->request) {
-            // Carga las traducciones y guarda en LangManager
-            LangSelector::getLanguageParams($this->request);
+            // Ahora usamos la instancia inyectada, no método estático
+            $this->langSelector->getLanguageParams($this->request);
         }
     }
 
     protected function render(string $template, array $params = [], bool $useTheme = true): string
     {
-        $langParams = LangSelector::getLanguageParams($this->request);
+        // Obtenemos los parámetros de idioma desde el LangSelector inyectado
+        $langParams = $this->langSelector->getLanguageParams($this->request);
+
         return $this->view->render($template, array_merge($langParams, $params), $useTheme);
     }
-
-
 }

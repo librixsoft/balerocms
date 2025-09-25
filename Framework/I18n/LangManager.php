@@ -1,22 +1,16 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Framework\I18n;
 
 class LangManager
 {
-    private static array $translations = [];
-    private static string $currentLang = 'en';
+    public array $translations = [];
+    private string $currentLang = 'en';
 
-    public static function load(string $lang, string $path): void
+    public function load(string $lang, string $path): void
     {
-        self::$translations = [];
-        self::$currentLang = $lang;
+        $this->translations = [];
+        $this->currentLang = $lang;
         $dir = rtrim($path, '/') . "/$lang";
 
         if (!is_dir($dir)) {
@@ -27,25 +21,23 @@ class LangManager
             $filename = basename($file, '.php');
             $translations = require $file;
             if (is_array($translations)) {
-                self::$translations[$filename] = $translations;
+                $this->translations[$filename] = $translations;
             }
         }
     }
 
-    public static function get(string $key, string $default = ''): string
+    public function get(string $fullKey, string $default = ''): string
     {
-        $parts = explode('.', $key, 2);
-
+        $parts = explode('.', $fullKey, 2);
         if (count($parts) === 2) {
-            [$fileKey, $nestedKey] = $parts;
-            return self::$translations[$fileKey][$nestedKey] ?? $default;
+            [$file, $key] = $parts;
+            return $this->translations[$file][$key] ?? $default;
         }
-
-        return self::$translations[$key] ?? $default;
+        return $this->translations[$fullKey] ?? $default;
     }
 
-    public static function current(): string
+    public function current(): string
     {
-        return self::$currentLang;
+        return $this->currentLang;
     }
 }

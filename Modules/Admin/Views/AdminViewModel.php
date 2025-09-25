@@ -25,14 +25,14 @@ class AdminViewModel
 
         $viewModel->addAll([
 
-            'mod_name' =>__('admin.settings'),
+            'mod_name' => '{admin.settings}',
 
             'core_version' => _CORE_VERSION,
             'defaultTheme' => $this->config->theme,
             'themes' => $this->themesReader->getThemes(),
             'activeMenu' => 'settings',
             'lbl_theme' => "Theme",
-            'lbl_settings' => __('admin.settings'),
+            'lbl_settings' => '{admin.settings}',
             'lbl_title' => 'Title',
             'lbl_keywords' => 'Keywords',
             'lbl_description' => 'Description',
@@ -61,10 +61,16 @@ class AdminViewModel
     {
         $viewModel = new ViewModel();
 
+        $session_lang = $_SESSION['lang'] ?? 'en';
+        $lang_selected_en = $session_lang === 'en' ? 'selected' : '';
+        $lang_selected_es = $session_lang === 'es' ? 'selected' : '';
+
         // Parámetros base disponibles en todas las vistas
         $viewModel->addAll([
             'username' => $this->config->username,
             'email' => $this->config->email,
+            'lang_selected_en' => $lang_selected_en,
+            'lang_selected_es' => $lang_selected_es,
         ]);
 
         return $viewModel;
@@ -76,7 +82,7 @@ class AdminViewModel
 
         $viewModel->addAll([
 
-            'mod_name' =>__('admin.pages'),
+            'mod_name' =>'{admin.pages}',
 
             'lbl_title' => 'Title',
             'current_date' => date('Y-m-d H:i:s'),
@@ -98,7 +104,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
-            'mod_name' =>__('admin.pages'),
+            'mod_name' =>'{admin.pages}',
             'activeMenu' => 'all_pages',
         ]);
 
@@ -129,7 +135,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
-            'mod_name' =>__('admin.blocks'),
+            'mod_name' =>'{admin.blocks}',
             'lbl_blocks' => 'Blocks',
             'lbl_new_block' => 'New Block',
             'activeMenu' => 'all_blocks',
