@@ -165,14 +165,7 @@ docker run --rm \
   3. Navigate to **My Account → Security**
   4. Generate and copy your token
   5. Replace it in the command above
-
----
-
-## Repository
-
-* GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
-* Bitbucket mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git](https://balerocms@bitbucket.org/librixsoft/balerocms.git)
-
+  
 ---
 
 ## Docker-Compose Configuration (Option 2: MySQL Separate Container)
@@ -188,4 +181,105 @@ services:
     container_name: lamp-app
     ports:
       - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./apache/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: balero_cms
+    # Option 1: In-memory (tmpfs)
+    tmpfs:
+      - /var/lib/mysql
+    # Option 2: Persistent volume (comment tmpfs and uncomment below)
+    # volumes:
+    #   - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - mysql
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://db:5432/sonar
+      SONAR_JDBC_USERNAME: sonar
+      SONAR_JDBC_PASSWORD: sonar
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    container_name: postgres-sonar
+    environment:
+      POSTGRES_USER: sonar
+      POSTGRES_PASSWORD: sonar
+      POSTGRES_DB: sonar
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  postgres_data:
 ```
+
+---
+
+## Stopping Docker Services
+
+### 1️⃣ Stop only containers (keep volumes and networks)
+
+```bash
+docker-compose stop
+```
+
+### 2️⃣ Stop and remove containers and networks
+
+```bash
+docker-compose down
+```
+
+### 3️⃣ Stop and remove everything including volumes
+
+```bash
+docker-compose down -v
+```
+
+> 💡 For MySQL in RAM (tmpfs), simply use `docker-compose down` and restart; the database is deleted when the container stops.
+
+---
+
+### Notes
+
+* **phpMyAdmin:** [http://localhost:8081](http://localhost:8081) (User: `root`, Password: `root`)
+* **MySQL storage modes:** RAM for ephemeral testing, volume for persistent data.
+* **LAMP:** Only Apache + PHP; MySQL is separate.
+
+---
+
+## Repository
+
+* GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
+* Bitbucket mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git](https://balerocms@bitbucket.org/librixsoft/balerocms.git)
