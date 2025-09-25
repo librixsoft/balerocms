@@ -10,4 +10,6 @@ define('APP_ENV', 'dev'); // change to "prod" if you are uploading to your serve
 
 require_once LOCAL_DIR . '/bootstrap.php';
 
-(new Boot)->instantiateClass(Router::class)->initBalero();
+$boot = new Boot();
+$router = $boot->getFromContainer(Router::class);
+$router->initBalero();

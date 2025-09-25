@@ -2,56 +2,102 @@
 
 /**
  * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
+ *
+ * Clase Boot
+ *
+ * Punto de entrada del framework:
+ * - Registra autoload de clases
+ * - Inicializa contenedor de dependencias
+ * - Inicializa el contexto global de la aplicación
+ * - Registra manejador de errores
+ *
+ * Flujo de dependencias:
+ *
+ * index.php
+ *     │
+ *     ▼
+ * +-------------------+
+ * |      Boot         |
+ * |-------------------|
+ * | - container       |───► instancia de Container
+ * | - context         |───► instancia de Context(container)
+ * +-------------------+
+ *     │
+ *     │ $boot->getFromContainer(Router::class)
+ *     ▼
+ * +-------------------+
+ * |      Router       |
+ * |-------------------|
+ * | __construct(      |
+ * |   ConfigSettings, │◄── resuelto automáticamente desde Container
+ * |   RequestHelper,  │◄── resuelto automáticamente desde Container
+ * |   Boot            │◄── inyectado la misma instancia de Boot
+ * | )                 |
+ * +-------------------+
+ *     │
+ *     ▼ initBalero()
+ * +-------------------+
+ * |   Controller(s)   |
+ * |-------------------|
+ * | - initControllerAndInject() │◄── opcional, se ejecuta tras constructor
+ * | - todas las dependencias resueltas automáticamente
+ * +-------------------+
+ *
+ * @author Anibal Gomez
  * @license GNU General Public License
  */
 
 namespace Framework\Core;
 
 use Framework\Config\Context;
+use Framework\Core\ErrorConsole;
 
 class Boot
 {
     /**
-     * Contenedor de dependencias estático para toda la aplicación.
+     * Contenedor de dependencias para toda la aplicación.
+     *
+     * // CHANGE: ya no es estático
      */
-    public static Container $container;
+    private Container $container;
+
+    /**
+     * Contexto de la aplicación (ya no estático)
+     *
+     * // CHANGE: almacenamos la instancia de Context
+     */
+    private Context $context;
 
     /**
      * Inicializa el framework:
-     * - Registra el autoload de clases.
-     * - Registra el manejador de errores personalizado.
-     * - Inicializa configuraciones globales.
-     * - Instancia el contenedor de dependencias.
+     * - Registra autoload de clases
+     * - Inicializa contenedor y Context
+     * - Registra manejador de errores
      */
     public function __construct()
     {
         spl_autoload_register([$this, "autoloadClass"]);
 
-        // Primero: instancia el contenedor
-        self::$container = new Container();
+        $this->container = new Container();
 
         ErrorConsole::register();
 
-        // Global services
-        Context::init(self::$container);
-
+        $this->context = new Context($this->container);
     }
 
     /**
-     * LLama el metodo initControllerAndInject() de la clase padre
-     * Ejecuta la DI adicionalmente al constructor con el metodo initControllerAndInject()
+     * Carga un controller y aplica DI.
+     *
      * @param string $controllerClass
      */
-    public static function loadController(string $controllerClass): void
+    public function loadController(string $controllerClass): void
     {
         try {
-            // Instancia el controller usando DI automática en el constructor
-            $instance = self::instantiateClass($controllerClass);
+            // Instancia el controller usando DI automática
+            $instance = $this->getFromContainer($controllerClass);
 
             // Ejecuta lógica post-constructor opcional
             if (method_exists($instance, 'initControllerAndInject')) {
-                // initControllerAndInject no recibe parámetros; obtiene dependencias desde Context
                 $instance->initControllerAndInject();
             }
 
@@ -68,40 +114,57 @@ class Boot
     }
 
     /**
-     * Instancia cualquier clase pasando argumentos opcionales.
-     * No realiza lógica extra ni inyecciones automáticas.
+     * Instancia cualquier clase usando el contenedor.
+     * No realiza lógica extra ni inyecciones automáticas fuera del contenedor.
      *
-     * @return object Instancia creada.
+     * @param string $class
+     * @return object Instancia creada
+     *
+     * // CHANGE: ya no es static
      */
-    public static function instantiateClass(string $class): object
+    public function getFromContainer(string $class): object
     {
-        return self::$container->resolveInstance($class);
+        return $this->container->get($class);
+    }
+
+    /**
+     * Getter para el contenedor.
+     *
+     * @return Container
+     */
+    public function getContainer(): Container
+    {
+        return $this->container;
+    }
+
+    /**
+     * Getter para el Context de la aplicación.
+     *
+     * @return Context
+     */
+    public function getContext(): Context
+    {
+        return $this->context;
     }
 
     /**
      * Autocarga una clase PHP dado su namespace.
-     * Busca el archivo PHP correspondiente dentro de los directorios base definidos.
      *
-     * @param string $class Nombre completo del namespace + clase.
-     * @return void
+     * @param string $class
      */
     public function autoloadClass(string $class): void
     {
-        $baseDirs = [
-            LOCAL_DIR . '/',
-        ];
+        $baseDirs = [LOCAL_DIR . '/'];
 
         $relativeClass = ltrim($class, '\\');
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
 
-        // Corrección en caso de doble prefijo 'Modules/Modules/'
         if (str_starts_with($relativePath, 'Modules/Modules/')) {
             $relativePath = substr($relativePath, strlen('Modules/'));
         }
 
         foreach ($baseDirs as $baseDir) {
             $file = $baseDir . $relativePath;
-
             if (file_exists($file)) {
                 require_once $file;
                 return;
@@ -111,5 +174,4 @@ class Boot
         $message = "No se pudo cargar la clase <code>$class</code><br>Ruta esperada: <code>$relativePath</code>";
         ErrorConsole::handleException(new \Exception($message));
     }
-
 }

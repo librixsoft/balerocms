@@ -34,13 +34,18 @@ class Router
     private ConfigSettings $configSettings;
     private string $module;
 
+    private Boot $boot;
+
     public function __construct(
         ConfigSettings $configSettings,
-        RequestHelper $request
+        RequestHelper $request,
+        Boot $boot
     )
     {
         $this->configSettings = $configSettings;
         $this->request = $request;
+
+        $this->boot = $boot;
 
         $this->initSessionLang();
         $this->checkInstallerRedirect();
@@ -108,7 +113,7 @@ class Router
             ErrorConsole::handleException(new Exception("Controller class not found: $controllerClass"));
         }
 
-        Boot::loadController($controllerClass);
+        $this->boot->loadController($controllerClass);
     }
 
     private function initSessionLang(): void

@@ -5,7 +5,7 @@
  * Context - Contenedor de dependencias global
  *
  * Proporciona acceso global a servicios registrados en el contenedor,
- * especialmente útil en métodos estáticos o clases que no pasan por DI.
+ * especialmente útil en clases que no pasan por DI directamente.
  *
  * Esta clase registra los processors principales y las condiciones necesarias
  * para la evaluación de templates:
@@ -43,82 +43,67 @@ class Context
      *
      * @var Container
      */
-    protected static Container $container;
+    private Container $container;
 
     /**
-     * Inicializa el Context con el contenedor y registra todos los servicios globales.
+     * Constructor de Context.
      *
-     * - Instancia los prototipos OrCondition y AndCondition.
-     * - Crea ConditionFactory a partir de los prototipos.
-     * - Registra ProcessorIfBlocks con ConditionFactory.
-     * - Registra ProcessorFlattenParams y ProcessorForEach.
-     *
-     * Esto garantiza que los processors y condiciones estén disponibles
-     * globalmente mediante Context::get() y replicando la DI usada en tests.
+     * Aquí se inicializan y registran todos los servicios globales
+     * necesarios para la aplicación (processors, conditions, etc.).
      *
      * @param Container $container Contenedor de la aplicación
      */
-    public static function init(Container $container): void
+    public function __construct(Container $container)
     {
-        self::$container = $container;
+        $this->container = $container;
 
         // Instancia prototipos
-        $container->registerSingletonInstance(OrCondition::class, new OrCondition());
-        $container->registerSingletonInstance(AndCondition::class, new AndCondition());
+        $container->set(OrCondition::class, new OrCondition());
+        $container->set(AndCondition::class, new AndCondition());
 
         /** @var OrCondition $or */
-        $or = $container->resolveInstance(OrCondition::class);
+        $or = $container->get(OrCondition::class);
         /** @var AndCondition $and */
-        $and = $container->resolveInstance(AndCondition::class);
+        $and = $container->get(AndCondition::class);
 
         // ConditionFactory
-        $container->registerSingletonInstance(
+        $container->set(
             ConditionFactory::class,
             new ConditionFactory($or, $and)
         );
 
         /** @var ConditionFactory $conditionFactory */
-        $conditionFactory = $container->resolveInstance(ConditionFactory::class);
+        $conditionFactory = $container->get(ConditionFactory::class);
 
         // ProcessorIfBlocks
-        $container->registerSingletonInstance(
+        $container->set(
             ProcessorIfBlocks::class,
             new ProcessorIfBlocks($conditionFactory)
         );
 
         // ProcessorFlattenParams
-        $container->registerSingletonInstance(
+        $container->set(
             ProcessorFlattenParams::class,
             new ProcessorFlattenParams()
         );
 
         /** @var ProcessorFlattenParams $flatten */
-        $flatten = $container->resolveInstance(ProcessorFlattenParams::class);
+        $flatten = $container->get(ProcessorFlattenParams::class);
         /** @var ProcessorIfBlocks $ifBlocks */
-        $ifBlocks = $container->resolveInstance(ProcessorIfBlocks::class);
+        $ifBlocks = $container->get(ProcessorIfBlocks::class);
 
         // ProcessorForEach
-        $container->registerSingletonInstance(
+        $container->set(
             ProcessorForEach::class,
             new ProcessorForEach($flatten, $ifBlocks)
         );
 
         $config = new ConfigSettings();
+        $container->set(ConfigSettings::class, $config);
 
-        $container->registerSingletonInstance(
-            ConfigSettings::class,
-            $config
-        );
-
-        $container->registerSingletonInstance(ConfigSettings::class, $config);
-
-        /**
-         * Inicializar RedirectService y asociarlo a la fachada Redirect
-         * Esto reemplaza la necesidad de tener RedirectService en Context.
-         */
+        // RedirectService y fachada Redirect
         $redirectService = new RedirectService($config);
         Redirect::setInstance($redirectService);
-
     }
 
     /**
@@ -126,15 +111,15 @@ class Context
      *
      * Ejemplo de uso:
      * ```php
-     * $processor = Context::get(ProcessorForEach::class);
+     * $processor = $context->get(ProcessorForEach::class);
      * ```
      *
      * @template T
      * @param class-string<T> $class
      * @return T
      */
-    public static function get(string $class): object
+    public function get(string $class): object
     {
-        return self::$container->resolveInstance($class);
+        return $this->container->get($class);
     }
 }

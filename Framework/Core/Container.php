@@ -1,8 +1,16 @@
 <?php
 
 /**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
+ * Balero CMS - Contenedor de dependencias (Dependency Injection Container)
+ *
+ * Permite registrar y resolver dependencias de manera automática:
+ * - Soporta registro de instancias singleton mediante `set()`.
+ * - Resuelve clases de forma recursiva inspeccionando el constructor.
+ * - Inyecta propiedades marcadas con el atributo #[Inject].
+ *
+ * Inspirado en los principios de Inversión de Control (IoC).
+ *
+ * @author Anibal Gomez
  * @license GNU General Public License
  */
 
@@ -13,7 +21,7 @@ use Closure;
 class Container
 {
     /**
-     * Array que asocia identificadores de clase o interfaz a closures que crean las instancias.
+     * Mapeo de identificadores a closures que devuelven instancias.
      *
      * @var array<string, Closure>
      */
@@ -22,13 +30,14 @@ class Container
     /**
      * Registra una instancia singleton para un identificador dado.
      *
-     * Cada vez que se solicite este identificador, se devolverá siempre la misma instancia.
+     * Cada vez que se solicite este identificador, se devolverá siempre
+     * la misma instancia registrada.
      *
-     * @param string $id Nombre de clase o interfaz.
-     * @param object $instance Instancia única a devolver.
+     * @param string $id Nombre de clase o interfaz
+     * @param object $instance Instancia única a devolver
      * @return void
      */
-    public function registerSingletonInstance(string $id, object $instance): void
+    public function set(string $id, object $instance): void
     {
         $this->bindings[$id] = fn() => $instance;
     }
@@ -40,16 +49,17 @@ class Container
      * 1. Si existe un binding o singleton registrado, lo devuelve.
      * 2. Si no, analiza el constructor y crea instancias de sus dependencias automáticamente.
      * 3. Después de instanciar el objeto, inyecta automáticamente todas las propiedades
-     *    marcadas con el atributo #[Inject] usando la resolución del contenedor.
+     *    marcadas con #[Inject] usando la resolución del contenedor.
      *
      * Lanza excepción si no puede instanciar o resolver dependencias no tipadas o escalares.
      *
-     * @param string $id Nombre de la clase o interfaz a instanciar
-     * @return object Instancia resuelta con constructor y propiedades inyectadas
+     * @template T
+     * @param class-string<T> $id Nombre de la clase o interfaz a instanciar
+     * @return T Instancia resuelta con constructor y propiedades inyectadas
      *
      * @throws \Exception Si no se puede crear la instancia o resolver dependencias
      */
-    public function resolveInstance(string $id): object
+    public function get(string $id): object
     {
         if (str_starts_with($id, 'Framework\\Static\\')) {
             throw new \Exception("La clase estática {$id} no puede ser instanciada");
@@ -74,7 +84,7 @@ class Container
                 if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
                     throw new \Exception("No se puede resolver el parámetro {$param->getName()} en {$id}");
                 }
-                $dependencies[] = $this->resolveInstance($type->getName());
+                $dependencies[] = $this->get($type->getName());
             }
         }
 
@@ -89,11 +99,10 @@ class Container
                     throw new \Exception("No se puede inyectar la propiedad {$property->getName()} en {$id}");
                 }
                 $property->setAccessible(true);
-                $property->setValue($instance, $this->resolveInstance($propType->getName()));
+                $property->setValue($instance, $this->get($propType->getName()));
             }
         }
 
         return $instance;
     }
-
 }
