@@ -15,7 +15,7 @@ use Framework\Core\ErrorConsole;
 class Uploader
 {
 
-    private string $uploadsPath = LOCAL_DIR . "/assets/images/uploads/";
+    private string $uploadsPath = LOCAL_DIR . "/public/assets/images/uploads/";
 
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
@@ -68,7 +68,7 @@ class Uploader
                 throw new Exception("Failed to move uploaded file to destination.");
             }
 
-            return $this->configSettings->basepath .  $this->getUploadsPath() . $filename;
+            return $this->configSettings->basepath . "assets/images/uploads/" . $filename;
 
         } catch (Exception $e) {
             ErrorConsole::handleException($e);
