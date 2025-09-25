@@ -10,13 +10,8 @@ use Throwable;
 
 class InstallerModel extends Model
 {
-    /**
-     * Marca la instalación como completada.
-     */
-    public function setInstalled(): void
-    {
-        $this->configSettings->installed = "yes";
-    }
+
+    private string $tablesSqlPath = LOCAL_DIR . "/Modules/Installer/sql/tables.sql";
 
     /**
      * Ejecuta la instalación de la base de datos y las tablas.
@@ -93,4 +88,30 @@ class InstallerModel extends Model
             return false;
         }
     }
+
+    /**
+     * @return string
+     */
+    public function getTablesSqlPath(): string
+    {
+        return $this->tablesSqlPath;
+    }
+
+    /**
+     * @param string $tablesSqlPath
+     */
+    public function setTablesSqlPath(string $tablesSqlPath): void
+    {
+        $this->tablesSqlPath = $tablesSqlPath;
+    }
+
+
+    /**
+     * Marca la instalación como completada.
+     */
+    public function setInstalled(): void
+    {
+        $this->configSettings->installed = "yes";
+    }
+
 }

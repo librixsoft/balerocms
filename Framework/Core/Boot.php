@@ -9,7 +9,6 @@
 namespace Framework\Core;
 
 use Framework\Config\Context;
-use Framework\Static\Constant;
 
 class Boot
 {
@@ -89,7 +88,7 @@ class Boot
     public function autoloadClass(string $class): void
     {
         $baseDirs = [
-            Constant::LOCAL_BASEPATH . '/',
+            LOCAL_DIR . '/',
         ];
 
         $relativeClass = ltrim($class, '\\');

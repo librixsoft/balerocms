@@ -15,6 +15,9 @@ use Framework\Static\Constant;
 
 class Uploader
 {
+
+    private string $uploadsPath = LOCAL_DIR . "/assets/images/uploads/";
+
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
     private ConfigSettings $configSettings;
@@ -48,7 +51,7 @@ class Uploader
             }
 
             // Ensure upload directory exists
-            $uploadDir = rtrim(Constant::UPLOADS_PATH, '/') . '/';
+            $uploadDir = rtrim($this->getUploadsPath(), '/') . '/';
             if (!is_dir($uploadDir)) {
                 if (!mkdir($uploadDir, 0777, true)) {
                     throw new Exception("Failed to create upload directory: $uploadDir");
@@ -66,11 +69,28 @@ class Uploader
                 throw new Exception("Failed to move uploaded file to destination.");
             }
 
-            return $this->configSettings->basepath .  Constant::REMOTE_UPLOADS_PATH . $filename;
+            return $this->configSettings->basepath .  $this->getUploadsPath() . $filename;
 
         } catch (Exception $e) {
             ErrorConsole::handleException($e);
             return '';
         }
     }
+
+    /**
+     * @return string
+     */
+    public function getUploadsPath(): string
+    {
+        return $this->uploadsPath;
+    }
+
+    /**
+     * @param string $uploadsPath
+     */
+    public function setUploadsPath(string $uploadsPath): void
+    {
+        $this->uploadsPath = $uploadsPath;
+    }
+
 }

@@ -7,6 +7,9 @@ use Framework\Static\Constant;
 
 class LangSelector
 {
+
+    private string $langPath = LOCAL_DIR . '/resources/lang';
+
     private LangManager $langManager;
     private RequestHelper $request;
 
@@ -29,7 +32,7 @@ class LangSelector
 
         $_SESSION['lang'] = $lang;
 
-        $this->langManager->load($lang, Constant::LANG_PATH);
+        $this->langManager->load($lang, $this->getLangPAth());
 
         // Genera array plano 'archivo.clave' => 'Valor'
         $placeholders = [];
@@ -41,4 +44,21 @@ class LangSelector
 
         return $placeholders;
     }
+
+    /**
+     * @return string
+     */
+    public function getLangPath(): string
+    {
+        return $this->langPath;
+    }
+
+    /**
+     * @param string $langPath
+     */
+    public function setLangPath(string $langPath): void
+    {
+        $this->langPath = $langPath;
+    }
+
 }
