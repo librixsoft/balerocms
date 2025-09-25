@@ -94,6 +94,22 @@ composer install
 composer test
 ```
 
+## Generate code coverage local in PHPUnit
+
+php -d xdebug.mode=coverage ./vendor/bin/phpunit \
+-c phpunit.xml \
+--coverage-clover build/logs/coverage.xml \
+--coverage-filter Framework
+
+It will create: build/logs/coverage.xml
+
+## Execute sonar to view coverage
+
+php -d xdebug.mode=coverage ./vendor/bin/phpunit \
+-c phpunit.xml \
+--coverage-clover build/logs/coverage.xml \
+--coverage-filter Framework
+
 ---
 
 ## Using Third-Party Libraries in BaleroCMS

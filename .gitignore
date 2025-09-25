@@ -10,3 +10,4 @@ public/assets/images
 node_modules/
 /vendor/
 .phpunit.result.cache
+build/
