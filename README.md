@@ -77,8 +77,8 @@ Dashboard: [http://localhost:8080/login](http://localhost:8080/login)
 
 Note: Using in production mode
 
-```bash
 public/index.php
+```bash
 define('APP_ENV', 'dev'); // change to "prod" if you are uploading to your server
 ```
 
