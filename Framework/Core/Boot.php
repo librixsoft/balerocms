@@ -51,6 +51,7 @@ namespace Framework\Core;
 
 use Framework\Config\Context;
 use Framework\Core\ErrorConsole;
+use Framework\Exceptions\BootException;
 
 class Boot
 {
@@ -103,7 +104,7 @@ class Boot
 
         } catch (\Throwable $e) {
             ErrorConsole::handleException(
-                new \Exception(
+                new BootException(
                     "Error cargando controller '$controllerClass': " . $e->getMessage(),
                     0,
                     $e
@@ -172,6 +173,6 @@ class Boot
         }
 
         $message = "No se pudo cargar la clase <code>$class</code><br>Ruta esperada: <code>$relativePath</code>";
-        ErrorConsole::handleException(new \Exception($message));
+        ErrorConsole::handleException(new BootException($message));
     }
 }

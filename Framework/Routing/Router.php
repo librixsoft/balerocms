@@ -15,6 +15,7 @@ use Framework\Core\ErrorConsole;
 use Framework\Http\RequestHelper;
 use Framework\Static\Redirect;
 use Modules\Admin\AdminElements;
+use Framework\Exceptions\RouterException;
 use Throwable;
 
 class Router
@@ -110,7 +111,7 @@ class Router
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
         if (!class_exists($controllerClass)) {
-            ErrorConsole::handleException(new Exception("Controller class not found: $controllerClass"));
+            ErrorConsole::handleException(new RouterException("Controller class not found: $controllerClass"));
         }
 
         $this->boot->loadController($controllerClass);
