@@ -224,7 +224,12 @@ docker-compose down -v
 
 ---
 
+## Docker Hub Repository
+
+[https://hub.docker.com/r/lastprophet/balerocms](https://hub.docker.com/r/lastprophet/balerocms)
+
 ## Repository
 
 * GitHub: [https://github.com/librixsoft/balerocms-docker](https://github.com/librixsoft/balerocms-docker)
 * Bitbucket mirror: [https://balerocms@bitbucket.org/librixsoft/balerocms.git](https://balerocms@bitbucket.org/librixsoft/balerocms.git)
+
