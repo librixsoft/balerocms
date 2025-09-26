@@ -73,6 +73,15 @@ In `docker-compose.yml` you can switch between these two options by commenting/u
 
 That's all, if you enter to [http://localhost:8080](http://localhost:8080) you will see the Balero CMS Setup Wizard!
 
+Dashboard: [http://localhost:8080/login](http://localhost:8080/login)
+
+Note: Using in production mode
+
+```bash
+public/index.php
+define('APP_ENV', 'dev'); // change to "prod" if you are uploading to your server
+```
+
 ---
 
 # Documentation only for developers or/and customization
