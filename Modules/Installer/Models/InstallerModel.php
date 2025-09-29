@@ -2,19 +2,16 @@
 
 namespace Modules\Installer\Models;
 
-use Exception;
-use Framework\Core\ErrorConsole;
-use Framework\Core\Model;
 use Throwable;
+use Framework\Core\Model;
+use Modules\Installer\Exceptions\InstallerException;
 
 class InstallerModel extends Model
 {
-
     private string $tablesSqlPath = LOCAL_DIR . "/Modules/Installer/sql/tables.sql";
 
     /**
-     * Ejecuta la instalación de la base de datos y las tablas.
-     * Verifica la conexión, asegura que la base de datos exista y ejecuta el SQL del archivo de tablas.
+     * Executes the installation of the database and tables.
      */
     public function install(): void
     {
@@ -24,24 +21,24 @@ class InstallerModel extends Model
             $pass = $this->configSettings->dbpass;
             $dbname = $this->configSettings->dbname;
 
-            // Verificar conexión y que la base de datos exista
+            // Verify connection and that the database exists
             if (!$this->canConnectToDatabase()) {
-                throw new Exception("No se pudo conectar o crear la base de datos.");
+                throw new InstallerException("Unable to connect to or create the database.");
             }
 
-            // Reconectar usando la base de datos
+            // Reconnect using the database
             $this->db->connect($host, $user, $pass, $dbname);
 
-            // Cargar y ejecutar el archivo SQL
+            // Load and execute the SQL file
             $sqlFile = $this->getTablesSqlPath();
 
             if (!file_exists($sqlFile)) {
-                throw new Exception("Archivo SQL no encontrado: $sqlFile");
+                throw new InstallerException("SQL file not found: $sqlFile");
             }
 
             $query = file_get_contents($sqlFile);
             if ($query === false) {
-                throw new Exception("No se pudo leer el archivo SQL: $sqlFile");
+                throw new InstallerException("Unable to read SQL file: $sqlFile");
             }
 
             $query = str_replace("{dbname}", $dbname, $query);
@@ -49,17 +46,15 @@ class InstallerModel extends Model
 
         } catch (Throwable $e) {
             $this->configSettings->installed = "no";
-            ErrorConsole::handleException(
-                new Exception("Installation failed: " . $e->getMessage(), 0, $e)
+            throw new InstallerException(
+                "Installation failed: " . $e->getMessage(),
+                previous: $e
             );
         }
     }
 
     /**
-     * Verifica la conexión a la base de datos.
-     * Si la conexión al servidor es exitosa, crea la base de datos si no existe y se reconecta usando la base de datos.
-     *
-     * @return bool True si la conexión y la base de datos son accesibles, false en caso contrario.
+     * Verifies the database connection.
      */
     public function canConnectToDatabase(): bool
     {
@@ -69,17 +64,17 @@ class InstallerModel extends Model
             $pass = $this->configSettings->dbpass;
             $dbname = $this->configSettings->dbname;
 
-            // Conectar al servidor sin especificar la base de datos
+            // Connect to server without specifying a database
             $this->db->connect($host, $user, $pass);
 
             if (!$this->db->isStatus()) {
                 return false;
             }
 
-            // Crear la base de datos si no existe
+            // Create database if it does not exist
             $this->db->query("CREATE DATABASE IF NOT EXISTS `$dbname`;");
 
-            // Reconectar usando la base de datos
+            // Reconnect using the database
             $this->db->connect($host, $user, $pass, $dbname);
 
             return $this->db->isStatus();
@@ -88,29 +83,21 @@ class InstallerModel extends Model
         }
     }
 
-    /**
-     * @return string
-     */
     public function getTablesSqlPath(): string
     {
         return $this->tablesSqlPath;
     }
 
-    /**
-     * @param string $tablesSqlPath
-     */
     public function setTablesSqlPath(string $tablesSqlPath): void
     {
         $this->tablesSqlPath = $tablesSqlPath;
     }
 
-
     /**
-     * Marca la instalación como completada.
+     * Marks the installation as completed.
      */
     public function setInstalled(): void
     {
         $this->configSettings->installed = "yes";
     }
-
 }

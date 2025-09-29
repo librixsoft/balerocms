@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Balero CMS
+ * @author Anibal Gomez <balerocms@gmail.com>
+ * @license GNU General Public License
+ */
+
 namespace Framework\Core;
 
 use Framework\Http\Get;
@@ -7,14 +13,17 @@ use Framework\Http\Post;
 use Framework\Http\RequestHelper;
 use Framework\I18n\LangSelector;
 use Framework\Security\LoginManager;
+use Framework\Exceptions\ControllerException;
+use ReflectionClass;
+use ReflectionMethod;
 
 class Controller
 {
     private const PARAM_TARGET = 'target';
 
-    /****************************
-     * Serán heredadas al controller hijo
-     ***************************/
+    /**
+     * Will be inherited by child controllers
+     */
     #[Inject]
     protected View $view;
 
@@ -28,10 +37,10 @@ class Controller
     protected LoginManager $loginManager;
 
     #[Inject]
-    protected LangSelector $langSelector; // Inyectamos LangSelector
+    protected LangSelector $langSelector;
 
     /**
-     * Construye la plantilla base de los controllers de Balero CMS
+     * Builds the base template of Balero CMS controllers
      */
     public function initControllerAndInject(): void
     {
@@ -45,8 +54,8 @@ class Controller
         $httpMethod = $_SERVER['REQUEST_METHOD'];
         $requestedTarget = trim($this->request->get(self::PARAM_TARGET) ?? '', '/');
 
-        $reflection = new \ReflectionClass($this);
-        $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
+        $reflection = new ReflectionClass($this);
+        $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         $classAuthAttr = $reflection->getAttributes(\Framework\Http\Auth::class);
         $classAuth = !empty($classAuthAttr) ? $classAuthAttr[0]->newInstance() : null;
@@ -71,7 +80,7 @@ class Controller
                         $auth = !empty($methodAuthAttr) ? $methodAuthAttr[0]->newInstance() : $classAuth;
 
                         if ($auth && $auth->required && !$this->loginManager->isLoggedIn()) {
-                            die("Unauthorized - login required");
+                            throw new ControllerException("Unauthorized access - login required");
                         }
 
                         $this->runMethod($method->getName(), $params);
@@ -81,9 +90,7 @@ class Controller
             }
         }
 
-        ErrorConsole::handleException(
-            new \RuntimeException("Ruta no encontrada: '{$requestedTarget}'")
-        );
+        throw new ControllerException("Route not found: '{$requestedTarget}'");
     }
 
     private function initBasePath(): void
@@ -115,14 +122,12 @@ class Controller
     protected function initLanguage(): void
     {
         if ($this->request) {
-            // Ahora usamos la instancia inyectada, no método estático
             $this->langSelector->getLanguageParams($this->request);
         }
     }
 
     protected function render(string $template, array $params = [], bool $useTheme = true): string
     {
-        // Obtenemos los parámetros de idioma desde el LangSelector inyectado
         $langParams = $this->langSelector->getLanguageParams($this->request);
 
         return $this->view->render($template, array_merge($langParams, $params), $useTheme);

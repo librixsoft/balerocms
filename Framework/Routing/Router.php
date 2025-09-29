@@ -8,19 +8,16 @@
 
 namespace Framework\Routing;
 
-use Exception;
-use Framework\Core\Boot;
+use Framework\Config\Context;
 use Framework\Core\ConfigSettings;
-use Framework\Core\ErrorConsole;
+use Framework\Core\Container;
 use Framework\Http\RequestHelper;
 use Framework\Static\Redirect;
-use Modules\Admin\AdminElements;
 use Framework\Exceptions\RouterException;
 use Throwable;
 
 class Router
 {
-
     /**
      * Load default app controller
      */
@@ -31,22 +28,19 @@ class Router
      */
     private const PARAM_MODULE = 'module';
 
+    private Container $container;
+    private Context $context;
     private RequestHelper $request;
     private ConfigSettings $configSettings;
-    private string $module;
+    private ?string $module = null;
 
-    private Boot $boot;
-
-    public function __construct(
-        ConfigSettings $configSettings,
-        RequestHelper $request,
-        Boot $boot
-    )
+    public function __construct()
     {
-        $this->configSettings = $configSettings;
-        $this->request = $request;
+        $this->container = new Container();
+        $this->context = new Context($this->container);
 
-        $this->boot = $boot;
+        $this->configSettings = $this->container->get(ConfigSettings::class);
+        $this->request = $this->container->get(RequestHelper::class);
 
         $this->initSessionLang();
         $this->checkInstallerRedirect();
@@ -54,67 +48,70 @@ class Router
 
     private function checkInstallerRedirect(): void
     {
-        try {
-
-            if (
-                !isset($this->configSettings->basepath) ||
-                $this->configSettings->basepath === ''
-            ) {
-                $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
-            }
-
-            $currentModule = $this->request->get(self::PARAM_MODULE);
-            if ($currentModule === 'notification') {
-                return;
-            }
-            $installed = $this->configSettings->installed;
-
-            // Si no está instalado, forzar acceso al instalador
-            if ($installed === "no" && $currentModule !== 'installer') {
-                Redirect::to('/installer');
-                exit;
-            }
-
-            // Si ya está instalado, impedir acceder al instalador
-            if ($installed === "yes" && $currentModule === 'installer') {
-                Redirect::to('/');
-                exit;
-            }
-
-        } catch (Throwable $e) {
-            ErrorConsole::handleException($e);
+        if (
+            !isset($this->configSettings->basepath) ||
+            $this->configSettings->basepath === ''
+        ) {
+            $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
         }
-    }
 
-    public function initBalero(): self
-    {
+        $currentModule = $this->request->get(self::PARAM_MODULE);
+        if ($currentModule === 'notification') {
+            return;
+        }
 
-        // Resolver application
-        $module = $this->request->get(self::PARAM_MODULE);
+        $installed = $this->configSettings->installed;
 
-        if (!$module) {
-            $this->initModule(self::DEFAULT_MODULE);
+        if ($installed === "no" && $currentModule !== 'installer') {
+            Redirect::to('/installer');
             exit;
         }
 
-        // Default load
-        match ($module) {
-            default => $this->initModule(ucfirst($module)),
-        };
-
-        return $this;
+        if ($installed === "yes" && $currentModule === 'installer') {
+            Redirect::to('/');
+            exit;
+        }
     }
 
-    private function initModule(string $module): void
+    public function initBalero(): void
     {
-        $this->module = $module;
+        $this->module = $this->request->get(self::PARAM_MODULE);
+
+        if (!$this->module) {
+            $this->loadController(self::DEFAULT_MODULE);
+            exit;
+        }
+
+        $this->loadController(ucfirst($this->module));
+    }
+
+    /**
+     * Carga un controller y aplica DI.
+     *
+     * @param string $module
+     * @throws RouterException
+     */
+    public function loadController(string $module): void
+    {
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
         if (!class_exists($controllerClass)) {
-            ErrorConsole::handleException(new RouterException("Controller class not found: $controllerClass"));
+            throw new RouterException("Controller class not found: $controllerClass");
         }
 
-        $this->boot->loadController($controllerClass);
+        try {
+            $instance = $this->getFromContainer($controllerClass);
+
+            if (method_exists($instance, 'initControllerAndInject')) {
+                $instance->initControllerAndInject();
+            }
+        } catch (Throwable $e) {
+            throw new RouterException(
+                "Error loading controller '$controllerClass': " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 
     private function initSessionLang(): void
@@ -123,10 +120,19 @@ class Router
             session_start();
         }
 
-        // Solo inicializa si no existe
         if (!isset($_SESSION['lang'])) {
             $_SESSION['lang'] = $this->configSettings->language ?? 'en';
         }
     }
 
+    /**
+     * Instancia cualquier clase usando el contenedor.
+     *
+     * @param string $class
+     * @return object
+     */
+    public function getFromContainer(string $class): object
+    {
+        return $this->container->get($class);
+    }
 }

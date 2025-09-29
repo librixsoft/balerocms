@@ -1,22 +1,14 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Modules\Admin\Models;
 
-use Exception;
-use Framework\Core\ErrorConsole;
 use Framework\Core\Model;
 use Framework\Static\Utils;
 use Throwable;
+use Modules\Admin\Exceptions\AdminException;
 
 class AdminModel extends Model
 {
-
     public function getPageById(int $id): ?array
     {
         $id = (int)$id;
@@ -47,7 +39,6 @@ class AdminModel extends Model
 
         $this->db->query($sql, $params);
 
-        // Puedes devolver true si no hubo excepción
         return true;
     }
 
@@ -62,7 +53,6 @@ class AdminModel extends Model
             $data['visible'],
             $data['date'],
         ];
-
 
         $this->db->query($sql, $params);
 
@@ -84,7 +74,6 @@ class AdminModel extends Model
 
             $rows = $this->db->getRows() ?? [];
 
-            // Generar URL estática para cada página virtual
             foreach ($rows as &$row) {
                 $slug = Utils::slugify($row['static_url']);
                 $row['url'] = "{$slug}";
@@ -92,10 +81,7 @@ class AdminModel extends Model
 
             return $rows;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al obtener páginas virtuales: " . $e->getMessage(), 0, $e)
-            );
-            return [];
+            throw new AdminException("Error fetching virtual pages: " . $e->getMessage(), previous: $e);
         }
     }
 
@@ -105,9 +91,6 @@ class AdminModel extends Model
         return count($blocks);
     }
 
-    /**
-     * Obtener todos los bloques, ordenados por sort_order ascendente.
-     */
     public function getBlocks(): array
     {
         try {
@@ -117,7 +100,6 @@ class AdminModel extends Model
 
             $rows = $this->db->getRows() ?? [];
 
-            // Aseguramos que cada bloque tenga todas las claves
             foreach ($rows as &$row) {
                 $row = [
                     'id' => $row['id'] ?? 0,
@@ -129,10 +111,7 @@ class AdminModel extends Model
 
             return $rows;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al obtener bloques: " . $e->getMessage(), 0, $e)
-            );
-            return [];
+            throw new BlockException("Error fetching blocks: " . $e->getMessage(), previous: $e);
         }
     }
 
@@ -153,16 +132,10 @@ class AdminModel extends Model
             $this->db->query($sql, [$id]);
             return true;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al eliminar página: " . $e->getMessage(), 0, $e)
-            );
-            return false;
+            throw new AdminException("Error deleting page: " . $e->getMessage(), previous: $e);
         }
     }
 
-    /**
-     * Obtener un bloque por ID
-     */
     public function getBlockById(int $id): array
     {
         try {
@@ -171,7 +144,6 @@ class AdminModel extends Model
             $this->db->get();
             $row = $this->db->getRow() ?? [];
 
-            // Retornar con valores por defecto si alguna clave falta
             return [
                 'id' => $row['id'] ?? 0,
                 'name' => $row['name'] ?? '',
@@ -179,21 +151,10 @@ class AdminModel extends Model
                 'content' => $row['content'] ?? '',
             ];
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al obtener bloque por ID: " . $e->getMessage(), 0, $e)
-            );
-            return [
-                'id' => 0,
-                'name' => '',
-                'sort_order' => 1,
-                'content' => '',
-            ];
+            throw new BlockException("Error fetching block by ID: " . $e->getMessage(), previous: $e);
         }
     }
 
-    /**
-     * Crear un nuevo bloque
-     */
     public function createBlock(array $data): bool
     {
         try {
@@ -210,20 +171,13 @@ class AdminModel extends Model
             $this->db->query($sql, $params);
             return true;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al crear bloque: " . $e->getMessage(), 0, $e)
-            );
-            return false;
+            throw new AdminException("Error creating block: " . $e->getMessage(), previous: $e);
         }
     }
 
-    /**
-     * Actualizar un bloque existente
-     */
     public function updateBlock(int $id, array $data): bool
     {
         try {
-            // Convertir a entero asegurando valor válido
             $sortOrder = (isset($data['sort_order']) && is_numeric($data['sort_order']))
                 ? (int)$data['sort_order']
                 : 1;
@@ -239,16 +193,10 @@ class AdminModel extends Model
             $this->db->query($sql, $params);
             return true;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al actualizar bloque: " . $e->getMessage(), 0, $e)
-            );
-            return false;
+            throw new AdminException("Error updating block: " . $e->getMessage(), previous: $e);
         }
     }
 
-    /**
-     * Eliminar un bloque por ID
-     */
     public function deleteBlock(int $id): bool
     {
         try {
@@ -256,11 +204,7 @@ class AdminModel extends Model
             $this->db->query($sql, [$id]);
             return true;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al eliminar bloque: " . $e->getMessage(), 0, $e)
-            );
-            return false;
+            throw new AdminException("Error deleting block: " . $e->getMessage(), previous: $e);
         }
     }
-
 }

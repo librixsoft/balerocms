@@ -1,8 +1,14 @@
 <?php
 
+/**
+ * Balero CMS
+ * @author Anibal Gomez <balerocms@gmail.com>
+ * @license GNU General Public License
+ */
+
 namespace Framework\Core;
 
-use Exception;
+use Framework\Exceptions\JSONHandlerException;
 
 class JSONHandler
 {
@@ -12,7 +18,7 @@ class JSONHandler
     public function __construct(string $jsonFile)
     {
         if (!file_exists($jsonFile)) {
-            throw new Exception("Archivo no encontrado: " . $jsonFile);
+            throw new JSONHandlerException("File not found: " . $jsonFile);
         }
 
         $this->file = $jsonFile;
@@ -25,7 +31,7 @@ class JSONHandler
         $decoded = json_decode($content, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception("Error cargando JSON: " . json_last_error_msg());
+            throw new JSONHandlerException("Error parsing JSON: " . json_last_error_msg());
         }
 
         $this->data = $decoded;
@@ -67,7 +73,7 @@ class JSONHandler
     {
         $json = json_encode($this->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         if (file_put_contents($this->file, $json) === false) {
-            throw new Exception("No se pudo guardar el archivo JSON: " . $this->file);
+            throw new JSONHandlerException("Could not save JSON file: " . $this->file);
         }
     }
 }

@@ -1,8 +1,15 @@
 <?php
 
+/**
+ * Balero CMS
+ * @author Anibal Gomez <balerocms@gmail.com>
+ * @license GNU General Public License
+ */
+
 namespace Framework\Core;
 
 use Exception;
+use Framework\Exceptions\ConfigException;
 
 class ConfigSettings
 {
@@ -48,10 +55,10 @@ class ConfigSettings
      */
     public function __construct(string $jsonFile = '')  // <-- CAMBIO: parámetro opcional agregado
     {
-        $this->configPath = $jsonFile ?: (LOCAL_DIR . '/resources/config/balero.config.json');
+        $this->configPath = $jsonFile ? : ($this->configPath);
 
         if (!file_exists($this->configPath)) {
-            throw new \Exception("Archivo no encontrado: {$this->configPath}");
+            throw new ConfigException("File not found: {$this->configPath}");
         }
 
         $this->handler = new JSONHandler($this->configPath);
@@ -75,7 +82,7 @@ class ConfigSettings
     public function __set(string $name, string $value)
     {
         if (!isset($this->fields[$name])) {
-            throw new Exception("Propiedad no existe: $name");
+            throw new ConfigException("Propiedad no existe: $name");
         }
 
         $this->data[$name] = $value;

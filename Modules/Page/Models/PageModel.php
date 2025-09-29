@@ -1,45 +1,31 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Modules\Page\Models;
 
-use Exception;
-use Framework\Core\ErrorConsole;
 use Framework\Core\Model;
 use Framework\Static\Utils;
 use Throwable;
+use Modules\Page\Exceptions\PageException;
 
 class PageModel extends Model
 {
-
     public function getVirtualPages(): array
     {
         try {
-
             $sql = "SELECT * FROM page WHERE visible = 1 ORDER BY id ASC";
             $this->db->query($sql);
             $this->db->get();
 
             $rows = $this->db->getRows() ?? [];
 
-            // Generar URL estática para cada página virtual
             foreach ($rows as &$row) {
-
                 $slug = Utils::slugify($row['static_url']);
                 $row['url'] = "{$slug}";
             }
 
             return $rows;
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al obtener páginas virtuales: " . $e->getMessage(), 0, $e)
-            );
-            return [];
+            throw new PageException("Error fetching virtual pages: " . $e->getMessage(), previous: $e);
         }
     }
 
@@ -51,17 +37,12 @@ class PageModel extends Model
             $this->db->query($sql, $params);
             $this->db->get();
 
-            // Debug: loguea las filas obtenidas
-            error_log("Rows obtenidas en getVirtualPageBySlug para slug '{$slug}': " . print_r($this->db->getRows(), true));
+            // Debug: log the retrieved rows
+            error_log("Rows retrieved in getVirtualPageBySlug for slug '{$slug}': " . print_r($this->db->getRows(), true));
 
             return $this->db->getRow() ?? [];
-
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al obtener página virtual por slug: " . $e->getMessage(), 0, $e)
-            );
-            return [];
+            throw new PageException("Error fetching virtual page by slug: " . $e->getMessage(), previous: $e);
         }
     }
-
 }

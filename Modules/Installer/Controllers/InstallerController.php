@@ -12,6 +12,7 @@ use Modules\Installer\DTO\InstallerDTO;
 use Modules\Installer\Mapper\InstallerMapper;
 use Modules\Installer\Models\InstallerModel;
 use Modules\Installer\Views\InstallerViewModel;
+use Modules\Installer\Exceptions\InstallerException;
 
 class InstallerController extends Controller
 {
@@ -30,21 +31,15 @@ class InstallerController extends Controller
     #[Get('/')]
     public function home()
     {
-
-        // Recolectar errores y datos cacheados
         $params = [];
 
         if (Flash::has('errors')) {
             $params['errors'] = Flash::get('errors');
         }
 
-        // Obtener el flag de conexión DB desde el modelo
         $dbOk = $this->model->canConnectToDatabase();
-
-        // Pasar ese dato al ViewModel en extraParams
         $params['db_ok'] = $dbOk;
 
-        // Obtener todos los parámetros del instalador listos para render
         $params = $this->installerViewModel->setInstallerParams($params);
 
         return $this->render("installer/setup_wizard.html", $params, false);
@@ -57,18 +52,24 @@ class InstallerController extends Controller
         $input = (array)$installerDTO;
 
         $validator = Validator::make($input)
-            ->required('username', 'El nombre de usuario no puede estar vacío.')
-            ->required('passwd', 'La contraseña no puede estar vacía.')
-            ->match('passwd', 'passwd2', 'Las contraseñas no coinciden.')
-            ->email('email', 'El correo electrónico no es válido.');
+            ->required('username', 'Username cannot be empty.')
+            ->required('passwd', 'Password cannot be empty.')
+            ->match('passwd', 'passwd2', 'Passwords do not match.')
+            ->email('email', 'Invalid email address.');
 
         if ($validator->fails()) {
             Flash::set('errors', $validator->errors());
         } else {
-            InstallerMapper::map($installerDTO, $this->configSettings);
+            try {
+                InstallerMapper::map($installerDTO, $this->configSettings);
+            } catch (\Throwable $e) {
+                throw new InstallerException(
+                    "Failed to map installer data: " . $e->getMessage(),
+                    previous: $e
+                );
+            }
         }
 
-        // PRG
         Redirect::to("/installer/");
     }
 
@@ -78,9 +79,19 @@ class InstallerController extends Controller
         if (!Flash::has('install_in_progress')) {
             Redirect::to("/installer/");
         }
-        $this->model->setInstalled();
+
+        try {
+            $this->model->setInstalled();
+        } catch (\Throwable $e) {
+            throw new InstallerException(
+                "Failed to mark installation as completed: " . $e->getMessage(),
+                previous: $e
+            );
+        }
+
         $params = $this->installerViewModel->setInstallerParams();
         Flash::delete('install_in_progress');
+
         return $this->render("installer/progressBar.html", $params, false);
     }
 
@@ -88,8 +99,16 @@ class InstallerController extends Controller
     public function postProgressBar()
     {
         Flash::set('install_in_progress', true);
-        $this->model->install();
+
+        try {
+            $this->model->install();
+        } catch (\Throwable $e) {
+            throw new InstallerException(
+                "Installation failed: " . $e->getMessage(),
+                previous: $e
+            );
+        }
+
         Redirect::to("/installer/progressBar");
     }
-
 }

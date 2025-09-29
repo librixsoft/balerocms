@@ -1,17 +1,10 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez
- * @license GNU General Public License
- */
-
 namespace Modules\Block\Models;
 
-use Exception;
-use Framework\Core\ErrorConsole;
 use Framework\Core\Model;
 use Throwable;
+use Modules\Block\Exceptions\BlockException;
 
 class BlockModel extends Model
 {
@@ -24,11 +17,7 @@ class BlockModel extends Model
 
             return $this->db->getRows() ?? [];
         } catch (Throwable $e) {
-            ErrorConsole::handleException(
-                new Exception("Error al obtener bloques: " . $e->getMessage(), 0, $e)
-            );
-            return [];
+            throw new BlockException("Error fetching blocks: " . $e->getMessage(), previous: $e);
         }
     }
-
 }

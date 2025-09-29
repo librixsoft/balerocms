@@ -9,14 +9,22 @@ class RedirectServiceTest extends TestCase
 {
     protected ConfigSettings $config;
 
-    /**
-     * Test RedirectService::to() genera URL correcta sin hacer exit
-     */
+    protected function setUp(): void
+    {
+        // Definir LOCAL_DIR si no está definido
+        if (!defined('LOCAL_DIR')) {
+            define('LOCAL_DIR', __DIR__ . '/../../'); // raíz del proyecto
+        }
+
+        // Configuración simulada
+        $this->config = $this->createMock(ConfigSettings::class);
+        $this->config->basepath = '/basepath';
+    }
+
     public function testRedirectServiceToGeneratesUrl()
     {
         $service = new RedirectService($this->config);
 
-        // Capturamos la URL generada usando closure en un mock de to()
         $urlCaptured = null;
 
         $serviceMock = $this->getMockBuilder(RedirectService::class)
@@ -33,48 +41,28 @@ class RedirectServiceTest extends TestCase
         $this->assertEquals('/installer', $urlCaptured);
     }
 
-    /**
-     * Test la fachada Redirect delega al servicio
-     */
     public function testRedirectFacadeDelegatesToService()
     {
-        // Mock del servicio
         $mockService = $this->createMock(RedirectService::class);
-
-        // Esperamos que to() sea llamado con /installer
         $mockService->expects($this->once())
             ->method('to')
             ->with('/installer', true);
 
-        // Inyectamos el mock en la fachada
         Redirect::setInstance($mockService);
 
-        // Llamada a la fachada
         Redirect::to('/installer');
     }
 
-    /**
-     * Test que lanza excepción si la fachada no tiene servicio
-     */
     public function testRedirectFacadeThrowsIfNoInstance()
     {
-        // Reiniciar la propiedad estática $instance usando reflection
         $reflection = new \ReflectionClass(Redirect::class);
         $prop = $reflection->getProperty('instance');
         $prop->setAccessible(true);
-        $prop->setValue(null, null); // $instance = null
+        $prop->setValue(null, null);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Redirect instance not set.');
 
-        // Llamada a la fachada sin instancia
         Redirect::to('/installer');
-    }
-
-    protected function setUp(): void
-    {
-        // Configuración simulada
-        $this->config = $this->createMock(ConfigSettings::class);
-        $this->config->basepath = '/basepath';
     }
 }

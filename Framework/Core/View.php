@@ -1,9 +1,16 @@
 <?php
 
+/**
+ * Balero CMS
+ * @author Anibal Gomez <balerocms@gmail.com>
+ * @license GNU General Public License
+ */
+
 namespace Framework\Core;
 
 use Framework\Rendering\TemplateEngine;
 use Framework\I18n\LangManager;
+use Framework\Exceptions\ViewException;
 
 class View
 {
@@ -43,31 +50,29 @@ class View
                     if (file_exists($fallbackPath)) {
                         $templateFullPath = $fallbackPath;
                     } else {
-                        throw new \RuntimeException("Plantilla no encontrada en theme activo ni en default: $templateFullPath");
+                        throw new ViewException("Template not found in active theme nor default: $templateFullPath");
                     }
                 }
             } else {
                 $templateFullPath = $this->baseDir . ltrim($templatePath, '/');
                 if (!file_exists($templateFullPath)) {
-                    throw new \RuntimeException("Plantilla no encontrada en vistas base: $templateFullPath");
+                    throw new ViewException("Template not found in base views: $templateFullPath");
                 }
             }
 
             $content = file_get_contents($templateFullPath);
             if ($content === false) {
-                throw new \RuntimeException("No se pudo leer la plantilla: $templateFullPath");
+                throw new ViewException("Failed to read template file: $templateFullPath");
             }
 
             $params = $this->getDefaultParams($params);
 
             $output = $this->templateEngine->processTemplate($content, $params);
 
-            // Aquí se reemplazan placeholders faltantes con LangManager
             return $this->parsePlaceholders($output, $params);
 
         } catch (\Throwable $e) {
-            ErrorConsole::handleException($e);
-            return '';
+            throw new ViewException("Error rendering template: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -89,10 +94,8 @@ class View
     {
         $params = $this->getDefaultParams($extraParams);
 
-        // Primero pasar por template engine
         $text = $this->templateEngine->processTemplate($text, $params);
 
-        // Luego buscar claves {modulo.llave} que queden sin reemplazar y usar LangManager
         return preg_replace_callback(
             '/\{([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)\}/',
             function ($matches) use ($params) {
