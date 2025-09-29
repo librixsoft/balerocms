@@ -1,66 +1,47 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Framework\Routing;
 
-use Framework\Config\Context;
-use Framework\Core\ConfigSettings;
-use Framework\Core\Container;
 use Framework\Http\RequestHelper;
+use Framework\Core\ConfigSettings;
+use Framework\Config\Context;
 use Framework\Static\Redirect;
 use Framework\Exceptions\RouterException;
 use Throwable;
 
 class Router
 {
-    /**
-     * Load default app controller
-     */
     private const DEFAULT_MODULE = 'Block';
-
-    /**
-     * Constante que define el nombre del parámetro index.php?module={module}
-     */
     private const PARAM_MODULE = 'module';
 
-    private Container $container;
-    private Context $context;
-    private RequestHelper $request;
-    private ConfigSettings $configSettings;
-    private ?string $module = null;
-
-    public function __construct()
+    /**
+     * Inicializa la app.
+     *
+     * @param RequestHelper $request
+     * @param ConfigSettings $configSettings
+     * @param Context $context
+     * @param callable $controllerResolver Callback que recibe nombre de clase y devuelve instancia
+     */
+    public function initBalero(RequestHelper $request, ConfigSettings $configSettings, Context $context, callable $controllerResolver): void
     {
-        $this->container = new Container();
-        $this->context = new Context($this->container);
-
-        $this->configSettings = $this->container->get(ConfigSettings::class);
-        $this->request = $this->container->get(RequestHelper::class);
-
-        $this->initSessionLang();
-        $this->checkInstallerRedirect();
-    }
-
-    private function checkInstallerRedirect(): void
-    {
-        if (
-            !isset($this->configSettings->basepath) ||
-            $this->configSettings->basepath === ''
-        ) {
-            $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
+        // Sesión
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
         }
 
-        $currentModule = $this->request->get(self::PARAM_MODULE);
-        if ($currentModule === 'notification') {
-            return;
+        if (!isset($_SESSION['lang'])) {
+            $_SESSION['lang'] = $configSettings->language ?? 'en';
         }
 
-        $installed = $this->configSettings->installed;
+        if (!isset($configSettings->basepath) || $configSettings->basepath === '') {
+            $configSettings->basepath = rtrim($configSettings->getFullBasepath(), '/') . '/';
+        }
+
+        $currentModule = $request->get(self::PARAM_MODULE);
+
+        if ($currentModule === 'notification') return;
+
+        $installed = $configSettings->installed;
 
         if ($installed === "no" && $currentModule !== 'installer') {
             Redirect::to('/installer');
@@ -71,27 +52,15 @@ class Router
             Redirect::to('/');
             exit;
         }
-    }
 
-    public function initBalero(): void
-    {
-        $this->module = $this->request->get(self::PARAM_MODULE);
-
-        if (!$this->module) {
-            $this->loadController(self::DEFAULT_MODULE);
-            exit;
-        }
-
-        $this->loadController(ucfirst($this->module));
+        $module = $currentModule ?: self::DEFAULT_MODULE;
+        $this->loadController($module, $context, $controllerResolver);
     }
 
     /**
-     * Carga un controller y aplica DI.
-     *
-     * @param string $module
-     * @throws RouterException
+     * Carga un controller usando el callback de Boot
      */
-    public function loadController(string $module): void
+    public function loadController(string $module, Context $context, callable $controllerResolver): void
     {
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
@@ -100,7 +69,7 @@ class Router
         }
 
         try {
-            $instance = $this->getFromContainer($controllerClass);
+            $instance = call_user_func($controllerResolver, $controllerClass);
 
             if (method_exists($instance, 'initControllerAndInject')) {
                 $instance->initControllerAndInject();
@@ -112,27 +81,5 @@ class Router
                 $e
             );
         }
-    }
-
-    private function initSessionLang(): void
-    {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['lang'])) {
-            $_SESSION['lang'] = $this->configSettings->language ?? 'en';
-        }
-    }
-
-    /**
-     * Instancia cualquier clase usando el contenedor.
-     *
-     * @param string $class
-     * @return object
-     */
-    public function getFromContainer(string $class): object
-    {
-        return $this->container->get($class);
     }
 }

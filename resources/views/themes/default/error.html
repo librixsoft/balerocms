@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="{basepath}">
+    <meta charset="UTF-8"/>
+    <link href="favicon.ico" rel="shortcut icon">
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>{title} - Error</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link href="assets/css/all.min.css" rel="stylesheet">
+
+    <!-- jQuery -->
+    <script src="assets/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom styles -->
+    <link href="assets/themes/{theme}/style.css" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- Navbar estático -->
+<nav class="navbar navbar-expand-md">
+    <div class="container">
+        <a class="navbar-brand" href="{basepath}">{title}</a>
+    </div>
+</nav>
+
+<!-- Hero Header con mensaje de error -->
+<header class="hero-header bg-danger text-white py-5">
+    <div class="hero-content text-center">
+        <h1>Oops! Something went wrong</h1>
+        <small>We are working to fix the issue. Please try again later.</small>
+    </div>
+</header>
+
+<!-- Main vacío -->
+<main class="container my-5 text-center">
+    <p class="text-muted">Si el problema persiste, contacte al administrador del sistema.</p>
+</main>
+
+<!-- Footer -->
+<footer class="text-center py-3">
+    <p>{footer}</p>
+</footer>
+
+</body>
+</html>

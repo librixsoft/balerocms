@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Framework\Core;
 
 use Throwable;
@@ -13,11 +7,24 @@ use Throwable;
 class ErrorConsole
 {
     private bool $rendered = false;
+    private View $view;
+    private ConfigSettings $configSettings;
 
-    // Devuelve true si estamos en producción
+    public function __construct(View $view, ConfigSettings $configSettings)
+    {
+        $this->view = $view;
+        $this->configSettings = $configSettings;
+    }
+
     private function isProduction(): bool
     {
         return defined('APP_ENV') && APP_ENV === 'prod';
+    }
+
+    private function isInstalled(): bool
+    {
+        return isset($this->configSettings->installed)
+            && $this->configSettings->installed === 'yes';
     }
 
     public function register(): void
@@ -26,12 +33,7 @@ class ErrorConsole
             ob_start();
         }
 
-        if ($this->isProduction()) {
-            ini_set('display_errors', '0'); // Producción: no mostrar errores
-        } else {
-            ini_set('display_errors', '1'); // Desarrollo: mostrar errores
-        }
-
+        ini_set('display_errors', $this->isProduction() ? '0' : '1');
         error_reporting(E_ALL);
 
         set_error_handler([$this, 'handleError']);
@@ -43,27 +45,20 @@ class ErrorConsole
     {
         $this->cleanOutput();
 
-        if ($this->isProduction()) {
-            $this->renderGeneric();
-        } else {
-            $message = "Error [$errno]: $errstr in $errfile on line $errline";
-            $this->renderConsole($message);
-        }
+        $message = "Error [$errno]: $errstr in $errfile on line $errline";
+        $this->renderOutput($message);
     }
 
     public function handleException(Throwable $e): void
     {
         $this->cleanOutput();
 
-        if ($this->isProduction()) {
-            $this->renderGeneric();
-        } else {
-            $message = "Exception: " . get_class($e) . "\n";
-            $message .= "Message: " . $e->getMessage() . "\n";
-            $message .= "File: " . $e->getFile() . " (" . $e->getLine() . ")\n";
-            $message .= "Trace:\n" . $e->getTraceAsString();
-            $this->renderConsole($message, $e);
-        }
+        $message = "Exception: " . get_class($e) . "\n";
+        $message .= "Message: " . $e->getMessage() . "\n";
+        $message .= "File: " . $e->getFile() . " (" . $e->getLine() . ")\n";
+        $message .= "Trace:\n" . $e->getTraceAsString();
+
+        $this->renderOutput($message, $e);
     }
 
     public function handleShutdown(): void
@@ -71,13 +66,35 @@ class ErrorConsole
         $error = error_get_last();
         if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
             $this->cleanOutput();
-            if ($this->isProduction()) {
-                $this->renderGeneric();
-            } else {
-                $message = "Fatal Error: {$error['message']} in {$error['file']} on line {$error['line']}";
-                $this->renderConsole($message);
-            }
+            $message = "Fatal Error: {$error['message']} in {$error['file']} on line {$error['line']}";
+            $this->renderOutput($message);
         }
+    }
+
+    private function renderOutput(string $message, ?Throwable $e = null): void
+    {
+        if ($this->rendered) {
+            return;
+        }
+        $this->rendered = true;
+
+        // ⚡ Caso: app instalada y en producción → renderizar plantilla
+        if ($this->configSettings->installed === 'yes' && APP_ENV === 'prod') {
+            $params = [
+                'message' => $message
+            ];
+            echo $this->view->render("error.html", $params, useTheme: true);
+            exit;
+        }
+
+        // ⚡ Caso: app instalada pero no en producción → consola clásica
+        if ($this->configSettings->installed === 'yes') {
+            $this->renderConsole($message, $e);
+            return;
+        }
+
+        // ⚡ Caso: app NO instalada → consola clásica
+        $this->renderConsole($message, $e);
     }
 
     private function renderGeneric(): void
@@ -98,11 +115,6 @@ class ErrorConsole
 
     private function renderConsole(string $mainMessage, ?Throwable $e = null): void
     {
-        if ($this->rendered) {
-            return;
-        }
-        $this->rendered = true;
-
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Balero CMS Error Console</title>';
         echo '<style>
             html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; background: #2a2a2a; color: #33ff33; font-family: "Menlo", Monaco, Consolas, "Courier New", monospace; overflow: hidden; }
