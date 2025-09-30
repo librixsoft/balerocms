@@ -26,11 +26,10 @@ class NotificationController extends Controller
         $message = "Key '$key' deleted success.";
 
         header('Content-Type: application/json');
-        echo json_encode([
+        return json_encode([
             'status' => $status,
             'message' => $message
         ]);
-        exit;
     }
 
 }
