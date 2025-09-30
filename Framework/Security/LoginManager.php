@@ -63,7 +63,7 @@ class LoginManager
 
             // Falló el login → incrementar contador
             $this->setCookie('counter', $counter + 1, 300);
-            $this->message = __('login.message');
+            $this->message = '{login.message}';
             return false;
         }
 
