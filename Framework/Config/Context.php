@@ -27,14 +27,10 @@ namespace Framework\Config;
 
 use Framework\Core\ConfigSettings;
 use Framework\Core\Container;
-use Framework\Rendering\Conditions\AndCondition;
-use Framework\Rendering\Conditions\ConditionFactory;
-use Framework\Rendering\Conditions\OrCondition;
-use Framework\Rendering\ProcessorFlattenParams;
-use Framework\Rendering\ProcessorForEach;
-use Framework\Rendering\ProcessorIfBlocks;
 use Framework\Services\RedirectService;
 use Framework\Static\Redirect;
+use Framework\Core\View;
+use Framework\Core\ErrorConsole;
 
 class Context
 {
@@ -60,7 +56,11 @@ class Context
         $config = new ConfigSettings();
         $container->set(ConfigSettings::class, $config);
 
-        // RedirectService y fachada Redirect
+        $view = $container->get(View::class);
+
+        $errorConsole = new ErrorConsole($view, $config);
+        $container->set(ErrorConsole::class, $errorConsole);
+
         $redirectService = new RedirectService($config);
         Redirect::setInstance($redirectService);
     }

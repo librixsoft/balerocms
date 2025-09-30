@@ -4,8 +4,8 @@ namespace Framework\Core;
 
 use Framework\Exceptions\BootException;
 use Framework\Routing\Router;
-use Framework\Core\Container;
 use Framework\Config\Context;
+use Framework\Http\RequestHelper;
 use Throwable;
 
 class Boot
@@ -16,28 +16,21 @@ class Boot
     public function __construct(bool $loadRouter = true)
     {
         try {
-            // Autoload
+
             spl_autoload_register([$this, "autoloadClass"]);
 
-
-            // Container
             $this->container = new Container();
 
-            // Context se obtiene del container
             $context = new Context($this->container);
 
-            $view = $this->container->get(View::class);
-            $config = $this->container->get(ConfigSettings::class);
-            $errorConsole = new ErrorConsole($view, $config); // directamente
-            $errorConsole->register();
+            $this->errorConsole = $this->container->get(ErrorConsole::class);
+            $this->errorConsole->register();
 
-
-            // Inicializar Router
             if ($loadRouter) {
                 $router = new Router();
                 $router->initBalero(
-                    $this->container->get(\Framework\Http\RequestHelper::class),
-                    $this->container->get(\Framework\Core\ConfigSettings::class),
+                    $this->container->get(RequestHelper::class),
+                    $this->container->get(ConfigSettings::class),
                     fn(string $class) => $this->getFromContainer($class)
                 );
             }
