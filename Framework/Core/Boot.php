@@ -38,7 +38,6 @@ class Boot
                 $router->initBalero(
                     $this->container->get(\Framework\Http\RequestHelper::class),
                     $this->container->get(\Framework\Core\ConfigSettings::class),
-                    $context,
                     fn(string $class) => $this->getFromContainer($class)
                 );
             }

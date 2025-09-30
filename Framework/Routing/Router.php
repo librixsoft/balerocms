@@ -4,7 +4,6 @@ namespace Framework\Routing;
 
 use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
-use Framework\Config\Context;
 use Framework\Static\Redirect;
 use Framework\Exceptions\RouterException;
 use Throwable;
@@ -22,7 +21,7 @@ class Router
      * @param Context $context
      * @param callable $controllerResolver Callback que recibe nombre de clase y devuelve instancia
      */
-    public function initBalero(RequestHelper $request, ConfigSettings $configSettings, Context $context, callable $controllerResolver): void
+    public function initBalero(RequestHelper $request, ConfigSettings $configSettings, callable $controllerResolver): void
     {
         // Sesión
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -54,13 +53,13 @@ class Router
         }
 
         $module = $currentModule ?: self::DEFAULT_MODULE;
-        $this->loadController($module, $context, $controllerResolver);
+        $this->loadController($module, $controllerResolver);
     }
 
     /**
      * Carga un controller usando el callback de Boot
      */
-    public function loadController(string $module, Context $context, callable $controllerResolver): void
+    public function loadController(string $module, callable $controllerResolver): void
     {
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
