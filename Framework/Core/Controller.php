@@ -12,6 +12,7 @@ use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\RequestHelper;
 use Framework\I18n\LangSelector;
+use Framework\Http\JsonResponse;
 use Framework\Security\LoginManager;
 use Framework\Exceptions\ControllerException;
 use ReflectionClass;
@@ -83,7 +84,7 @@ class Controller
                             throw new ControllerException("Unauthorized access - login required");
                         }
 
-                        $this->runMethod($method->getName(), $params);
+                        $this->runMethod($method, $params);
                         return;
                     }
                 }
@@ -102,11 +103,31 @@ class Controller
         $this->configSettings->basepath = $basepath;
     }
 
-    private function runMethod(string $methodName, array $params = []): void
+    /**
+     * Ejecuta el método del controlador y procesa el resultado (JSON o View/String).
+     * * @param ReflectionMethod $method El método de acción del controlador a ejecutar.
+     * @param array $params Los parámetros de la ruta.
+     * @return void
+     */
+    private function runMethod(ReflectionMethod $method, array $params = []): void
     {
         $this->initLanguage();
 
-        $result = $this->{$methodName}(...$params);
+        $result = $method->invoke($this, ...$params);
+
+        $jsonAttribute = $method->getAttributes(JsonResponse::class);
+
+        if (!empty($jsonAttribute)) {
+            if (is_array($result) || is_object($result)) {
+                header('Content-Type: application/json');
+                echo json_encode($result);
+                exit;
+            } else {
+                header('Content-Type: application/json', true, 500);
+                echo json_encode(['status' => 'error', 'message' => 'Controller marked for JSON response did not return an array or object.']);
+                exit;
+            }
+        }
 
         if (is_string($result)) {
             echo $result;
