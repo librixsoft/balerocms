@@ -13,7 +13,7 @@ class NotificationController extends Controller
     #[Get('/')]
     public function getNotification()
     {
-        return "Can't Acces To Get /notification Endpoint";
+        return "/notification endpoint is up!";
     }
 
     #[Post('/')]

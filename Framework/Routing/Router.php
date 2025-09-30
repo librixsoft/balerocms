@@ -37,12 +37,11 @@ class Router
         }
 
         $currentModule = $request->get(self::PARAM_MODULE);
-
-        if ($currentModule === 'notification') return;
-
+        
         $installed = $configSettings->installed;
+        $allowedModules = ['installer', 'notification']; // módulos permitidos antes de instalar
 
-        if ($installed === "no" && $currentModule !== 'installer') {
+        if ($installed === "no" && !in_array($currentModule, $allowedModules)) {
             Redirect::to('/installer');
             exit;
         }
