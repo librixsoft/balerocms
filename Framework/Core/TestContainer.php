@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Balero CMS
+ * @author Anibal Gomez <balerocms@gmail.com>
+ * @license GNU General Public License
+ */
+
 namespace Framework\Core;
 
 use ReflectionClass;
@@ -9,8 +15,10 @@ use ReflectionNamedType;
  * TestContainer
  *
  * Contenedor de pruebas para PHPUnit que permite:
- * - Inicializar propiedades del test marcadas con #[InjectMocks] como SUT (System Under Test).
- * - Reemplazar automáticamente las dependencias #[Inject] de la clase SUT con mocks.
+ * - Inicializar propiedades del test marcadas con #[InjectMocks] como SUT (System Under Test),
+ *   creando la instancia y asignando automáticamente las dependencias.
+ * - Reemplazar automáticamente las dependencias marcadas con #[Inject] por mocks,
+ *   que se inyectan en el SUT.
  * - Mantener un registro de todos los mocks creados para uso dentro de los tests.
  *
  * Uso típico en un TestCase:
@@ -20,8 +28,8 @@ use ReflectionNamedType;
  * ```
  *
  * Notas:
- * - No hace llamadas estáticas.
- * - Cada dependencia #[Inject] se reemplaza por un mock y se guarda internamente.
+ * - Cada dependencia #[Inject] se reemplaza por un mock y se inyecta automáticamente por constructor
+ *   o en la propiedad correspondiente del SUT.
  * - Se puede obtener cualquier mock usando `getMock(ClassName::class)`.
  */
 class TestContainer
@@ -56,7 +64,7 @@ class TestContainer
 
     /**
      * Inicializa todas las propiedades del test con #[InjectMocks]
-     * y reemplaza sus dependencias #[Inject] con mocks.
+     * creando la instancia de la clase (SUT) y reemplazando sus dependencias #[Inject] con mocks.
      *
      * @param object $test Instancia del PHPUnit TestCase
      * @return void
