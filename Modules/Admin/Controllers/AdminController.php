@@ -57,12 +57,12 @@ class AdminController extends Controller
     public function postSettings()
     {
         $data = [
-            'title' => $this->request->post("title"),
-            'description' => $this->request->post("description"),
-            'keywords' => $this->request->post("keywords"),
-            'theme' => $this->request->post("theme"),
-            'language' => $this->request->post("language"),
-            'footer' => $this->request->post("footer"),
+            'title' => $this->requestHelper->post("title"),
+            'description' => $this->requestHelper->post("description"),
+            'keywords' => $this->requestHelper->post("keywords"),
+            'theme' => $this->requestHelper->post("theme"),
+            'language' => $this->requestHelper->post("language"),
+            'footer' => $this->requestHelper->post("footer"),
         ];
 
         $this->model->updateSettings($data);
@@ -98,11 +98,11 @@ class AdminController extends Controller
     public function postNewPage()
     {
         $data = [
-            'virtual_title' => $this->request->post('virtual_title'),
-            'static_url' => $this->request->post('static_url'),
-            'virtual_content' => $this->request->raw('virtual_content'),
-            'visible' => (int)$this->request->post('visible'),
-            'date' => $this->request->post('date'),
+            'virtual_title' => $this->requestHelper->post('virtual_title'),
+            'static_url' => $this->requestHelper->post('static_url'),
+            'virtual_content' => $this->requestHelper->raw('virtual_content'),
+            'visible' => (int)$this->requestHelper->post('visible'),
+            'date' => $this->requestHelper->post('date'),
         ];
 
         $this->model->createPage($data);
@@ -126,9 +126,9 @@ class AdminController extends Controller
     {
         $data = [
             'id' => $id,
-            'virtual_title' => $this->request->post("virtual_title"),
-            'static_url' => $this->request->post("static_url"),
-            'virtual_content' => $this->request->raw("virtual_content"),
+            'virtual_title' => $this->requestHelper->post("virtual_title"),
+            'static_url' => $this->requestHelper->post("static_url"),
+            'virtual_content' => $this->requestHelper->raw("virtual_content"),
         ];
 
         $this->model->updatePage($id, $data);
@@ -189,9 +189,9 @@ class AdminController extends Controller
     public function createBlock()
     {
         $data = [
-            'name' => $this->request->post('name'),
-            'sort_order' => $this->request->post('sort_order'),
-            'content' => $this->request->raw('content'),
+            'name' => $this->requestHelper->post('name'),
+            'sort_order' => $this->requestHelper->post('sort_order'),
+            'content' => $this->requestHelper->raw('content'),
         ];
 
         $this->model->createBlock($data);
@@ -214,9 +214,9 @@ class AdminController extends Controller
     public function postEditBlock(int $id)
     {
         $data = [
-            'name' => $this->request->post('name'),
-            'sort_order' => $this->request->post('sort_order'),
-            'content' => $this->request->raw('content'),
+            'name' => $this->requestHelper->post('name'),
+            'sort_order' => $this->requestHelper->post('sort_order'),
+            'content' => $this->requestHelper->raw('content'),
         ];
 
         $this->model->updateBlock($id, $data);

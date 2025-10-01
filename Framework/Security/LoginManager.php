@@ -43,15 +43,15 @@ class LoginManager
      */
     public function handleLogin(): bool
     {
-        $counter = $this->security->toInt($this->request->cookie('counter', 0));
+        $counter = $this->security->toInt($this->requestHelper->cookie('counter', 0));
         if ($counter >= 5) {
             die("MAX LOGIN ATTEMPS, WAIT 5 MINUTES!");
         }
 
         // Intento de login por formulario
-        if ($this->request->hasPost('login')) {
-            $usr = $this->request->post('usr', '');
-            $pwd = $this->request->post('pwd', '');
+        if ($this->requestHelper->hasPost('login')) {
+            $usr = $this->requestHelper->post('usr', '');
+            $pwd = $this->requestHelper->post('pwd', '');
 
             $verify = Hash::verify_hash($pwd, $this->config->pass);
 
@@ -68,7 +68,7 @@ class LoginManager
         }
 
         // Validar cookie existente
-        if ($cookie = $this->request->cookie('admin_god_balero')) {
+        if ($cookie = $this->requestHelper->cookie('admin_god_balero')) {
             $decoded = base64_decode($cookie, true);
             if ($decoded !== false && str_contains($decoded, ':')) {
                 [$cookieUsr, $cookiePwd] = explode(':', $decoded, 2);

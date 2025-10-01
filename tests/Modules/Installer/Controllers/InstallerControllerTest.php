@@ -40,7 +40,7 @@ final class InstallerControllerTest extends TestCase
         // Mock de RequestHelper
         $this->requestMock = $this->createMock(RequestHelper::class);
 
-        // Controller anónimo con render() que usa el stub de View
+        // Controller anónimo que usa render() con el stub de View
         $this->controller = new class($this->modelMock, $this->viewModelMock) extends InstallerController {
             public View $view;
 
@@ -53,11 +53,11 @@ final class InstallerControllerTest extends TestCase
         // Inyectamos el stub de View
         $this->controller->view = $this->viewStub;
 
-        // Inyectamos el mock de RequestHelper respetando la tipificación
+        // Inyectamos el mock de RequestHelper respetando tipificación
         $refController = new \ReflectionObject($this->controller);
-        $propRequest = $refController->getProperty('request');
-        $propRequest->setAccessible(true);
-        $propRequest->setValue($this->controller, $this->requestMock);
+        $propRequestHelper = $refController->getProperty('requestHelper');
+        $propRequestHelper->setAccessible(true);
+        $propRequestHelper->setValue($this->controller, $this->requestMock);
     }
 
     public function testHomeReturnsHtml(): void

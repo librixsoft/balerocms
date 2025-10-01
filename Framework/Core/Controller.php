@@ -29,7 +29,7 @@ class Controller
     protected View $view;
 
     #[Inject]
-    protected RequestHelper $request;
+    protected RequestHelper $requestHelper;
 
     #[Inject]
     protected ConfigSettings $configSettings;
@@ -39,6 +39,10 @@ class Controller
 
     #[Inject]
     protected LangSelector $langSelector;
+
+    public function __construct()
+    {
+    }
 
     /**
      * Builds the base template of Balero CMS controllers
@@ -53,7 +57,7 @@ class Controller
         $this->initBasePath();
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $requestedTarget = trim($this->request->get(self::PARAM_TARGET) ?? '', '/');
+        $requestedTarget = trim($this->requestHelper->get(self::PARAM_TARGET) ?? '', '/');
 
         $reflection = new ReflectionClass($this);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
@@ -142,14 +146,14 @@ class Controller
 
     protected function initLanguage(): void
     {
-        if ($this->request) {
-            $this->langSelector->getLanguageParams($this->request);
+        if ($this->requestHelper) {
+            $this->langSelector->getLanguageParams($this->requestHelper);
         }
     }
 
     protected function render(string $template, array $params = [], bool $useTheme = true): string
     {
-        $langParams = $this->langSelector->getLanguageParams($this->request);
+        $langParams = $this->langSelector->getLanguageParams($this->requestHelper);
 
         return $this->view->render($template, array_merge($langParams, $params), $useTheme);
     }

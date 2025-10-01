@@ -7,9 +7,18 @@ use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\JsonResponse;
 use Framework\Static\Flash;
+use Modules\Notification\Models\NotificationModel;
 
 class NotificationController extends Controller
 {
+
+    #[Inject]
+    private NotificationModel $model;
+
+    public function __construct(NotificationModel $model)
+    {
+        $this->model = $model;
+    }
 
     #[Get('/')]
     #[JsonResponse]
@@ -25,7 +34,7 @@ class NotificationController extends Controller
     #[JsonResponse]
     public function postNotification()
     {
-        $key = $this->request->post('key');
+        $key = $this->requestHelper->post('key');
 
         Flash::delete($key);
         $status = 'success';

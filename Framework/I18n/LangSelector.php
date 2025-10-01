@@ -10,18 +10,18 @@ class LangSelector
     private string $langPath = LOCAL_DIR . '/resources/lang';
 
     private LangManager $langManager;
-    private RequestHelper $request;
+    private RequestHelper $requestHelper;
 
-    public function __construct(LangManager $langManager, RequestHelper $request)
+    public function __construct(LangManager $langManager, RequestHelper $requestHelper)
     {
         $this->langManager = $langManager;
-        $this->request = $request;
+        $this->requestHelper = $requestHelper;
     }
 
     public function getLanguageParams(): array
     {
-        $lang = $this->request->hasGet('lang')
-            ? $this->request->get('lang')
+        $lang = $this->requestHelper->hasGet('lang')
+            ? $this->requestHelper->get('lang')
             : ($_SESSION['lang'] ?? substr($_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? 'en', 0, 2));
 
         $supported = ['en', 'es'];
