@@ -7,4 +7,8 @@ use Framework\Core\Model;
 class NotificationModel extends Model
 {
 
+    public function connect() {
+        return "success";
+    }
+
 }
