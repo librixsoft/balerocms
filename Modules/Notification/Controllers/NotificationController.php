@@ -15,11 +15,6 @@ class NotificationController extends Controller
     #[Inject]
     private NotificationModel $model;
 
-    public function __construct(NotificationModel $model)
-    {
-        $this->model = $model;
-    }
-
     #[Get('/')]
     #[JsonResponse]
     public function getNotification()
