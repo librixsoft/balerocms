@@ -16,18 +16,18 @@ class LoginManager
 {
     private Security $security;
     private ConfigSettings $config;
-    private RequestHelper $request;
+    private RequestHelper $requestHelper;
     private string $message = '';
 
     public function __construct(
         Security $security,
         ConfigSettings $config,
-        RequestHelper $request
+        RequestHelper $requestHelper
     )
     {
         $this->security = $security;
         $this->config = $config;
-        $this->request = $request;
+        $this->requestHelper = $requestHelper;
     }
 
     /**

@@ -16,12 +16,11 @@ class Router
     /**
      * Inicializa la app.
      *
-     * @param RequestHelper $request
+     * @param RequestHelper $requestHelper
      * @param ConfigSettings $configSettings
-     * @param Context $context
      * @param callable $controllerResolver Callback que recibe nombre de clase y devuelve instancia
      */
-    public function initBalero(RequestHelper $request, ConfigSettings $configSettings, callable $controllerResolver): void
+    public function initBalero(RequestHelper $requestHelper, ConfigSettings $configSettings, callable $controllerResolver): void
     {
         // Sesión
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -36,8 +35,8 @@ class Router
             $configSettings->basepath = rtrim($configSettings->getFullBasepath(), '/') . '/';
         }
 
-        $currentModule = $request->get(self::PARAM_MODULE);
-        
+        $currentModule = $requestHelper->get(self::PARAM_MODULE);
+
         $installed = $configSettings->installed;
         $allowedModules = ['installer', 'notification']; // módulos permitidos antes de instalar
 
