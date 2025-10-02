@@ -18,6 +18,16 @@ class TestController
     #[Inject]
     private TestModel $model;
 
+    /**Test without contructor
+    private Controller $controller;
+    private TestModel $model;
+    public function __construct(Controller $controller, TestModel $model)
+    {
+    $this->controller = $controller;
+    $this->model = $model;
+    }
+     **/
+
     #[Get('/')]
     public function getNotification()
     {
