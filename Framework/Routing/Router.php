@@ -13,6 +13,13 @@ class Router
     private const DEFAULT_MODULE = 'Block';
     private const PARAM_MODULE = 'module';
 
+    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings)
+    {
+        $this->requestHelper = $requestHelper;
+        $this->configSettings = $configSettings;
+    }
+
+
     /**
      * Inicializa la app.
      *
@@ -20,7 +27,7 @@ class Router
      * @param ConfigSettings $configSettings
      * @param callable $controllerResolver Callback que recibe nombre de clase y devuelve instancia
      */
-    public function initBalero(RequestHelper $requestHelper, ConfigSettings $configSettings, callable $controllerResolver): void
+    public function initBalero(callable $controllerResolver): void
     {
         // Sesión
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -31,13 +38,13 @@ class Router
             $_SESSION['lang'] = $configSettings->language ?? 'en';
         }
 
-        if (!isset($configSettings->basepath) || $configSettings->basepath === '') {
-            $configSettings->basepath = rtrim($configSettings->getFullBasepath(), '/') . '/';
+        if (!isset($this->configSettings ->basepath) || $this->configSettings ->basepath === '') {
+            $this->configSettings ->basepath = rtrim($this->configSettings ->getFullBasepath(), '/') . '/';
         }
 
-        $currentModule = $requestHelper->get(self::PARAM_MODULE);
+        $currentModule = $this->requestHelper->get(self::PARAM_MODULE);
 
-        $installed = $configSettings->installed;
+        $installed = $this->configSettings ->installed;
         $allowedModules = ['installer', 'notification']; // módulos permitidos antes de instalar
 
         if ($installed === "no" && !in_array($currentModule, $allowedModules)) {
