@@ -17,6 +17,12 @@ class TestModelTest extends TestCase
 
     protected function setUp(): void
     {
+
+// tests/bootstrap.php o al inicio de tu TestCase
+        if (!defined('LOCAL_DIR')) {
+            define('LOCAL_DIR', __DIR__ . '/../../'); // ajusta según tu estructura
+        }
+
         $this->container = new TestContainer(fn($class) => $this->createMock($class));
         $this->container->initTest($this); // inyecta mocks automáticamente en $model
     }

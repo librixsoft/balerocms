@@ -1,7 +1,8 @@
 <?php
+
+use Framework\Core\View;
 use Modules\Test\Controllers\TestController;
 use Framework\DI\TestContainer;
-use Framework\Core\Controller;
 use Modules\Test\Models\TestModel;
 use PHPUnit\Framework\TestCase;
 use Framework\Attributes\InjectMocks;
@@ -17,6 +18,12 @@ class TestControllerTest extends TestCase
 
     protected function setUp(): void
     {
+
+// tests/bootstrap.php o al inicio de tu TestCase
+        if (!defined('LOCAL_DIR')) {
+            define('LOCAL_DIR', __DIR__ . '/../../'); // ajusta según tu estructura
+        }
+
         // Creamos el TestContainer y lo guardamos
         $this->container = new TestContainer(fn($class) => $this->createMock($class));
         $this->container->initTest($this); // inyecta mocks automáticamente en $controller
@@ -25,7 +32,7 @@ class TestControllerTest extends TestCase
     public function testGetNotificationCallsRender(): void
     {
         // Obtenemos el mock de Controller que ya fue inyectado
-        $controllerMock = $this->container->getMock(Controller::class);
+        $controllerMock = $this->container->getMock(View::class);
 
         $controllerMock
             ->expects($this->once())

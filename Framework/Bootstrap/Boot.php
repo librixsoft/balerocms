@@ -27,11 +27,8 @@ class Boot
             $this->errorConsole->register();
 
             if ($loadRouter) {
-                // Se inyectan RequestHelper y ConfigSettings automáticamente
                 $router = $this->container->get(Router::class);
-
-                // Pasamos callback para resolver controladores
-                $router->initBalero(fn(string $class) => $this->container->get($class));
+                $router->initBalero(); // sin callback
             }
 
         } catch (Throwable $e) {

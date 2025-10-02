@@ -2,6 +2,7 @@
 
 namespace Framework\Bootstrap;
 
+use Framework\DI\Container;
 use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
 use Framework\Static\Redirect;
@@ -15,16 +16,14 @@ class Router
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
 
-    private Controller $controller; // <-- aquí guardamos la instancia de Controller
+    private Container $container;
 
-
-    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings,         Controller $controller   // <-- inyectamos Controller
-    )
+    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings, Controller $controller, Container $container)
     {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
-        $this->controller = $controller; // <-- asignamos
-
+        $this->controller = $controller;
+        $this->container = $container; // guardamos container
     }
 
 
@@ -35,25 +34,27 @@ class Router
      * @param ConfigSettings $configSettings
      * @param callable $controllerResolver Callback que recibe nombre de clase y devuelve instancia
      */
-    public function initBalero(callable $controllerResolver): void
+    public function initBalero(): void
     {
-
-        // Sesión
+        // Iniciar sesión si no está activa
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
+        // Configurar idioma por defecto
         if (!isset($_SESSION['lang'])) {
-            $_SESSION['lang'] = $configSettings->language ?? 'en';
+            $_SESSION['lang'] = $this->configSettings->language ?? 'en';
         }
 
-        if (!isset($this->configSettings ->basepath) || $this->configSettings ->basepath === '') {
-            $this->configSettings ->basepath = rtrim($this->configSettings ->getFullBasepath(), '/') . '/';
+        // Asegurar basepath
+        if (!isset($this->configSettings->basepath) || $this->configSettings->basepath === '') {
+            $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
         }
 
         $currentModule = $this->requestHelper->get(self::PARAM_MODULE);
 
-        $installed = $this->configSettings ->installed;
+        // Comprobar instalación
+        $installed = $this->configSettings->installed;
         $allowedModules = ['installer', 'notification', 'test']; // módulos permitidos antes de instalar
 
         if ($installed === "no" && !in_array($currentModule, $allowedModules)) {
@@ -66,14 +67,14 @@ class Router
             exit;
         }
 
+        // Módulo por defecto
         $module = $currentModule ?: self::DEFAULT_MODULE;
-        $this->loadController($module, $controllerResolver);
+
+        // Cargar controller usando DI
+        $this->loadController($module);
     }
 
-    /**
-     * Carga un controller usando el callback de Boot
-     */
-    public function loadController(string $module, callable $controllerResolver): void
+    public function loadController(string $module): void
     {
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
@@ -82,11 +83,11 @@ class Router
         }
 
         try {
-            $moduleController = call_user_func($controllerResolver, $controllerClass);
+            // Crear instancia usando el Container directamente
+            $moduleController = $this->container->get($controllerClass);
 
-            // 1️⃣ Llamamos primero a initControllerAndInject pasándole el ModuleController
+            // Inicializar controller y route
             $this->controller->initControllerAndRoute($moduleController);
-
 
         } catch (\Throwable $e) {
             throw new \Framework\Exceptions\RouterException(
@@ -96,7 +97,6 @@ class Router
             );
         }
     }
-
 
 
 
