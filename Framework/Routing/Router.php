@@ -13,6 +13,9 @@ class Router
     private const DEFAULT_MODULE = 'Block';
     private const PARAM_MODULE = 'module';
 
+    private RequestHelper $requestHelper;
+    private ConfigSettings $configSettings;
+    
     public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings)
     {
         $this->requestHelper = $requestHelper;
