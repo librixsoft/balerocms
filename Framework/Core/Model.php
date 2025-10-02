@@ -12,8 +12,8 @@ use Framework\Database\MySQL;
 
 class Model
 {
-    protected MySQL $db;
-    protected ConfigSettings $configSettings;
+    private MySQL $db;
+    private ConfigSettings $configSettings;
 
     public function __construct(ConfigSettings $configSettings, MySQL $db)
     {

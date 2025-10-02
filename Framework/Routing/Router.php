@@ -6,6 +6,7 @@ use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
 use Framework\Static\Redirect;
 use Framework\Exceptions\RouterException;
+use Framework\Core\Controller;
 use Throwable;
 
 class Router
@@ -15,11 +16,17 @@ class Router
 
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
-    
-    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings)
+
+    private Controller $controller; // <-- aquí guardamos la instancia de Controller
+
+
+    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings,         Controller $controller   // <-- inyectamos Controller
+    )
     {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
+        $this->controller = $controller; // <-- asignamos
+
     }
 
 
@@ -32,6 +39,7 @@ class Router
      */
     public function initBalero(callable $controllerResolver): void
     {
+
         // Sesión
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -48,7 +56,7 @@ class Router
         $currentModule = $this->requestHelper->get(self::PARAM_MODULE);
 
         $installed = $this->configSettings ->installed;
-        $allowedModules = ['installer', 'notification']; // módulos permitidos antes de instalar
+        $allowedModules = ['installer', 'notification', 'test']; // módulos permitidos antes de instalar
 
         if ($installed === "no" && !in_array($currentModule, $allowedModules)) {
             Redirect::to('/installer');
@@ -72,21 +80,26 @@ class Router
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
         if (!class_exists($controllerClass)) {
-            throw new RouterException("Controller class not found: $controllerClass");
+            throw new \Framework\Exceptions\RouterException("Controller class not found: $controllerClass");
         }
 
         try {
-            $instance = call_user_func($controllerResolver, $controllerClass);
+            $moduleController = call_user_func($controllerResolver, $controllerClass);
 
-            if (method_exists($instance, 'initControllerAndInject')) {
-                $instance->initControllerAndInject();
-            }
-        } catch (Throwable $e) {
-            throw new RouterException(
+            // 1️⃣ Llamamos primero a initControllerAndInject pasándole el ModuleController
+            $this->controller->initControllerAndInject($moduleController);
+
+
+        } catch (\Throwable $e) {
+            throw new \Framework\Exceptions\RouterException(
                 "Error loading controller '$controllerClass': " . $e->getMessage(),
                 0,
                 $e
             );
         }
     }
+
+
+
+
 }

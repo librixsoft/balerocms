@@ -10,6 +10,8 @@ namespace Framework\Core;
 
 use ReflectionClass;
 use ReflectionNamedType;
+use Framework\Attributes\Inject;
+use Framework\Attributes\InjectMocks;
 
 /**
  * TestContainer
@@ -101,13 +103,13 @@ class TestContainer
      * @param string $class Nombre de la clase del SUT
      * @return object Instancia del SUT con dependencias mockeadas
      */
-    private function createWithMocks(string $class): object
+    public function createWithMocks(string $class): object
     {
         $reflector = new ReflectionClass($class);
         $sut = $reflector->newInstanceWithoutConstructor();
 
         foreach ($reflector->getProperties() as $prop) {
-            $injectAttrs = $prop->getAttributes(\Framework\Core\Inject::class);
+            $injectAttrs = $prop->getAttributes(Inject::class);
             if (empty($injectAttrs)) continue;
 
             $depClass = $prop->getType()?->getName();
@@ -136,4 +138,90 @@ class TestContainer
     {
         return $this->mocks[$class] ?? null;
     }
+
+    public function readPrivateMembers(object $object, string $propertyName): array
+    {
+        $reflector = new \ReflectionClass($object);
+        $prop = $reflector->getProperty($propertyName);
+
+        $access = $prop->isPrivate() ? 'private' : ($prop->isProtected() ? 'protected' : 'public');
+        $hasInject = !empty($prop->getAttributes(Inject::class));
+        $type = (string) $prop->getType()?->getName();
+
+        $prop->setAccessible(true);
+        $instance = $prop->getValue($object);
+
+        $methodsResult = [];
+
+        if ($instance) {
+            $instanceReflector = new \ReflectionClass($instance);
+            foreach ($instanceReflector->getMethods() as $method) {
+                // Ignorar métodos estáticos y que requieran parámetros
+                if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
+                    continue;
+                }
+
+                $method->setAccessible(true);
+
+                try {
+                    $methodsResult[$method->getName()] = $method->invoke($instance);
+                } catch (\Throwable $e) {
+                    $methodsResult[$method->getName()] = 'Error: ' . $e->getMessage();
+                }
+            }
+        }
+
+        return [
+            'property' => $prop->getName(),
+            'access' => $access,
+            'hasInject' => $hasInject,
+            'type' => $type,
+            'methodsResult' => $methodsResult
+        ];
+    }
+
+
+    public function debugCreateWithMocks(string $class): array
+    {
+        $reflector = new \ReflectionClass($class);
+        $sut = $reflector->newInstanceWithoutConstructor();
+
+        $debug = [
+            'sutClass' => $class,
+            'properties' => []
+        ];
+
+        foreach ($reflector->getProperties() as $prop) {
+            $injectAttrs = $prop->getAttributes(Inject::class);
+            if (empty($injectAttrs)) continue;
+
+            $depClass = $prop->getType()?->getName();
+            if (!$depClass || !class_exists($depClass)) {
+                $debug['properties'][$prop->getName()] = 'Invalid type or class does not exist';
+                continue;
+            }
+
+            // Crear “mock” sin constructor
+            $depReflector = new \ReflectionClass($depClass);
+            $mock = $depReflector->newInstanceWithoutConstructor();
+
+            $prop->setAccessible(true);
+            $prop->setValue($sut, $mock);
+
+            $this->mocks[$depClass] = $mock;
+
+            $debug['properties'][$prop->getName()] = [
+                'dependencyClass' => $depClass,
+                'mockClass' => get_class($mock)
+            ];
+        }
+
+        $debug['sutInstance'] = $sut;
+
+        return $debug;
+    }
+
+
+
+
 }

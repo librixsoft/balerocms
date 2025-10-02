@@ -2,7 +2,7 @@
 
 /**
  * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
+ * @author Anibal Gomez
  * @license GNU General Public License
  */
 
@@ -22,44 +22,40 @@ class Controller
 {
     private const PARAM_TARGET = 'target';
 
-    /**
-     * Will be inherited by child controllers
-     */
-    #[Inject]
     protected View $view;
-
-    #[Inject]
     protected RequestHelper $requestHelper;
-
-    #[Inject]
     protected ConfigSettings $configSettings;
-
-    #[Inject]
     protected LoginManager $loginManager;
-
-    #[Inject]
     protected LangSelector $langSelector;
 
-    public function __construct()
-    {
+    public function __construct(
+        View $view,
+        RequestHelper $requestHelper,
+        ConfigSettings $configSettings,
+        LoginManager $loginManager,
+        LangSelector $langSelector
+    ) {
+        $this->view = $view;
+        $this->requestHelper = $requestHelper;
+        $this->configSettings = $configSettings;
+        $this->loginManager = $loginManager;
+        $this->langSelector = $langSelector;
     }
 
     /**
-     * Builds the base template of Balero CMS controllers
+     * Inicializa el Controller y ejecuta la ruta correspondiente.
+     * @param object|null $controllerInstance Instancia de ModuleController opcional.
      */
-    public function initControllerAndInject(): void
-    {
-        $this->run();
-    }
-
-    public function run(): void
+    public function initControllerAndInject(?object $controllerInstance = null): void
     {
         $this->initBasePath();
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];
         $requestedTarget = trim($this->requestHelper->get(self::PARAM_TARGET) ?? '', '/');
 
-        $reflection = new ReflectionClass($this);
+        $instanceToScan = $controllerInstance ?? $this;
+
+        $reflection = new ReflectionClass($instanceToScan);
         $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         $classAuthAttr = $reflection->getAttributes(\Framework\Http\Auth::class);
@@ -68,13 +64,13 @@ class Controller
         foreach ($methods as $method) {
             foreach ($method->getAttributes() as $attribute) {
                 $attrName = $attribute->getName();
-                $instance = $attribute->newInstance();
+                $routeInstance = $attribute->newInstance();
 
                 if (
                     ($attrName === Get::class && $httpMethod === 'GET') ||
                     ($attrName === Post::class && $httpMethod === 'POST')
                 ) {
-                    $routePattern = trim($instance->target, '/');
+                    $routePattern = trim($routeInstance->target, '/');
                     $regex = preg_replace('#\{([^}]+)\}#', '(?P<$1>[^/]+)', $routePattern);
                     $regex = '#^' . $regex . '$#';
 
@@ -88,7 +84,7 @@ class Controller
                             throw new ControllerException("Unauthorized access - login required");
                         }
 
-                        $this->runMethod($method, $params);
+                        $this->runMethod($method, $params, $instanceToScan);
                         return;
                     }
                 }
@@ -108,16 +104,15 @@ class Controller
     }
 
     /**
-     * Ejecuta el método del controlador y procesa el resultado (JSON o View/String).
-     * * @param ReflectionMethod $method El método de acción del controlador a ejecutar.
-     * @param array $params Los parámetros de la ruta.
-     * @return void
+     * Ejecuta el método del controller y procesa JSON, render o string.
      */
-    private function runMethod(ReflectionMethod $method, array $params = []): void
+    private function runMethod(ReflectionMethod $method, array $params = [], ?object $controllerInstance = null): void
     {
+        $controllerInstance ??= $this;
+
         $this->initLanguage();
 
-        $result = $method->invoke($this, ...$params);
+        $result = $method->invoke($controllerInstance, ...$params);
 
         $jsonAttribute = $method->getAttributes(JsonResponse::class);
 
@@ -128,7 +123,10 @@ class Controller
                 exit;
             } else {
                 header('Content-Type: application/json', true, 500);
-                echo json_encode(['status' => 'error', 'message' => 'Controller marked for JSON response did not return an array or object.']);
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Controller marked for JSON response did not return an array or object.'
+                ]);
                 exit;
             }
         }
@@ -151,10 +149,9 @@ class Controller
         }
     }
 
-    protected function render(string $template, array $params = [], bool $useTheme = true): string
+    public function render(string $template, array $params = [], bool $useTheme = true): string
     {
         $langParams = $this->langSelector->getLanguageParams($this->requestHelper);
-
         return $this->view->render($template, array_merge($langParams, $params), $useTheme);
     }
 }
