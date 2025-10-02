@@ -112,7 +112,8 @@ docker compose run --rm phpunit \
   php -d xdebug.mode=coverage ./vendor/bin/phpunit \
   -c phpunit.xml \
   --coverage-clover build/logs/coverage.xml \
-  --coverage-filter Framework
+  --coverage-filter Framework \
+  --coverage-filter Modules
 ```
 
 It will create: build/logs/coverage.xml
