@@ -1,6 +1,6 @@
 <?php
 use Modules\Test\Controllers\TestController;
-use Framework\Core\TestContainer;
+use Framework\DI\TestContainer;
 use Framework\Core\Controller;
 use Modules\Test\Models\TestModel;
 use PHPUnit\Framework\TestCase;

@@ -4,7 +4,7 @@ namespace Modules\Test\Controllers;
 
 use Framework\Attributes\Inject;
 use Framework\Core\Controller;
-use Framework\Core\TestContainer;
+use Framework\DI\TestContainer;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
 use Modules\Test\Models\TestModel;

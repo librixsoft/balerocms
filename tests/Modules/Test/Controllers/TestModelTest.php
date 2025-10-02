@@ -3,7 +3,7 @@
 namespace Modules\Test\Tests\Models;
 
 use Modules\Test\Models\TestModel;
-use Framework\Core\TestContainer;
+use Framework\DI\TestContainer;
 use PHPUnit\Framework\TestCase;
 use Framework\Attributes\InjectMocks;
 

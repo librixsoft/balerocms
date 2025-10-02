@@ -1,7 +1,6 @@
 <?php
 
-use Framework\Core\Boot;
-use Framework\Routing\Router;
+use Framework\Bootstrap\Boot;
 
 const _CORE_VERSION = "1.0";
 const LOCAL_DIR = __DIR__ . '/..';

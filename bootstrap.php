@@ -6,7 +6,7 @@
 
 // Archivos críticos del framework
 require_once LOCAL_DIR . '/Framework/Core/ErrorConsole.php';
-require_once LOCAL_DIR . '/Framework/Core/Boot.php';
+require_once LOCAL_DIR . '/Framework/Bootstrap/Boot.php';
 
 // Autoload de Composer opcional
 $composerAutoload = LOCAL_DIR . '/vendor/autoload.php';
