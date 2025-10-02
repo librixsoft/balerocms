@@ -94,8 +94,9 @@ class Container
             }
 
             $controllerAttrs = $reflector->getAttributes(Controller::class);
+            $classNamespace = $reflector->getName();
 
-            if (!empty($controllerAttrs)) {
+            if (!empty($controllerAttrs) && str_starts_with($classNamespace, 'Modules')) {
                 $baseController = $this->get(BaseController::class);
                 $method = new \ReflectionMethod(BaseController::class, 'initControllerAndRoute');
                 $method->invoke($baseController, $instance);
