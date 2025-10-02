@@ -18,7 +18,6 @@ class TestController
     #[Inject]
     private TestModel $model;
 
-
     #[Get('/')]
     public function getNotification()
     {

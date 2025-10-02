@@ -62,10 +62,12 @@ class Container
     public function get(string $id): object
     {
         try {
+            // No se pueden instanciar clases estáticas
             if (str_starts_with($id, 'Framework\\Static\\')) {
                 throw new ContainerException("Static class {$id} cannot be instantiated");
             }
 
+            // Retornar singleton si existe
             if (isset($this->bindings[$id])) {
                 return ($this->bindings[$id])();
             }
@@ -75,22 +77,12 @@ class Container
                 throw new ContainerException("Class {$id} is not instantiable");
             }
 
-            $constructor = $reflector->getConstructor();
-            $dependencies = [];
-            if ($constructor) {
-                foreach ($constructor->getParameters() as $param) {
-                    $type = $param->getType();
-                    if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
-                        throw new ContainerException("Cannot resolve parameter {$param->getName()} in {$id}");
-                    }
-                    $dependencies[] = $this->get($type->getName());
-                }
-            }
+            // --- Crear instancia sin llamar al constructor ---
+            $instance = $reflector->newInstanceWithoutConstructor();
 
-            $instance = $reflector->newInstanceArgs($dependencies);
-
+            // --- Inyectar propiedades #[Inject] ---
             foreach ($reflector->getProperties() as $property) {
-                $attributes = $property->getAttributes(Inject::class);
+                $attributes = $property->getAttributes(\Framework\Attributes\Inject::class);
                 if (!empty($attributes)) {
                     $propType = $property->getType();
                     if (!$propType instanceof \ReflectionNamedType || $propType->isBuiltin()) {
@@ -101,9 +93,23 @@ class Container
                 }
             }
 
+            // --- Llamar al constructor si existe ---
+            $constructor = $reflector->getConstructor();
+            if ($constructor) {
+                $dependencies = [];
+                foreach ($constructor->getParameters() as $param) {
+                    $type = $param->getType();
+                    if (!$type instanceof \ReflectionNamedType || $type->isBuiltin()) {
+                        throw new ContainerException("Cannot resolve parameter {$param->getName()} in {$id}");
+                    }
+                    $dependencies[] = $this->get($type->getName());
+                }
+                $constructor->invokeArgs($instance, $dependencies);
+            }
+
             return $instance;
 
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             throw new ContainerException(
                 "Error while resolving dependency for {$id}: " . $e->getMessage(),
                 0,
@@ -111,4 +117,5 @@ class Container
             );
         }
     }
+
 }
