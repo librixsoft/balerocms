@@ -2,6 +2,7 @@
 
 namespace Modules\Installer\Controllers;
 
+use Framework\Attributes\Inject;
 use Framework\Core\Controller;
 use Framework\Core\Validator;
 use Framework\Http\Get;
@@ -14,10 +15,18 @@ use Modules\Installer\Models\InstallerModel;
 use Modules\Installer\Views\InstallerViewModel;
 use Modules\Installer\Exceptions\InstallerException;
 
-class InstallerController extends Controller
+#[Controller]
+class InstallerController
 {
-    protected InstallerModel $model;
-    protected InstallerViewModel $installerViewModel;
+
+    #[Inject]
+    private View $view;
+
+    #[Inject]
+    private InstallerModel $model;
+
+    #[Inject]
+    private InstallerViewModel $installerViewModel;
 
     public function __construct(
         InstallerModel $model,
@@ -42,7 +51,7 @@ class InstallerController extends Controller
 
         $params = $this->installerViewModel->setInstallerParams($params);
 
-        return $this->render("installer/setup_wizard.html", $params, false);
+        return $this->view->render("installer/setup_wizard.html", $params, false);
     }
 
     #[Post('/install')]
@@ -92,7 +101,7 @@ class InstallerController extends Controller
         $params = $this->installerViewModel->setInstallerParams();
         Flash::delete('install_in_progress');
 
-        return $this->render("installer/progressBar.html", $params, false);
+        return $this->view->render("installer/progressBar.html", $params, false);
     }
 
     #[Post('progressBar')]

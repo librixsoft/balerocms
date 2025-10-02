@@ -22,11 +22,11 @@ class Controller
 {
     private const PARAM_TARGET = 'target';
 
-    protected View $view;
-    protected RequestHelper $requestHelper;
-    protected ConfigSettings $configSettings;
-    protected LoginManager $loginManager;
-    protected LangSelector $langSelector;
+    private View $view;
+    private RequestHelper $requestHelper;
+    private ConfigSettings $configSettings;
+    private LoginManager $loginManager;
+    private LangSelector $langSelector;
 
     public function __construct(
         View $view,
@@ -46,7 +46,7 @@ class Controller
      * Inicializa el Controller y ejecuta la ruta correspondiente.
      * @param object|null $controllerInstance Instancia de ModuleController opcional.
      */
-    public function initControllerAndInject(?object $controllerInstance = null): void
+    public function initControllerAndRoute(?object $controllerInstance = null): void
     {
         $this->initBasePath();
 
@@ -137,7 +137,7 @@ class Controller
         }
 
         if (is_array($result) && isset($result['view'])) {
-            echo $this->render($result['view'], $result['params'] ?? []);
+            echo $this->view->render($result['view'], $result['params'] ?? []);
             exit;
         }
     }
@@ -149,9 +149,4 @@ class Controller
         }
     }
 
-    public function render(string $template, array $params = [], bool $useTheme = true): string
-    {
-        $langParams = $this->langSelector->getLanguageParams($this->requestHelper);
-        return $this->view->render($template, array_merge($langParams, $params), $useTheme);
-    }
 }

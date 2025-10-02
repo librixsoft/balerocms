@@ -4,6 +4,7 @@ namespace Modules\Test\Controllers;
 
 use Framework\Attributes\Inject;
 use Framework\Core\Controller;
+use Framework\Core\View;
 use Framework\DI\TestContainer;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
@@ -13,7 +14,7 @@ class TestController
 {
 
     #[Inject]
-    private Controller $controller;
+    private View $view;
 
     #[Inject]
     private TestModel $model;
@@ -31,7 +32,7 @@ class TestController
     #[Get('/')]
     public function getNotification()
     {
-        return $this->controller->render("test.html", [], useTheme: false);
+        return $this->view->render("test.html", [], useTheme: false);
     }
 
     #[Get('/debug')]
@@ -50,7 +51,7 @@ class TestController
     #[Get('/test')]
     public function getNotification1()
     {
-        return $this->controller->render("test.html", [], useTheme: false);
+        return $this->view->render("test.html", [], useTheme: false);
     }
 
     #[Get('/model-test')]

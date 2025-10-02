@@ -85,7 +85,7 @@ class Router
             $moduleController = call_user_func($controllerResolver, $controllerClass);
 
             // 1️⃣ Llamamos primero a initControllerAndInject pasándole el ModuleController
-            $this->controller->initControllerAndInject($moduleController);
+            $this->controller->initControllerAndRoute($moduleController);
 
 
         } catch (\Throwable $e) {
