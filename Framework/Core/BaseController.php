@@ -18,7 +18,7 @@ use Framework\Exceptions\ControllerException;
 use ReflectionClass;
 use ReflectionMethod;
 
-class Controller
+class BaseController
 {
     private const PARAM_TARGET = 'target';
 
@@ -48,6 +48,7 @@ class Controller
      */
     public function initControllerAndRoute(?object $controllerInstance = null): void
     {
+
         $this->initBasePath();
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];

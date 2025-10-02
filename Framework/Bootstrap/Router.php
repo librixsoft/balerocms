@@ -6,7 +6,6 @@ use Framework\DI\Container;
 use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
 use Framework\Static\Redirect;
-use Framework\Core\Controller;
 
 class Router
 {
@@ -18,12 +17,11 @@ class Router
 
     private Container $container;
 
-    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings, Controller $controller, Container $container)
+    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings, Container $container)
     {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
-        $this->controller = $controller;
-        $this->container = $container; // guardamos container
+        $this->container = $container;
     }
 
 
@@ -83,11 +81,10 @@ class Router
         }
 
         try {
-            // Crear instancia usando el Container directamente
-            $moduleController = $this->container->get($controllerClass);
 
-            // Inicializar controller y route
-            $this->controller->initControllerAndRoute($moduleController);
+            //$moduleController =
+            $this->container->get($controllerClass);
+            //$moduleController->dinamic
 
         } catch (\Throwable $e) {
             throw new \Framework\Exceptions\RouterException(
