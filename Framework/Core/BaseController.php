@@ -44,6 +44,7 @@ class BaseController
 
     /**
      * Inicializa el Controller y ejecuta la ruta correspondiente.
+     * Llamado desde Container::class
      * @param object|null $controllerInstance Instancia de ModuleController opcional.
      */
     public function initControllerAndRoute(?object $controllerInstance = null): void

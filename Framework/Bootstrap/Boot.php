@@ -28,7 +28,7 @@ class Boot
 
             if ($loadRouter) {
                 $router = $this->container->get(Router::class);
-                $router->initBalero(); // sin callback
+                $router->initBalero();
             }
 
         } catch (Throwable $e) {
@@ -57,13 +57,4 @@ class Boot
         throw new BootException("Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>");
     }
 
-    public function getFromContainer(string $class): object
-    {
-        return $this->container->get($class);
-    }
-
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
 }

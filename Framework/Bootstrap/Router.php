@@ -65,26 +65,22 @@ class Router
             exit;
         }
 
-        // Módulo por defecto
+        // Módulo por defecto si no se pasa ninguno
         $module = $currentModule ?: self::DEFAULT_MODULE;
 
-        // Cargar controller usando DI
-        $this->loadController($module);
-    }
-
-    public function loadController(string $module): void
-    {
+        // Construir namespace del controlador
         $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
 
+        // Si no existe el controlador, lanzar excepción
         if (!class_exists($controllerClass)) {
             throw new \Framework\Exceptions\RouterException("Controller class not found: $controllerClass");
         }
 
         try {
-
-            //$moduleController =
+            // Resolver controlador desde el contenedor con inyección de dependencias
+            //$moduleController = $this->container->get($controllerClass);
+            //$moduleController->something()
             $this->container->get($controllerClass);
-            //$moduleController->dinamic
 
         } catch (\Throwable $e) {
             throw new \Framework\Exceptions\RouterException(
@@ -94,7 +90,5 @@ class Router
             );
         }
     }
-
-
 
 }
