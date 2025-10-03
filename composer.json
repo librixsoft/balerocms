@@ -5,12 +5,12 @@
   "autoload": {
     "psr-4": {
       "Framework\\": "Framework/",
-      "Modules\\": "Modules/"
+      "App\\": "App/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Tests\\": "tests/"
+      "Tests\\": "Tests/"
     }
   },
   "authors": [

@@ -1,16 +1,16 @@
 <?php
 
-namespace Modules\Test\Controllers;
+namespace App\Controllers;
 
+use App\Models\TestModel;
 use Framework\Attributes\Inject;
 use Framework\Attributes\Controller;
 use Framework\Core\View;
 use Framework\DI\TestContainer;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
-use Modules\Test\Models\TestModel;
 
-#[Controller]
+#[Controller('/home')]
 class TestController
 {
 
@@ -30,7 +30,7 @@ class TestController
     }
      **/
 
-    #[Get('/')]
+    #[Get('/target')]
     public function getNotification()
     {
         return $this->view->render("test.html", [], useTheme: false);

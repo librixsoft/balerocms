@@ -67,4 +67,11 @@ class RequestHelper
         return $this->security->antiXSS($value);
     }
 
+    public function getPath(): string
+    {
+        $uri = $_SERVER['REQUEST_URI'] ?? '/';
+        $path = parse_url($uri, PHP_URL_PATH);
+        return rtrim($path, '/'); // elimina el slash final
+    }
+
 }

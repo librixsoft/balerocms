@@ -49,17 +49,24 @@ class BaseController
      */
     public function initControllerAndRoute(?object $controllerInstance = null): void
     {
-
         $this->initBasePath();
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $requestedTarget = trim($this->requestHelper->get(self::PARAM_TARGET) ?? '', '/');
+        $requestedPath = $this->requestHelper->getPath(); // usamos RequestHelper
 
         $instanceToScan = $controllerInstance ?? $this;
 
-        $reflection = new ReflectionClass($instanceToScan);
-        $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+        $reflection = new \ReflectionClass($instanceToScan);
+        $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
 
+        // Obtener ruta base del Controller
+        $classAttrs = $reflection->getAttributes(\Framework\Attributes\Controller::class);
+        $pathUrl = '/';
+        if (!empty($classAttrs)) {
+            $pathUrl = rtrim($classAttrs[0]->newInstance()->pathUrl, '/'); // <-- usamos pathUrl
+        }
+
+        // Opcional: Auth a nivel de clase
         $classAuthAttr = $reflection->getAttributes(\Framework\Http\Auth::class);
         $classAuth = !empty($classAuthAttr) ? $classAuthAttr[0]->newInstance() : null;
 
@@ -68,32 +75,33 @@ class BaseController
                 $attrName = $attribute->getName();
                 $routeInstance = $attribute->newInstance();
 
+                // Solo procesar GET/POST según el método HTTP
                 if (
-                    ($attrName === Get::class && $httpMethod === 'GET') ||
-                    ($attrName === Post::class && $httpMethod === 'POST')
+                    ($attrName === \Framework\Http\Get::class && $httpMethod === 'GET') ||
+                    ($attrName === \Framework\Http\Post::class && $httpMethod === 'POST')
                 ) {
-                    $routePattern = trim($routeInstance->target, '/');
-                    $regex = preg_replace('#\{([^}]+)\}#', '(?P<$1>[^/]+)', $routePattern);
-                    $regex = '#^' . $regex . '$#';
+                    // Construir ruta completa combinando pathUrl + método
+                    $routePath = rtrim($pathUrl, '/') . '/' . ltrim($routeInstance->target, '/');
+                    $routePath = rtrim($routePath, '/');
 
-                    if (preg_match($regex, $requestedTarget, $matches)) {
-                        $params = array_filter($matches, fn($key) => !is_int($key), ARRAY_FILTER_USE_KEY);
-
+                    if ($requestedPath === $routePath) {
+                        // Auth a nivel de método
                         $methodAuthAttr = $method->getAttributes(\Framework\Http\Auth::class);
                         $auth = !empty($methodAuthAttr) ? $methodAuthAttr[0]->newInstance() : $classAuth;
 
                         if ($auth && $auth->required && !$this->loginManager->isLoggedIn()) {
-                            throw new ControllerException("Unauthorized access - login required");
+                            throw new \Framework\Exceptions\ControllerException("Unauthorized access - login required");
                         }
 
-                        $this->runMethod($method, $params, $instanceToScan);
+                        // Ejecutar el método
+                        $this->runMethod($method, [], $instanceToScan);
                         return;
                     }
                 }
             }
         }
 
-        throw new ControllerException("Route not found: '{$requestedTarget}'");
+        throw new \Framework\Exceptions\ControllerException("Route not found: '{$requestedPath}'");
     }
 
     private function initBasePath(): void

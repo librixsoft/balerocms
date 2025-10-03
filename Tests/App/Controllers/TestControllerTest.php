@@ -1,11 +1,13 @@
 <?php
 
+namespace Tests\App\Controllers;
+
+use App\Controllers\TestController;
+use Framework\Attributes\InjectMocks;
 use Framework\Core\View;
-use Modules\Test\Controllers\TestController;
 use Framework\DI\TestContainer;
 use Modules\Test\Models\TestModel;
 use PHPUnit\Framework\TestCase;
-use Framework\Attributes\InjectMocks;
 
 class TestControllerTest extends TestCase
 {
@@ -21,7 +23,7 @@ class TestControllerTest extends TestCase
 
 // tests/bootstrap.php o al inicio de tu TestCase
         if (!defined('LOCAL_DIR')) {
-            define('LOCAL_DIR', __DIR__ . '/../../'); // ajusta según tu estructura
+            define('LOCAL_DIR', __DIR__ . '/../Modules/'); // ajusta según tu estructura
         }
 
         // Creamos el TestContainer y lo guardamos

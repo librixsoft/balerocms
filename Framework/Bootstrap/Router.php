@@ -49,45 +49,44 @@ class Router
             $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
         }
 
-        $currentModule = $this->requestHelper->get(self::PARAM_MODULE);
+        $requestedPath = $this->requestHelper->getPath(); // Ruta solicitada
 
-        // Comprobar instalación
-        $installed = $this->configSettings->installed;
-        $allowedModules = ['installer', 'notification', 'test']; // módulos permitidos antes de instalar
+        // Lista de controladores disponibles manualmente
+        $controllers = [
+            \App\Controllers\TestController::class,
+            \App\Controllers\HomeController::class,
+            // agregar aquí más controladores según necesites
+        ];
 
-        if ($installed === "no" && !in_array($currentModule, $allowedModules)) {
-            Redirect::to('/installer');
-            exit;
+        $found = false;
+        foreach ($controllers as $controllerClass) {
+            $reflector = new \ReflectionClass($controllerClass);
+            $attrs = $reflector->getAttributes(\Framework\Attributes\Controller::class);
+
+            if (empty($attrs)) continue;
+
+            $pathUrl = rtrim($attrs[0]->newInstance()->pathUrl, '/');
+
+            // Comparar si la ruta solicitada empieza con la ruta base del controlador
+            if (str_starts_with($requestedPath, $pathUrl)) {
+                try {
+                    // Resolver con Container (inyección de dependencias)
+                    $instance = $this->container->get($controllerClass);
+                    $instance->initControllerAndRoute();
+                    $found = true;
+                    break;
+                } catch (\Throwable $e) {
+                    throw new \Framework\Exceptions\RouterException(
+                        "Error loading controller '$controllerClass': " . $e->getMessage(),
+                        0,
+                        $e
+                    );
+                }
+            }
         }
 
-        if ($installed === "yes" && $currentModule === 'installer') {
-            Redirect::to('/');
-            exit;
-        }
-
-        // Módulo por defecto si no se pasa ninguno
-        $module = $currentModule ?: self::DEFAULT_MODULE;
-
-        // Construir namespace del controlador
-        $controllerClass = "Modules\\{$module}\\Controllers\\{$module}Controller";
-
-        // Si no existe el controlador, lanzar excepción
-        if (!class_exists($controllerClass)) {
-            throw new \Framework\Exceptions\RouterException("Controller class not found: $controllerClass");
-        }
-
-        try {
-            // Resolver controlador desde el contenedor con inyección de dependencias
-            //$moduleController = $this->container->get($controllerClass);
-            //$moduleController->something()
-            $this->container->get($controllerClass);
-
-        } catch (\Throwable $e) {
-            throw new \Framework\Exceptions\RouterException(
-                "Error loading controller '$controllerClass': " . $e->getMessage(),
-                0,
-                $e
-            );
+        if (!$found) {
+            throw new \Framework\Exceptions\RouterException("No controller found for path: {$requestedPath}");
         }
     }
 

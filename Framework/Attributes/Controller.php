@@ -8,10 +8,13 @@ use Attribute;
  * Indica que una clase es un Controller y debe ser inicializada automáticamente
  * por el contenedor (por ejemplo, llamar initControllerAndRoute).
  */
-#[Attribute(Attribute::TARGET_CLASS)]
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class Controller
 {
-    public function __construct(
+    public string $pathUrl;
 
-    ) {}
+    public function __construct(string $pathUrl = '/')
+    {
+        $this->pathUrl = $pathUrl;
+    }
 }

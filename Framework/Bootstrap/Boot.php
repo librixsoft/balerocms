@@ -42,8 +42,8 @@ class Boot
         $relativeClass = ltrim($class, '\\');
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
 
-        if (str_starts_with($relativePath, 'Modules/Modules/')) {
-            $relativePath = substr($relativePath, strlen('Modules/'));
+        if (str_starts_with($relativePath, 'App/App/')) {
+            $relativePath = substr($relativePath, strlen('App/'));
         }
 
         foreach ($baseDirs as $baseDir) {
