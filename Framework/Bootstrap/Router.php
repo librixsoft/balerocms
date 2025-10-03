@@ -51,19 +51,20 @@ class Router
 
         $requestedPath = $this->requestHelper->getPath(); // Ruta solicitada
 
-        // Lista de controladores disponibles manualmente
-        $controllers = [
-            \App\Controllers\TestController::class,
-            \App\Controllers\HomeController::class,
-            // agregar aquí más controladores según necesites
-        ];
+        // Escanear todos los controladores de App/Controllers
+        $controllers = $this->getControllersFromNamespace(
+            'App\\Controllers',
+            LOCAL_DIR . '/App/Controllers'
+        );
 
         $found = false;
         foreach ($controllers as $controllerClass) {
             $reflector = new \ReflectionClass($controllerClass);
             $attrs = $reflector->getAttributes(\Framework\Attributes\Controller::class);
 
-            if (empty($attrs)) continue;
+            if (empty($attrs)) {
+                continue;
+            }
 
             $pathUrl = rtrim($attrs[0]->newInstance()->pathUrl, '/');
 
@@ -72,7 +73,6 @@ class Router
                 try {
                     // Resolver con Container (inyección de dependencias)
                     $instance = $this->container->get($controllerClass);
-                    $instance->initControllerAndRoute();
                     $found = true;
                     break;
                 } catch (\Throwable $e) {
@@ -89,5 +89,40 @@ class Router
             throw new \Framework\Exceptions\RouterException("No controller found for path: {$requestedPath}");
         }
     }
+
+    /**
+     * Escanea un directorio y devuelve las clases dentro de un namespace.
+     */
+    private function getControllersFromNamespace(string $namespace, string $path): array
+    {
+        $controllers = [];
+        $files = scandir($path);
+
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+
+            $fullPath = $path . DIRECTORY_SEPARATOR . $file;
+
+            if (is_dir($fullPath)) {
+                // Recursivo si hay subcarpetas (ej: ApiControllers, AdminControllers, etc.)
+                $controllers = array_merge(
+                    $controllers,
+                    $this->getControllersFromNamespace($namespace . '\\' . $file, $fullPath)
+                );
+            } elseif (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
+                $className = $namespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
+
+                // Verificar que la clase exista (autoload PSR-4 la cargará)
+                if (class_exists($className)) {
+                    $controllers[] = $className;
+                }
+            }
+        }
+
+        return $controllers;
+    }
+
 
 }
