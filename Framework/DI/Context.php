@@ -27,10 +27,9 @@ namespace Framework\DI;
 
 use Framework\Core\ConfigSettings;
 use Framework\DI\Container;
-use Framework\Services\RedirectService;
-use Framework\Static\Redirect;
 use Framework\Core\View;
 use Framework\Core\ErrorConsole;
+use Framework\Utils\Redirect;
 
 class Context
 {
@@ -61,8 +60,9 @@ class Context
         $errorConsole = new ErrorConsole($view, $config);
         $container->set(ErrorConsole::class, $errorConsole);
 
-        $redirectService = new RedirectService($config);
-        Redirect::setInstance($redirectService);
+        $redirect = new Redirect($config);
+        $container->set(Redirect::class, $redirect);
+
     }
 
     /**
