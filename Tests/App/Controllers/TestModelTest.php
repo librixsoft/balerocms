@@ -2,10 +2,11 @@
 
 namespace Tests\App\Controllers;
 
+use App\Models\TestModel;
 use Framework\Attributes\InjectMocks;
 use Framework\DI\TestContainer;
-use Modules\Test\Models\TestModel;
 use PHPUnit\Framework\TestCase;
+use Framework\Attributes\Inject;
 
 class TestModelTest extends TestCase
 {

@@ -3,10 +3,11 @@
 namespace Tests\App\Controllers;
 
 use App\Controllers\TestController;
+use App\Models\TestModel;
 use Framework\Attributes\InjectMocks;
+use Framework\Attributes\Inject;
 use Framework\Core\View;
 use Framework\DI\TestContainer;
-use Modules\Test\Models\TestModel;
 use PHPUnit\Framework\TestCase;
 
 class TestControllerTest extends TestCase
