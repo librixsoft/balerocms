@@ -2,7 +2,9 @@
 
 namespace Framework\Bootstrap;
 
+use Framework\Core\BaseController;
 use Framework\DI\Container;
+use Framework\Exceptions\RouterException;
 use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
 use Framework\Static\Redirect;
@@ -34,60 +36,54 @@ class Router
      */
     public function initBalero(): void
     {
-        // Iniciar sesión si no está activa
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        // Configurar idioma por defecto
         if (!isset($_SESSION['lang'])) {
             $_SESSION['lang'] = $this->configSettings->language ?? 'en';
         }
 
-        // Asegurar basepath
         if (!isset($this->configSettings->basepath) || $this->configSettings->basepath === '') {
             $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
         }
 
-        $requestedPath = $this->requestHelper->getPath();
-
-        // Escanear todos los controladores de App/Controllers
-        $controllers = $this->getControllersFromNamespace(
+        $requestedPath   = $this->requestHelper->getPath();
+        $controllers     = $this->getControllersFromNamespace(
             'App\\Controllers',
             LOCAL_DIR . '/App/Controllers'
         );
 
-        $found = false;
+        $found            = false;
+        $matchedController = null;
 
         // Instancia de BaseController para usar helpers de metadata
-        $baseController = $this->container->get(\Framework\Core\BaseController::class);
+        $baseController = $this->container->get(BaseController::class);
 
         foreach ($controllers as $controllerClass) {
-            // Obtener pathUrl desde BaseController
             $pathUrl = $baseController->getControllerPathUrl($controllerClass);
 
-            // Comparar si la ruta solicitada empieza con la ruta base del controller
             if (str_starts_with($requestedPath, $pathUrl)) {
-                try {
-                    // Resolver la clase con DI y, si es controller, inicializa rutas automáticamente
-                    $instance = $this->container->get($controllerClass);
-                    $found = true;
-                    break;
-                } catch (\Throwable $e) {
-                    throw new \Framework\Exceptions\RouterException(
-                        "Error loading controller '$controllerClass': " . $e->getMessage(),
-                        0,
-                        $e
-                    );
-                }
+                $matchedController = $controllerClass;
+                $found = true;
+                break;
             }
         }
 
-        if (!$found) {
-            throw new \Framework\Exceptions\RouterException("No controller found for path: {$requestedPath}");
+        if ($found && $matchedController !== null) {
+            try {
+                $this->container->get($matchedController);
+            } catch (\Throwable $e) {
+                throw new RouterException(
+                    "Error loading controller '$matchedController': " . $e->getMessage(),
+                    0,
+                    $e
+                );
+            }
+        } else {
+            throw new RouterException("No controller found for path: {$requestedPath}");
         }
     }
-
     /**
      * Escanea un directorio y devuelve las clases dentro de un namespace.
      */
