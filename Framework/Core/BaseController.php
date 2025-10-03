@@ -15,6 +15,8 @@ use Framework\I18n\LangSelector;
 use Framework\Http\JsonResponse;
 use Framework\Security\LoginManager;
 use Framework\Exceptions\ControllerException;
+use Framework\Attributes\Controller as ControllerAttr;
+use Framework\Http\Auth as AuthAttr;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -27,6 +29,9 @@ class BaseController
     private ConfigSettings $configSettings;
     private LoginManager $loginManager;
     private LangSelector $langSelector;
+
+    /** Cache para metadata de controladores */
+    private array $metadataCache = [];
 
     public function __construct(
         View $view,
@@ -43,6 +48,53 @@ class BaseController
     }
 
     /**
+     * --- Helpers de metadata del #[Controller] ---
+     */
+
+    public function extractControllerMetadata(string $className): object
+    {
+        if (isset($this->metadataCache[$className])) {
+            return $this->metadataCache[$className];
+        }
+
+        $reflector = new ReflectionClass($className);
+
+        // Controller::pathUrl
+        $classAttrs = $reflector->getAttributes(ControllerAttr::class);
+        $pathUrl = '/';
+        if (!empty($classAttrs)) {
+            $pathUrl = rtrim($classAttrs[0]->newInstance()->pathUrl, '/') ?: '/';
+        }
+
+        // Auth a nivel de clase (opcional)
+        $authAttrs = $reflector->getAttributes(AuthAttr::class);
+        $classAuth = !empty($authAttrs) ? $authAttrs[0]->newInstance() : null;
+
+        $meta = (object)[
+            'class'   => $className,
+            'pathUrl' => $pathUrl,
+            'auth'    => $classAuth,
+        ];
+
+        return $this->metadataCache[$className] = $meta;
+    }
+
+    public function getControllerPathUrl(string $className): string
+    {
+        return $this->extractControllerMetadata($className)->pathUrl;
+    }
+
+    public function getControllerAuth(string $className)
+    {
+        return $this->extractControllerMetadata($className)->auth;
+    }
+
+    public function getControllerMetadata(string $className): object
+    {
+        return $this->extractControllerMetadata($className);
+    }
+
+    /**
      * Inicializa el Controller y ejecuta la ruta correspondiente.
      * Llamado desde Container::class
      * @param object|null $controllerInstance Instancia de ModuleController opcional.
@@ -52,48 +104,40 @@ class BaseController
         $this->initBasePath();
 
         $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $requestedPath = $this->requestHelper->getPath(); // usamos RequestHelper
+        $requestedPath = $this->requestHelper->getPath();
 
         $instanceToScan = $controllerInstance ?? $this;
+        $className = get_class($instanceToScan);
 
-        $reflection = new \ReflectionClass($instanceToScan);
-        $methods = $reflection->getMethods(\ReflectionMethod::IS_PUBLIC);
+        //usamos helpers en vez de repetir reflection
+        $pathUrl   = $this->getControllerPathUrl($className);
+        $classAuth = $this->getControllerAuth($className);
 
-        // Obtener ruta base del Controller
-        $classAttrs = $reflection->getAttributes(\Framework\Attributes\Controller::class);
-        $pathUrl = '/';
-        if (!empty($classAttrs)) {
-            $pathUrl = rtrim($classAttrs[0]->newInstance()->pathUrl, '/'); // <-- usamos pathUrl
-        }
-
-        // Opcional: Auth a nivel de clase
-        $classAuthAttr = $reflection->getAttributes(\Framework\Http\Auth::class);
-        $classAuth = !empty($classAuthAttr) ? $classAuthAttr[0]->newInstance() : null;
+        $reflection = new ReflectionClass($instanceToScan);
+        $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
             foreach ($method->getAttributes() as $attribute) {
                 $attrName = $attribute->getName();
                 $routeInstance = $attribute->newInstance();
 
-                // Solo procesar GET/POST según el método HTTP
                 if (
-                    ($attrName === \Framework\Http\Get::class && $httpMethod === 'GET') ||
-                    ($attrName === \Framework\Http\Post::class && $httpMethod === 'POST')
+                    ($attrName === Get::class && $httpMethod === 'GET') ||
+                    ($attrName === Post::class && $httpMethod === 'POST')
                 ) {
-                    // Construir ruta completa combinando pathUrl + método
+                    // Ruta completa: base del controller + target del método
                     $routePath = rtrim($pathUrl, '/') . '/' . ltrim($routeInstance->target, '/');
                     $routePath = rtrim($routePath, '/');
 
                     if ($requestedPath === $routePath) {
-                        // Auth a nivel de método
-                        $methodAuthAttr = $method->getAttributes(\Framework\Http\Auth::class);
+                        // Auth de método o clase
+                        $methodAuthAttr = $method->getAttributes(AuthAttr::class);
                         $auth = !empty($methodAuthAttr) ? $methodAuthAttr[0]->newInstance() : $classAuth;
 
                         if ($auth && $auth->required && !$this->loginManager->isLoggedIn()) {
-                            throw new \Framework\Exceptions\ControllerException("Unauthorized access - login required");
+                            throw new ControllerException("Unauthorized access - login required");
                         }
 
-                        // Ejecutar el método
                         $this->runMethod($method, [], $instanceToScan);
                         return;
                     }
@@ -101,10 +145,10 @@ class BaseController
             }
         }
 
-        throw new \Framework\Exceptions\ControllerException("Route not found: '{$requestedPath}'");
+        throw new ControllerException("Route not found: '{$requestedPath}'");
     }
 
-    private function initBasePath(): void
+    public function initBasePath(): void
     {
         $basepath = trim($this->configSettings->basepath ?? '');
         if ($basepath === '') {
@@ -113,13 +157,9 @@ class BaseController
         $this->configSettings->basepath = $basepath;
     }
 
-    /**
-     * Ejecuta el método del controller y procesa JSON, render o string.
-     */
-    private function runMethod(ReflectionMethod $method, array $params = [], ?object $controllerInstance = null): void
+    public function runMethod(ReflectionMethod $method, array $params = [], ?object $controllerInstance = null): void
     {
         $controllerInstance ??= $this;
-
         $this->initLanguage();
 
         $result = $method->invoke($controllerInstance, ...$params);
@@ -152,11 +192,10 @@ class BaseController
         }
     }
 
-    protected function initLanguage(): void
+    public function initLanguage(): void
     {
         if ($this->requestHelper) {
             $this->langSelector->getLanguageParams($this->requestHelper);
         }
     }
-
 }

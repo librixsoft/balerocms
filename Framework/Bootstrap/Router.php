@@ -49,7 +49,7 @@ class Router
             $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
         }
 
-        $requestedPath = $this->requestHelper->getPath(); // Ruta solicitada
+        $requestedPath = $this->requestHelper->getPath();
 
         // Escanear todos los controladores de App/Controllers
         $controllers = $this->getControllersFromNamespace(
@@ -58,20 +58,18 @@ class Router
         );
 
         $found = false;
+
+        // Instancia de BaseController para usar helpers de metadata
+        $baseController = $this->container->get(\Framework\Core\BaseController::class);
+
         foreach ($controllers as $controllerClass) {
-            $reflector = new \ReflectionClass($controllerClass);
-            $attrs = $reflector->getAttributes(\Framework\Attributes\Controller::class);
+            // Obtener pathUrl desde BaseController
+            $pathUrl = $baseController->getControllerPathUrl($controllerClass);
 
-            if (empty($attrs)) {
-                continue;
-            }
-
-            $pathUrl = rtrim($attrs[0]->newInstance()->pathUrl, '/');
-
-            // Comparar si la ruta solicitada empieza con la ruta base del controlador
+            // Comparar si la ruta solicitada empieza con la ruta base del controller
             if (str_starts_with($requestedPath, $pathUrl)) {
                 try {
-                    // Resolver con Container (inyección de dependencias)
+                    // Resolver la clase con DI y, si es controller, inicializa rutas automáticamente
                     $instance = $this->container->get($controllerClass);
                     $found = true;
                     break;
