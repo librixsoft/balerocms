@@ -30,11 +30,18 @@ class TestController
     }
      **/
 
-    #[Get('/target')]
+    #[Get('/')]
     public function getNotification()
     {
         return $this->view->render("test.html", [], useTheme: false);
     }
+
+    #[Get('/test')]
+    public function getNotificationTest()
+    {
+        return $this->view->render("test.html", [], useTheme: false);
+    }
+
 
     #[Get('/debug')]
     #[JsonResponse]
