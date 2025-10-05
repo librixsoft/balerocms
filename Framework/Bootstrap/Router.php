@@ -3,6 +3,7 @@
 namespace Framework\Bootstrap;
 
 use Framework\Core\BaseController;
+use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
 use Framework\Exceptions\RouterException;
 use Framework\Http\RequestHelper;
@@ -14,6 +15,7 @@ class Router
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
     private Container $container;
+    private ErrorConsole $errorConsole;
 
     /**
      * Router constructor.
@@ -22,11 +24,17 @@ class Router
      * @param ConfigSettings $configSettings Global application configuration
      * @param Container $container Dependency injection container
      */
-    public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings, Container $container)
+    public function __construct(
+        RequestHelper $requestHelper,
+        ConfigSettings $configSettings,
+        Container $container,
+        ErrorConsole $errorConsole
+    )
     {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
         $this->container = $container;
+        $this->errorConsole = $errorConsole;
     }
 
     /**
@@ -70,7 +78,7 @@ class Router
             $matchedController = $matchedControllerEntry['class'];
         } else {
             if (!file_exists($cacheFile)) {
-                echo '<div style="width:100%;padding:3px 0;background-color:rgba(255,165,0,0.7);color:white;font-weight:bold;text-align:center;font-size:12px;position:fixed;top:0;left:0;z-index:9999;margin:0;">Routes cache file does not exist: ' . $cacheFile . '</div>';
+                $this->errorConsole->warning("Routes cache file does not exist: ' . $cacheFile ");
             }
 
             $controllers = $this->getControllersFromNamespace(

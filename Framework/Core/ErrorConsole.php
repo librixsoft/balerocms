@@ -153,4 +153,10 @@ class ErrorConsole
         echo '</div></div></body></html>';
         exit;
     }
+
+    public function warning(string $message)
+    {
+        echo '<div style="width:100%;padding:3px 0;background-color:rgba(255,165,0,0.7);color:white;font-weight:bold;text-align:center;font-size:12px;position:fixed;top:0;left:0;z-index:9999;margin:0;">Warning: ' . $message . '</div>';
+    }
+
 }
