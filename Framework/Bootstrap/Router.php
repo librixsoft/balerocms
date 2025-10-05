@@ -79,18 +79,15 @@ class Router
             );
 
             $baseController = $this->container->get(BaseController::class);
+            $matchedController = null;
 
-            // Filtramos los controladores que coincidan con el path
-            $matchedControllerEntry = array_filter(
-                $controllers,
-                fn($className) => str_starts_with($requestedPath, $baseController->getControllerPathUrl($className))
-            );
-
-            // Tomamos el primer match
-            $matchedController = array_shift($matchedControllerEntry);
-
-            if (!$matchedController) {
-                throw new RouterException("No controller found for path: {$requestedPath}");
+            // Mantener foreach aquí como estaba
+            foreach ($controllers as $className) {
+                $pathUrl = $baseController->getControllerPathUrl($className);
+                if (str_starts_with($requestedPath, $pathUrl)) {
+                    $matchedController = $className;
+                    break;
+                }
             }
         }
 
