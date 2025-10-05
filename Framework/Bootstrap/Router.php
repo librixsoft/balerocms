@@ -56,17 +56,18 @@ class Router
         if (file_exists($cacheFile)) {
             $controllers = require $cacheFile;
 
-            $matchedController = null;
-            foreach ($controllers as $controller) {
-                if (str_starts_with($requestedPath, $controller['url'])) {
-                    $matchedController = $controller['class'];
-                    break;
-                }
-            }
+            $matchedControllerEntry = array_filter(
+                $controllers,
+                fn($controller) => str_starts_with($requestedPath, $controller['url'])
+            );
 
-            if (!$matchedController) {
+            $matchedControllerEntry = array_shift($matchedControllerEntry);
+
+            if (!$matchedControllerEntry) {
                 throw new RouterException("No controller found for path: {$requestedPath}");
             }
+
+            $matchedController = $matchedControllerEntry['class'];
         } else {
             if (!file_exists($cacheFile)) {
                 echo '<div style="width:100%;padding:3px 0;background-color:rgba(255,165,0,0.7);color:white;font-weight:bold;text-align:center;font-size:12px;position:fixed;top:0;left:0;z-index:9999;margin:0;">Routes cache file does not exist: ' . $cacheFile . '</div>';
@@ -78,15 +79,15 @@ class Router
             );
 
             $baseController = $this->container->get(BaseController::class);
-            $matchedController = null;
 
-            foreach ($controllers as $className) {
-                $pathUrl = $baseController->getControllerPathUrl($className);
-                if (str_starts_with($requestedPath, $pathUrl)) {
-                    $matchedController = $className;
-                    break;
-                }
-            }
+            // Filtramos los controladores que coincidan con el path
+            $matchedControllerEntry = array_filter(
+                $controllers,
+                fn($className) => str_starts_with($requestedPath, $baseController->getControllerPathUrl($className))
+            );
+
+            // Tomamos el primer match
+            $matchedController = array_shift($matchedControllerEntry);
 
             if (!$matchedController) {
                 throw new RouterException("No controller found for path: {$requestedPath}");
