@@ -7,18 +7,21 @@ use Framework\DI\Container;
 use Framework\Exceptions\RouterException;
 use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
-use Framework\Static\Redirect;
 
 class Router
 {
-    private const DEFAULT_MODULE = 'Block';
-    private const PARAM_MODULE = 'module';
 
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
-
     private Container $container;
 
+    /**
+     * Router constructor.
+     *
+     * @param RequestHelper $requestHelper Helper for accessing HTTP request information
+     * @param ConfigSettings $configSettings Global application configuration
+     * @param Container $container Dependency injection container
+     */
     public function __construct(RequestHelper $requestHelper, ConfigSettings $configSettings, Container $container)
     {
         $this->requestHelper = $requestHelper;
@@ -26,13 +29,17 @@ class Router
         $this->container = $container;
     }
 
-
     /**
-     * Inicializa la app.
+     * Initializes the application and resolves the controller matching the requested path.
      *
-     * @param RequestHelper $requestHelper
-     * @param ConfigSettings $configSettings
-     * @param callable $controllerResolver Callback que recibe nombre de clase y devuelve instancia
+     * - Starts the session if not already active.
+     * - Sets the session language.
+     * - Attempts to load controllers from cache.
+     * - If cache does not exist, scans the controllers directory.
+     * - Finds the controller that matches the requested URL.
+     * - Instantiates the controller using the dependency container.
+     *
+     * @throws RouterException If no controller is found for the requested path or instantiation fails.
      */
     public function initBalero(): void
     {
@@ -61,7 +68,10 @@ class Router
                 throw new RouterException("No controller found for path: {$requestedPath}");
             }
         } else {
-            if (!file_exists($cacheFile)) echo '<div style="width:100%;padding:3px 0;background-color:rgba(255,165,0,0.7);color:white;font-weight:bold;text-align:center;font-size:12px;position:fixed;top:0;left:0;z-index:9999;margin:0;">Routes cache file does not exist: ' . $cacheFile . '</div>';
+            if (!file_exists($cacheFile)) {
+                echo '<div style="width:100%;padding:3px 0;background-color:rgba(255,165,0,0.7);color:white;font-weight:bold;text-align:center;font-size:12px;position:fixed;top:0;left:0;z-index:9999;margin:0;">Routes cache file does not exist: ' . $cacheFile . '</div>';
+            }
+
             $controllers = $this->getControllersFromNamespace(
                 'App\\Controllers',
                 LOCAL_DIR . '/App/Controllers'
@@ -83,7 +93,7 @@ class Router
             }
         }
 
-        // Instanciar el controller
+        // Instantiate the controller
         try {
             $this->container->get($matchedController);
         } catch (\Throwable $e) {
@@ -96,7 +106,11 @@ class Router
     }
 
     /**
-     * Escanea un directorio y devuelve las clases dentro de un namespace.
+     * If cache fails scans a directory of controllers and returns all classes within the given namespace.
+     *
+     * @param string $namespace Base namespace to search for classes
+     * @param string $path Physical directory path containing the controllers
+     * @return string[] Array of fully-qualified class names found
      */
     private function getControllersFromNamespace(string $namespace, string $path): array
     {
@@ -111,7 +125,7 @@ class Router
             $fullPath = $path . DIRECTORY_SEPARATOR . $file;
 
             if (is_dir($fullPath)) {
-                // Recursivo si hay subcarpetas (ej: ApiControllers, AdminControllers, etc.)
+                // Recursive scan for subfolders (e.g., ApiControllers, AdminControllers, etc.)
                 $controllers = array_merge(
                     $controllers,
                     $this->getControllersFromNamespace($namespace . '\\' . $file, $fullPath)
@@ -119,7 +133,7 @@ class Router
             } elseif (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
                 $className = $namespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
 
-                // Verificar que la clase exista (autoload PSR-4 la cargará)
+                // Check that the class exists (PSR-4 autoload will load it)
                 if (class_exists($className)) {
                     $controllers[] = $className;
                 }
@@ -128,6 +142,4 @@ class Router
 
         return $controllers;
     }
-
-
 }
