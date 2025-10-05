@@ -3,6 +3,20 @@
 
 declare(strict_types=1);
 
+/**
+ * Generate controllers cache for the application.
+ *
+ * This script scans all PHP classes in the App/Controllers directory,
+ * detects classes marked with the #[Controller] attribute,
+ * and generates a cache file (`controllers.cache.php`) containing
+ * an array of controllers with their associated base URLs.
+ *
+ * The cache is always regenerated on system start to ensure it is up-to-date.
+ *
+ * Usage:
+ *   php bin/cache_routes.php
+ */
+
 use ReflectionClass;
 
 const LOCAL_DIR = __DIR__ . '/../';
@@ -10,13 +24,13 @@ $controllersDir = LOCAL_DIR . 'App/Controllers';
 $cacheDir = LOCAL_DIR . 'cache';
 $cacheFile = $cacheDir . '/controllers.cache.php';
 
-// Crear carpeta cache si no existe
+// Ensure cache directory exists
 if (!is_dir($cacheDir)) {
     mkdir($cacheDir, 0777, true);
-    echo "📂 Carpeta cache creada: $cacheDir\n";
+    echo "📂 Cache folder created: $cacheDir\n";
 }
 
-// Función recursiva para escanear controladores
+// Recursive function to scan controllers
 function scanControllers(string $namespace, string $dir): array {
     $result = [];
     foreach (scandir($dir) as $file) {
@@ -55,11 +69,17 @@ function scanControllers(string $namespace, string $dir): array {
     return $result;
 }
 
-// Escaneo
-echo "🔍 Escaneando controladores en $controllersDir...\n";
+// Scan controllers
+echo "🔍 Scanning controllers in $controllersDir...\n";
 $controllers = scanControllers('App\\Controllers', $controllersDir);
 
-// Guardar cache
-file_put_contents($cacheFile, '<?php return ' . var_export($controllers, true) . ';');
-echo "📦 Cache generado con " . count($controllers) . " controladores.\n";
-echo "📂 Archivo de cache: $cacheFile\n";
+// Prepare cache content with creation timestamp
+$cacheContent = "<?php\n";
+$cacheContent .= "// Controllers cache auto-generated on " . date('Y-m-d H:i:s') . "\n";
+$cacheContent .= "return " . var_export($controllers, true) . ";\n";
+
+// Save cache (always overwrite)
+file_put_contents($cacheFile, $cacheContent);
+
+echo "📦 Cache auto-generated with " . count($controllers) . " controllers.\n";
+echo "📂 Cache file: $cacheFile\n";

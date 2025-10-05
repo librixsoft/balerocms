@@ -98,7 +98,7 @@ class Router
     /**
      * Escanea un directorio y devuelve las clases dentro de un namespace.
      */
-    public function getControllersFromNamespace(string $namespace, string $path): array
+    private function getControllersFromNamespace(string $namespace, string $path): array
     {
         $controllers = [];
         $files = scandir($path);
