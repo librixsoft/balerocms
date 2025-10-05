@@ -12,8 +12,7 @@ services:
     volumes:
       - ./:/app
     working_dir: /app
-    command: tail -f /dev/null   # Mantener el container corriendo para ejecutar comandos
-
+    command: sh -c "php bin/cache_routes.php && tail -f /dev/null" # Generar cache de Balero
   # -----------------------------
   # LAMP Stack (Apache + PHP, sin MySQL)
   # -----------------------------

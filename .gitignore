@@ -9,5 +9,6 @@ public/assets/images
 *.iml
 node_modules/
 /vendor/
+/cache/controllers.cache.php
 .phpunit.result.cache
 build/

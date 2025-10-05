@@ -40,54 +40,65 @@ class Router
             session_start();
         }
 
-        if (!isset($_SESSION['lang'])) {
-            $_SESSION['lang'] = $this->configSettings->language ?? 'en';
-        }
+        $_SESSION['lang'] = $_SESSION['lang'] ?? $this->configSettings->language ?? 'en';
+        $this->configSettings->basepath = $this->configSettings->basepath ?: rtrim($this->configSettings->getFullBasepath(), '/') . '/';
 
-        if (!isset($this->configSettings->basepath) || $this->configSettings->basepath === '') {
-            $this->configSettings->basepath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
-        }
+        $requestedPath = $this->requestHelper->getPath();
+        $cacheFile = LOCAL_DIR . '/cache/controllers.cache.php';
 
-        $requestedPath   = $this->requestHelper->getPath();
-        $controllers     = $this->getControllersFromNamespace(
-            'App\\Controllers',
-            LOCAL_DIR . '/App/Controllers'
-        );
+        if (file_exists($cacheFile)) {
+            $controllers = require $cacheFile;
 
-        $found            = false;
-        $matchedController = null;
-
-        // Instancia de BaseController para usar helpers de metadata
-        $baseController = $this->container->get(BaseController::class);
-
-        foreach ($controllers as $controllerClass) {
-            $pathUrl = $baseController->getControllerPathUrl($controllerClass);
-
-            if (str_starts_with($requestedPath, $pathUrl)) {
-                $matchedController = $controllerClass;
-                $found = true;
-                break;
+            $matchedController = null;
+            foreach ($controllers as $controller) {
+                if (str_starts_with($requestedPath, $controller['url'])) {
+                    $matchedController = $controller['class'];
+                    break;
+                }
             }
-        }
 
-        if ($found && $matchedController !== null) {
-            try {
-                $this->container->get($matchedController);
-            } catch (\Throwable $e) {
-                throw new RouterException(
-                    "Error loading controller '$matchedController': " . $e->getMessage(),
-                    0,
-                    $e
-                );
+            if (!$matchedController) {
+                throw new RouterException("No controller found for path: {$requestedPath}");
             }
         } else {
-            throw new RouterException("No controller found for path: {$requestedPath}");
+            if (!file_exists($cacheFile)) echo '<div style="width:100%;padding:3px 0;background-color:rgba(255,165,0,0.7);color:white;font-weight:bold;text-align:center;font-size:12px;position:fixed;top:0;left:0;z-index:9999;margin:0;">Routes cache file does not exist: ' . $cacheFile . '</div>';
+            $controllers = $this->getControllersFromNamespace(
+                'App\\Controllers',
+                LOCAL_DIR . '/App/Controllers'
+            );
+
+            $baseController = $this->container->get(BaseController::class);
+            $matchedController = null;
+
+            foreach ($controllers as $className) {
+                $pathUrl = $baseController->getControllerPathUrl($className);
+                if (str_starts_with($requestedPath, $pathUrl)) {
+                    $matchedController = $className;
+                    break;
+                }
+            }
+
+            if (!$matchedController) {
+                throw new RouterException("No controller found for path: {$requestedPath}");
+            }
+        }
+
+        // Instanciar el controller
+        try {
+            $this->container->get($matchedController);
+        } catch (\Throwable $e) {
+            throw new RouterException(
+                "Error loading controller '$matchedController': " . $e->getMessage(),
+                0,
+                $e
+            );
         }
     }
+
     /**
      * Escanea un directorio y devuelve las clases dentro de un namespace.
      */
-    private function getControllersFromNamespace(string $namespace, string $path): array
+    public function getControllersFromNamespace(string $namespace, string $path): array
     {
         $controllers = [];
         $files = scandir($path);
