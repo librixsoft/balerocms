@@ -22,14 +22,12 @@ class TestControllerTest extends TestCase
     protected function setUp(): void
     {
 
-// tests/bootstrap.php o al inicio de tu TestCase
         if (!defined('LOCAL_DIR')) {
             define('LOCAL_DIR', __DIR__ . '/../Modules/'); // ajusta según tu estructura
         }
 
-        // Creamos el TestContainer y lo guardamos
-        $this->container = new TestContainer(fn($class) => $this->createMock($class));
-        $this->container->initTest($this); // inyecta mocks automáticamente en $controller
+        $this->container = new TestContainer($this);
+        $this->container->initTest($this);
     }
 
     public function testGetNotificationCallsRender(): void

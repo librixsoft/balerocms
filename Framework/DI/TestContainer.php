@@ -8,6 +8,7 @@
 
 namespace Framework\DI;
 
+use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionNamedType;
 use Framework\Attributes\Inject;
@@ -25,7 +26,7 @@ use Framework\Attributes\InjectMocks;
  *
  * Uso típico en un TestCase:
  * ```php
- * $container = new TestContainer(fn($class) => $this->createMock($class));
+ * $container = new TestContainer($this);
  * $container->initTest($this);
  * ```
  *
@@ -47,21 +48,20 @@ class TestContainer
     private array $mocks = [];
 
     /**
-     * Callback para crear mocks.
-     * Normalmente se pasa `$this->createMock` del TestCase.
+     * Referencia al TestCase para crear mocks
      *
-     * @var callable
+     * @var TestCase
      */
-    private $mockFactory;
+    private TestCase $testCase;
 
     /**
      * Constructor
      *
-     * @param callable $mockFactory Callback para crear mocks, ejemplo: fn($class) => $this->createMock($class)
+     * @param TestCase $testCase Instancia del TestCase actual
      */
-    public function __construct(callable $mockFactory)
+    public function __construct(TestCase $testCase)
     {
-        $this->mockFactory = $mockFactory;
+        $this->testCase = $testCase;
     }
 
     /**
@@ -115,8 +115,8 @@ class TestContainer
             $depClass = $prop->getType()?->getName();
             if (!$depClass || !class_exists($depClass)) continue;
 
-            // Crear mock usando el callback
-            $mock = ($this->mockFactory)($depClass);
+            // Crear mock usando reflexión para acceder al método protected
+            $mock = $this->createMock($depClass);
 
             $prop->setAccessible(true);
             $prop->setValue($sut, $mock);
@@ -126,6 +126,21 @@ class TestContainer
         }
 
         return $sut;
+    }
+
+    /**
+     * Crea un mock usando reflexión para acceder al método protected del TestCase
+     *
+     * @param string $className Nombre de la clase a mockear
+     * @return object Mock de la clase
+     */
+    private function createMock(string $className): object
+    {
+        $reflection = new ReflectionClass($this->testCase);
+        $method = $reflection->getMethod('createMock');
+        $method->setAccessible(true);
+
+        return $method->invoke($this->testCase, $className);
     }
 
     /**
@@ -139,9 +154,16 @@ class TestContainer
         return $this->mocks[$class] ?? null;
     }
 
+    /**
+     * Lee información detallada de una propiedad privada/protegida de un objeto
+     *
+     * @param object $object Objeto a inspeccionar
+     * @param string $propertyName Nombre de la propiedad
+     * @return array Información de la propiedad y resultados de métodos
+     */
     public function readPrivateMembers(object $object, string $propertyName): array
     {
-        $reflector = new \ReflectionClass($object);
+        $reflector = new ReflectionClass($object);
         $prop = $reflector->getProperty($propertyName);
 
         $access = $prop->isPrivate() ? 'private' : ($prop->isProtected() ? 'protected' : 'public');
@@ -154,7 +176,7 @@ class TestContainer
         $methodsResult = [];
 
         if ($instance) {
-            $instanceReflector = new \ReflectionClass($instance);
+            $instanceReflector = new ReflectionClass($instance);
             foreach ($instanceReflector->getMethods() as $method) {
                 // Ignorar métodos estáticos y que requieran parámetros
                 if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
@@ -180,10 +202,15 @@ class TestContainer
         ];
     }
 
-
+    /**
+     * Crea una instancia con mocks y retorna información de debug
+     *
+     * @param string $class Nombre de la clase a crear
+     * @return array Información de debug sobre la creación
+     */
     public function debugCreateWithMocks(string $class): array
     {
-        $reflector = new \ReflectionClass($class);
+        $reflector = new ReflectionClass($class);
         $sut = $reflector->newInstanceWithoutConstructor();
 
         $debug = [
@@ -201,8 +228,8 @@ class TestContainer
                 continue;
             }
 
-            // Crear “mock” sin constructor
-            $depReflector = new \ReflectionClass($depClass);
+            // Crear "mock" sin constructor
+            $depReflector = new ReflectionClass($depClass);
             $mock = $depReflector->newInstanceWithoutConstructor();
 
             $prop->setAccessible(true);
@@ -220,8 +247,4 @@ class TestContainer
 
         return $debug;
     }
-
-
-
-
 }
