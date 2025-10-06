@@ -53,7 +53,7 @@ class DependencyFactory
             if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
                 $params[] = $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null;
             } else {
-                $params[] = $this->resolverContainer->resolve($type->getName());
+                $params[] = $this->resolverContainer->get($type->getName());
             }
         }
         return $reflector->newInstanceArgs($params);
@@ -87,7 +87,7 @@ class DependencyFactory
             if (!$type instanceof ReflectionNamedType) continue;
 
             $prop->setAccessible(true);
-            $prop->setValue($instance, $this->resolverContainer->resolve($type->getName()));
+            $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
         }
     }
 

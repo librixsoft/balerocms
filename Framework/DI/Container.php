@@ -44,21 +44,6 @@ class Container
         $this->bindings[$id] = $instance;
     }
 
-    /**
-     * Resuelve y retorna una instancia de la clase o interfaz indicada
-     *
-     * @param string $className Nombre de la clase
-     * @return object Instancia resuelta con constructor y propiedades inyectadas
-     * @throws ContainerException
-     */
-    public function get(string $className): object
-    {
-        try {
-            return $this->resolve($className);
-        } catch (Throwable $e) {
-            throw new ContainerException("Error resolviendo {$className}: " . $e->getMessage(), 0, $e);
-        }
-    }
 
     /**
      * Método interno que hace la resolución real de la clase
@@ -66,7 +51,7 @@ class Container
      * @param string $className
      * @return object
      */
-    public function resolve(string $className): object
+    public function get(string $className): object
     {
         if (isset($this->bindings[$className])) {
             return $this->bindings[$className];
@@ -79,7 +64,7 @@ class Container
         $reflector = new ReflectionClass($className);
         $controllerAttrs = $reflector->getAttributes(Controller::class);
         if (!empty($controllerAttrs) && str_starts_with($className, 'App')) {
-            $baseController = $this->resolve(BaseController::class);
+            $baseController = $this->get(BaseController::class);
             $method = new ReflectionMethod(BaseController::class, 'initControllerAndRoute');
             $method->invoke($baseController, $instance);
         }

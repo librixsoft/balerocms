@@ -89,7 +89,7 @@ class TestContainer
      * @param string $className
      * @return object
      */
-    public function resolve(string $className): object
+    public function get(string $className): object
     {
         if (isset($this->mocks[$className])) {
             return $this->mocks[$className];
