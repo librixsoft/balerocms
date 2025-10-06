@@ -4,40 +4,25 @@ namespace Tests\App\Controllers;
 
 use App\Models\TestModel;
 use Framework\Attributes\InjectMocks;
-use Framework\DI\TestContainer;
-use PHPUnit\Framework\TestCase;
-use Framework\Attributes\Inject;
+use Framework\Attributes\SetupTestContainer;
+use Framework\Testing\TestCase;
 
+#[SetupTestContainer]
 class TestModelTest extends TestCase
 {
     #[InjectMocks]
     private ?TestModel $model = null;
 
-    #[Inject]
-    private ?TestContainer $container = null;
-
-    protected function setUp(): void
+    public function testDebugModel(): void
     {
-
-        if (!defined('LOCAL_DIR')) {
-            define('LOCAL_DIR', __DIR__ . '/../Modules/'); // ajusta según tu estructura
-        }
-
-        $this->container = new TestContainer($this);
-        $this->container->initTest($this);
+        $this->assertNotNull($this->model, 'El modelo no debería ser null');
     }
-
 
     public function testHelloGetterAndSetter(): void
     {
-        // Verificar valor inicial del getter
+        $this->assertNotNull($this->model, 'El modelo debe estar inyectado');
         $this->assertSame('hi', $this->model->getHello());
-
-        // Usar setter para cambiar el valor
         $this->model->setHello('hello world');
-
-        // Verificar que el getter devuelve el valor actualizado
         $this->assertSame('hello world', $this->model->getHello());
     }
-
 }

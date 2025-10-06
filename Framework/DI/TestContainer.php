@@ -29,19 +29,11 @@ use Framework\Attributes\InjectMocks;
  * $container = new TestContainer($this);
  * $container->initTest($this);
  * ```
- *
- * Notas:
- * - Cada dependencia #[Inject] se reemplaza por un mock y se inyecta automáticamente por constructor
- *   o en la propiedad correspondiente del SUT.
- * - Se puede obtener cualquier mock usando `getMock(ClassName::class)`.
  */
 class TestContainer
 {
     /**
      * Almacena todos los mocks creados para el test
-     * [
-     *   'NombreClase' => mockInstance
-     * ]
      *
      * @var array<string, object>
      */
@@ -78,7 +70,9 @@ class TestContainer
 
         foreach ($reflectTest->getProperties() as $prop) {
             $attrs = $prop->getAttributes(InjectMocks::class);
-            if (empty($attrs)) continue;
+            if (empty($attrs)) {
+                continue;
+            }
 
             $sutType = $prop->getType();
             if (!$sutType instanceof ReflectionNamedType || $sutType->isBuiltin()) {
@@ -89,7 +83,14 @@ class TestContainer
 
             $sutClass = $sutType->getName();
 
-            // Creamos el SUT sin llamar al constructor
+            // Verificar que la clase existe
+            if (!class_exists($sutClass)) {
+                throw new \RuntimeException(
+                    "La clase {$sutClass} no existe para la propiedad {$prop->getName()}"
+                );
+            }
+
+            // Creamos el SUT con sus dependencias mockeadas
             $sut = $this->createWithMocks($sutClass);
 
             $prop->setAccessible(true);
@@ -110,10 +111,20 @@ class TestContainer
 
         foreach ($reflector->getProperties() as $prop) {
             $injectAttrs = $prop->getAttributes(Inject::class);
-            if (empty($injectAttrs)) continue;
+            if (empty($injectAttrs)) {
+                continue;
+            }
 
-            $depClass = $prop->getType()?->getName();
-            if (!$depClass || !class_exists($depClass)) continue;
+            $propType = $prop->getType();
+            if (!$propType instanceof ReflectionNamedType) {
+                continue;
+            }
+
+            $depClass = $propType->getName();
+
+            if (!class_exists($depClass) && !interface_exists($depClass)) {
+                continue;
+            }
 
             // Crear mock usando reflexión para acceder al método protected
             $mock = $this->createMock($depClass);
@@ -149,7 +160,7 @@ class TestContainer
      * @param string $class Nombre de la clase del mock
      * @return object|null Instancia del mock o null si no existe
      */
-    public function getMock(string $class)
+    public function getMock(string $class): ?object
     {
         return $this->mocks[$class] ?? null;
     }
@@ -178,7 +189,6 @@ class TestContainer
         if ($instance) {
             $instanceReflector = new ReflectionClass($instance);
             foreach ($instanceReflector->getMethods() as $method) {
-                // Ignorar métodos estáticos y que requieran parámetros
                 if ($method->isStatic() || $method->getNumberOfRequiredParameters() > 0) {
                     continue;
                 }
@@ -220,15 +230,16 @@ class TestContainer
 
         foreach ($reflector->getProperties() as $prop) {
             $injectAttrs = $prop->getAttributes(Inject::class);
-            if (empty($injectAttrs)) continue;
+            if (empty($injectAttrs)) {
+                continue;
+            }
 
             $depClass = $prop->getType()?->getName();
-            if (!$depClass || !class_exists($depClass)) {
+            if (!$depClass || (!class_exists($depClass) && !interface_exists($depClass))) {
                 $debug['properties'][$prop->getName()] = 'Invalid type or class does not exist';
                 continue;
             }
 
-            // Crear "mock" sin constructor
             $depReflector = new ReflectionClass($depClass);
             $mock = $depReflector->newInstanceWithoutConstructor();
 

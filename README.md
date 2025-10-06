@@ -113,7 +113,7 @@ docker compose run --rm phpunit \
   -c phpunit.xml \
   --coverage-clover build/logs/coverage.xml \
   --coverage-filter Framework \
-  --coverage-filter Modules
+  --coverage-filter App
 ```
 
 It will create: build/logs/coverage.xml
