@@ -84,7 +84,6 @@ class TestContainer
 
             $sutClass = $sutType->getName();
 
-            // Verificar que la clase existe
             if (!class_exists($sutClass)) {
                 throw new \RuntimeException(
                     "La clase {$sutClass} no existe para la propiedad {$prop->getName()}"
@@ -111,16 +110,12 @@ class TestContainer
         $reflector = new ReflectionClass($class);
         $constructor = $reflector->getConstructor();
 
-        // Determinar si tiene constructor con parámetros
         if ($constructor && $constructor->getNumberOfParameters() > 0) {
-            // Inyección por constructor
-            $sut = $this->createWithConstructorInjection($reflector, $constructor);
+            $sut = $this->createWithConstructor($reflector, $constructor);
         } else {
-            // Sin constructor o sin parámetros: usar newInstance()
-            $sut = $reflector->newInstance();
+            $sut = $this->createWithoutConstructor($reflector);
         }
 
-        // Inyección por propiedades (#[Inject])
         $this->injectPropertyDependencies($sut, $reflector);
 
         return $sut;
@@ -128,47 +123,40 @@ class TestContainer
 
     /**
      * Crea instancia con inyección de dependencias por constructor
+     * (misma lógica que Container::createWithConstructor)
      *
      * @param ReflectionClass $reflector
      * @param \ReflectionMethod $constructor
      * @return object
      */
-    private function createWithConstructorInjection(
-        ReflectionClass $reflector,
-        \ReflectionMethod $constructor
-    ): object {
+    private function createWithConstructor(ReflectionClass $reflector, \ReflectionMethod $constructor): object
+    {
         $params = [];
-
         foreach ($constructor->getParameters() as $param) {
-            $paramType = $param->getType();
-
-            // Si no tiene tipo o es tipo primitivo, pasar null o valor por defecto
-            if (!$paramType instanceof ReflectionNamedType || $paramType->isBuiltin()) {
-                $params[] = $param->isDefaultValueAvailable()
-                    ? $param->getDefaultValue()
-                    : null;
-                continue;
+            $type = $param->getType();
+            if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
+                $params[] = $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null;
+            } else {
+                $depClass = $type->getName();
+                if (!isset($this->mocks[$depClass])) {
+                    $this->mocks[$depClass] = $this->createMock($depClass);
+                }
+                $params[] = $this->mocks[$depClass];
             }
-
-            $depClass = $paramType->getName();
-
-            // Verificar si es una clase o interfaz mockeable
-            if (!class_exists($depClass) && !interface_exists($depClass)) {
-                $params[] = $param->isDefaultValueAvailable()
-                    ? $param->getDefaultValue()
-                    : null;
-                continue;
-            }
-
-            // Crear o reutilizar mock
-            if (!isset($this->mocks[$depClass])) {
-                $this->mocks[$depClass] = $this->createMock($depClass);
-            }
-
-            $params[] = $this->mocks[$depClass];
         }
-
         return $reflector->newInstanceArgs($params);
+    }
+
+    /**
+     * Crea una instancia de la clase sin pasar parámetros al constructor
+     * (misma lógica que Container::createWithoutConstructor)
+     *
+     * @param ReflectionClass $reflector
+     * @return object
+     */
+    private function createWithoutConstructor(ReflectionClass $reflector): object
+    {
+        return $reflector->newInstance();
     }
 
     /**
@@ -197,7 +185,6 @@ class TestContainer
                 continue;
             }
 
-            // Crear o reutilizar mock
             if (!isset($this->mocks[$depClass])) {
                 $this->mocks[$depClass] = $this->createMock($depClass);
             }
