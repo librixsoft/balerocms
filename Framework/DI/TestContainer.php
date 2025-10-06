@@ -22,6 +22,7 @@ use Framework\Attributes\InjectMocks;
  *   creando la instancia y asignando automáticamente las dependencias.
  * - Reemplazar automáticamente las dependencias marcadas con #[Inject] por mocks,
  *   que se inyectan en el SUT.
+ * - Soportar inyección de dependencias por constructor y por propiedades.
  * - Mantener un registro de todos los mocks creados para uso dentro de los tests.
  *
  * Uso típico en un TestCase:
@@ -99,7 +100,8 @@ class TestContainer
     }
 
     /**
-     * Crea la instancia del SUT y reemplaza las propiedades #[Inject] con mocks.
+     * Crea la instancia del SUT y reemplaza las dependencias con mocks.
+     * Soporta inyección por constructor y por propiedades.
      *
      * @param string $class Nombre de la clase del SUT
      * @return object Instancia del SUT con dependencias mockeadas
@@ -107,8 +109,77 @@ class TestContainer
     public function createWithMocks(string $class): object
     {
         $reflector = new ReflectionClass($class);
-        $sut = $reflector->newInstanceWithoutConstructor();
+        $constructor = $reflector->getConstructor();
 
+        // Determinar si tiene constructor con parámetros
+        if ($constructor && $constructor->getNumberOfParameters() > 0) {
+            // Inyección por constructor
+            $sut = $this->createWithConstructorInjection($reflector, $constructor);
+        } else {
+            // Sin constructor o sin parámetros: usar newInstance()
+            $sut = $reflector->newInstance();
+        }
+
+        // Inyección por propiedades (#[Inject])
+        $this->injectPropertyDependencies($sut, $reflector);
+
+        return $sut;
+    }
+
+    /**
+     * Crea instancia con inyección de dependencias por constructor
+     *
+     * @param ReflectionClass $reflector
+     * @param \ReflectionMethod $constructor
+     * @return object
+     */
+    private function createWithConstructorInjection(
+        ReflectionClass $reflector,
+        \ReflectionMethod $constructor
+    ): object {
+        $params = [];
+
+        foreach ($constructor->getParameters() as $param) {
+            $paramType = $param->getType();
+
+            // Si no tiene tipo o es tipo primitivo, pasar null o valor por defecto
+            if (!$paramType instanceof ReflectionNamedType || $paramType->isBuiltin()) {
+                $params[] = $param->isDefaultValueAvailable()
+                    ? $param->getDefaultValue()
+                    : null;
+                continue;
+            }
+
+            $depClass = $paramType->getName();
+
+            // Verificar si es una clase o interfaz mockeable
+            if (!class_exists($depClass) && !interface_exists($depClass)) {
+                $params[] = $param->isDefaultValueAvailable()
+                    ? $param->getDefaultValue()
+                    : null;
+                continue;
+            }
+
+            // Crear o reutilizar mock
+            if (!isset($this->mocks[$depClass])) {
+                $this->mocks[$depClass] = $this->createMock($depClass);
+            }
+
+            $params[] = $this->mocks[$depClass];
+        }
+
+        return $reflector->newInstanceArgs($params);
+    }
+
+    /**
+     * Inyecta dependencias en propiedades marcadas con #[Inject]
+     *
+     * @param object $sut
+     * @param ReflectionClass $reflector
+     * @return void
+     */
+    private function injectPropertyDependencies(object $sut, ReflectionClass $reflector): void
+    {
         foreach ($reflector->getProperties() as $prop) {
             $injectAttrs = $prop->getAttributes(Inject::class);
             if (empty($injectAttrs)) {
@@ -126,17 +197,14 @@ class TestContainer
                 continue;
             }
 
-            // Crear mock usando reflexión para acceder al método protected
-            $mock = $this->createMock($depClass);
+            // Crear o reutilizar mock
+            if (!isset($this->mocks[$depClass])) {
+                $this->mocks[$depClass] = $this->createMock($depClass);
+            }
 
             $prop->setAccessible(true);
-            $prop->setValue($sut, $mock);
-
-            // Guardar mock internamente
-            $this->mocks[$depClass] = $mock;
+            $prop->setValue($sut, $this->mocks[$depClass]);
         }
-
-        return $sut;
     }
 
     /**
@@ -164,5 +232,4 @@ class TestContainer
     {
         return $this->mocks[$class] ?? null;
     }
-
 }

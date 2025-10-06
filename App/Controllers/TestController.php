@@ -10,7 +10,7 @@ use Framework\DI\TestContainer;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
 
-#[Controller('/home')]
+#[Controller('/test')]
 class TestController
 {
 
@@ -36,25 +36,6 @@ class TestController
         return $this->view->render("test.html", [], useTheme: false);
     }
 
-    #[Get('/test')]
-    public function getNotificationTest()
-    {
-        return $this->view->render("test.html", [], useTheme: false);
-    }
-
-
-    #[Get('/debug')]
-    #[JsonResponse]
-    public function debugMocks()
-    {
-        // Creamos el contenedor de test
-        $container = new TestContainer(fn($class) => new $class());
-
-        // Llamamos debugCreateWithMocks sobre NotificationController
-        $debugInfo = $container->debugCreateWithMocks(TestController::class);
-
-        return $debugInfo;
-    }
 
     #[Get('/test')]
     public function getNotification1()
