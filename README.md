@@ -116,7 +116,7 @@ docker compose run --rm phpunit \
   --coverage-clover ./build/clover.xml
 ```
 
-It will create: build/logs/coverage.xml
+It will create: build/clover.xml
 
 ## Execute sonar to view coverage
 
