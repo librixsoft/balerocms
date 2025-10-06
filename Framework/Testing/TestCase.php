@@ -29,6 +29,8 @@ use ReflectionClass;
  * TestCase
  *
  * Clase base abstracta para tests que proporciona auto-inyección de dependencias.
+ * Esta clase solo es una herecia de PHPUnitTestCase customizada para autoejecutarse
+ * por medio del atributo #[SetupTestContainer]
  *
  * Uso básico:
  * ```php
