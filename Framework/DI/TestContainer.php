@@ -1,90 +1,69 @@
 <?php
 
-/**
- * Balero CMS - Test Container
- *
- * Contenedor de pruebas para PHPUnit que permite:
- * - Inicializar propiedades del test marcadas con #[InjectMocks] como SUT (System Under Test)
- * - Reemplazar automáticamente las dependencias marcadas con #[Inject] por mocks
- * - Soportar inyección de dependencias por constructor y por propiedades
- * - Mantener un registro de todos los mocks creados para uso dentro de los tests
- *
- * @author Anibal Gomez
- * @license GNU General Public License
- */
-
 namespace Framework\DI;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionNamedType;
-use Framework\Attributes\Inject;
 use Framework\Attributes\InjectMocks;
+use Framework\Attributes\Inject;
 
 class TestContainer
 {
-    /**
-     * Almacena todos los mocks creados para el test
-     *
-     * @var array<string, object>
-     */
     private array $mocks = [];
-
-    /**
-     * Referencia al TestCase para crear mocks
-     *
-     * @var TestCase
-     */
     private TestCase $testCase;
 
-    /**
-     * Constructor
-     *
-     * @param TestCase $testCase Instancia del TestCase actual
-     */
     public function __construct(TestCase $testCase)
     {
         $this->testCase = $testCase;
     }
 
     /**
-     * Inicializa todas las propiedades del test con #[InjectMocks]
+     * Initializes all test properties marked with #[InjectMocks]
      *
-     * @param object $test Instancia del PHPUnit TestCase
+     * @param object $test PHPUnit TestCase instance
      * @return void
      * @throws \RuntimeException
      */
     public function initTest(object $test): void
     {
-        $reflectTest = new ReflectionClass($test);
+        try {
+            $reflectTest = new ReflectionClass($test);
 
-        foreach ($reflectTest->getProperties() as $prop) {
-            $attrs = $prop->getAttributes(InjectMocks::class);
-            if (empty($attrs)) continue;
+            foreach ($reflectTest->getProperties() as $prop) {
+                $attrs = $prop->getAttributes(InjectMocks::class);
+                if (empty($attrs)) continue;
 
-            $sutType = $prop->getType();
-            if (!$sutType instanceof ReflectionNamedType || $sutType->isBuiltin()) {
-                throw new \RuntimeException(
-                    "InjectMocks requiere un tipo de clase válido en {$prop->getName()}"
-                );
+                $sutType = $prop->getType();
+                if (!$sutType instanceof ReflectionNamedType || $sutType->isBuiltin()) {
+                    throw new \RuntimeException(
+                        "InjectMocks requires a valid class type on property '{$prop->getName()}'"
+                    );
+                }
+
+                $sutClass = $sutType->getName();
+                if (!class_exists($sutClass)) {
+                    throw new \RuntimeException(
+                        "Class '{$sutClass}' does not exist for property '{$prop->getName()}'"
+                    );
+                }
+
+                $sut = $this->createWithMocks($sutClass);
+
+                $prop->setAccessible(true);
+                $prop->setValue($test, $sut);
             }
-
-            $sutClass = $sutType->getName();
-            if (!class_exists($sutClass)) {
-                throw new \RuntimeException(
-                    "La clase {$sutClass} no existe para la propiedad {$prop->getName()}"
-                );
-            }
-
-            $sut = $this->createWithMocks($sutClass);
-
-            $prop->setAccessible(true);
-            $prop->setValue($test, $sut);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(
+                "Failed to initialize test container: " . $e->getMessage(),
+                0,
+                $e
+            );
         }
     }
 
     /**
-     * Resuelve una clase o devuelve el mock existente
+     * Returns a mock instance or previously generated mock
      *
      * @param string $className
      * @return object
@@ -99,7 +78,7 @@ class TestContainer
     }
 
     /**
-     * Crea la instancia del SUT con dependencias mockeadas
+     * Creates the System Under Test (SUT) with mocked dependencies
      *
      * @param string $className
      * @return object
@@ -111,10 +90,10 @@ class TestContainer
     }
 
     /**
-     * Sobreescribe el metodo para acceder a el xq tiene protected
+     * Creates a PHPUnit mock for the given class
      *
-     * @param string $className Nombre de la clase a mockear
-     * @return object Mock de la clase
+     * @param string $className
+     * @return object
      */
     private function createMock(string $className): object
     {
@@ -126,10 +105,10 @@ class TestContainer
     }
 
     /**
-     * Permite obtener cualquier mock generado para el test
+     * Returns a previously generated mock or null
      *
-     * @param string $class Nombre de la clase del mock
-     * @return object|null Instancia del mock o null si no existe
+     * @param string $class Class name of the mock
+     * @return object|null
      */
     public function getMock(string $class): ?object
     {

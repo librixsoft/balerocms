@@ -8,7 +8,7 @@
  * - Inyección de propiedades marcadas con #[Inject]
  * - Resolución delegada a un contenedor que implementa `get(string $className): object`
  *
- * @author Anibal Gomez <balerocms@gmail.com>
+ * @author Anibal Gomez
  * @license GNU General Public License
  */
 
@@ -18,11 +18,13 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionMethod;
 use Framework\Attributes\Inject;
+use Framework\Exceptions\ContainerException;
+use Throwable;
 
 class DependencyFactory
 {
     /**
-     * Contenedor que implementa `resolve(string $className): object`
+     * Contenedor que implementa `get(string $className): object`
      *
      * @var object
      */
@@ -31,7 +33,7 @@ class DependencyFactory
     /**
      * Constructor
      *
-     * @param object $resolverContainer Contenedor con método resolve()
+     * @param object $resolverContainer Contenedor con método get()
      */
     public function __construct(object $resolverContainer)
     {
@@ -41,73 +43,109 @@ class DependencyFactory
     /**
      * Crea una instancia de clase con inyección por constructor
      *
-     * @param ReflectionClass $reflector Reflección de la clase
-     * @param ReflectionMethod $constructor Constructor de la clase
-     * @return object Instancia creada con dependencias resueltas
+     * @param ReflectionClass $reflector
+     * @param ReflectionMethod $constructor
+     * @return object
+     * @throws ContainerException
      */
     public function createWithConstructor(ReflectionClass $reflector, ReflectionMethod $constructor): object
     {
-        $params = [];
-        foreach ($constructor->getParameters() as $param) {
-            $type = $param->getType();
-            if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
-                $params[] = $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null;
-            } else {
-                $params[] = $this->resolverContainer->get($type->getName());
+        try {
+            $params = [];
+            foreach ($constructor->getParameters() as $param) {
+                $type = $param->getType();
+                if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
+                    $params[] = $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null;
+                } else {
+                    $params[] = $this->resolverContainer->get($type->getName());
+                }
             }
+            return $reflector->newInstanceArgs($params);
+        } catch (Throwable $e) {
+            throw new ContainerException(
+                "Failed to create instance of {$reflector->getName()} using constructor injection: {$e->getMessage()}",
+                0,
+                $e
+            );
         }
-        return $reflector->newInstanceArgs($params);
     }
 
     /**
-     * Crea una instancia de clase sin pasar parámetros al constructor
+     * Crea una instancia sin pasar parámetros al constructor
      *
-     * @param ReflectionClass $reflector Reflección de la clase
-     * @return object Instancia creada sin argumentos
+     * @param ReflectionClass $reflector
+     * @return object
+     * @throws ContainerException
      */
     public function createWithoutConstructor(ReflectionClass $reflector): object
     {
-        return $reflector->newInstance();
-    }
-
-    /**
-     * Inyecta dependencias en propiedades marcadas con #[Inject]
-     *
-     * @param object $instance Instancia de la clase
-     * @param ReflectionClass $reflector Reflección de la clase
-     * @return void
-     */
-    public function injectProperties(object $instance, ReflectionClass $reflector): void
-    {
-        foreach ($reflector->getProperties() as $prop) {
-            $attrs = $prop->getAttributes(Inject::class);
-            if (empty($attrs)) continue;
-
-            $type = $prop->getType();
-            if (!$type instanceof ReflectionNamedType) continue;
-
-            $prop->setAccessible(true);
-            $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
+        try {
+            return $reflector->newInstance();
+        } catch (Throwable $e) {
+            throw new ContainerException(
+                "Failed to create instance of {$reflector->getName()} without constructor: {$e->getMessage()}",
+                0,
+                $e
+            );
         }
     }
 
     /**
-     * Crea la instancia completa de la clase (constructor + propiedades #[Inject])
+     * Inyecta dependencias en propiedades #[Inject]
      *
-     * @param string $className Nombre de la clase a crear
-     * @return object Instancia creada con todas las dependencias
+     * @param object $instance
+     * @param ReflectionClass $reflector
+     * @return void
+     * @throws ContainerException
+     */
+    public function injectProperties(object $instance, ReflectionClass $reflector): void
+    {
+        try {
+            foreach ($reflector->getProperties() as $prop) {
+                $attrs = $prop->getAttributes(Inject::class);
+                if (empty($attrs)) continue;
+
+                $type = $prop->getType();
+                if (!$type instanceof ReflectionNamedType) continue;
+
+                $prop->setAccessible(true);
+                $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
+            }
+        } catch (Throwable $e) {
+            throw new ContainerException(
+                "Failed to inject properties into {$reflector->getName()}: {$e->getMessage()}",
+                0,
+                $e
+            );
+        }
+    }
+
+    /**
+     * Crea la instancia completa de la clase (constructor + #[Inject])
+     *
+     * @param string $className
+     * @return object
+     * @throws ContainerException
      */
     public function create(string $className): object
     {
-        $reflector = new ReflectionClass($className);
-        $constructor = $reflector->getConstructor();
+        try {
+            $reflector = new ReflectionClass($className);
+            $constructor = $reflector->getConstructor();
 
-        $instance = ($constructor && $constructor->getNumberOfParameters() > 0)
-            ? $this->createWithConstructor($reflector, $constructor)
-            : $this->createWithoutConstructor($reflector);
+            $instance = ($constructor && $constructor->getNumberOfParameters() > 0)
+                ? $this->createWithConstructor($reflector, $constructor)
+                : $this->createWithoutConstructor($reflector);
 
-        $this->injectProperties($instance, $reflector);
+            $this->injectProperties($instance, $reflector);
 
-        return $instance;
+            return $instance;
+        } catch (Throwable $e) {
+            throw new ContainerException(
+                "Failed to create instance of {$className}: {$e->getMessage()}",
+                0,
+                $e
+            );
+        }
     }
 }
