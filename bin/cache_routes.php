@@ -56,12 +56,12 @@ function scanControllers(string $namespace, string $dir): array {
                 $attrName = $attr->getName();
                 if ($attrName === 'Controller' || str_ends_with($attrName, '\Controller')) {
                     $args = $attr->getArguments();
-                    $url = $args['path'] ?? '/';
+                    $path = $args['path'] ?? $args[0] ?? '/';
                     $result[] = [
                         'class' => $className,
-                        'url' => $url
+                        'path' => $path
                     ];
-                    echo "✅ $className -> $url\n";
+                    echo "✅ $className -> $path\n";
                 }
             }
         }

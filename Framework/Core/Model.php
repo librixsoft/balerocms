@@ -13,6 +13,7 @@ use Framework\Database\MySQL;
 class Model
 {
     private MySQL $db;
+
     private ConfigSettings $configSettings;
 
     public function __construct(ConfigSettings $configSettings, MySQL $db)
@@ -29,5 +30,21 @@ class Model
                 $this->configSettings->dbname
             );
         }
+    }
+
+    /**
+     * @return MySQL
+     */
+    public function getDb(): MySQL
+    {
+        return $this->db;
+    }
+
+    /**
+     * @param MySQL $db
+     */
+    public function setDb(MySQL $db): void
+    {
+        $this->db = $db;
     }
 }

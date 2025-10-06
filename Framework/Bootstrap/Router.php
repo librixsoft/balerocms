@@ -66,7 +66,7 @@ class Router
 
             $matchedControllerEntry = array_filter(
                 $controllers,
-                fn($controller) => str_starts_with($requestedPath, $controller['url'])
+                fn($controller) => str_starts_with($requestedPath, $controller['path'])
             );
 
             $matchedControllerEntry = array_shift($matchedControllerEntry);
