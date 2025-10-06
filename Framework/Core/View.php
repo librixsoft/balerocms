@@ -11,26 +11,25 @@ namespace Framework\Core;
 use Framework\Rendering\TemplateEngine;
 use Framework\I18n\LangManager;
 use Framework\Exceptions\ViewException;
+use Framework\Attributes\Inject;
 
 class View
 {
     private string $viewsPath = LOCAL_DIR . '/resources/views';
     private string $baseDir;
 
+    #[Inject]
     private ConfigSettings $configSettings;
+
+    #[Inject]
     private TemplateEngine $templateEngine;
+
+    #[Inject]
     private LangManager $langManager;
 
-    public function __construct(ConfigSettings $config, TemplateEngine $templateEngine, LangManager $langManager)
+    public function __construct()
     {
-        $this->configSettings = $config;
-        $this->templateEngine = $templateEngine;
-        $this->langManager = $langManager;
-
-        $this->baseDir = $this->normalizePath($this->getViewsPath());
-
-        $this->configSettings->LoadSettings();
-        $this->templateEngine->setBaseDir($this->baseDir);
+        // Constructor vacío para DI
     }
 
     private function normalizePath(string $path): string
@@ -38,35 +37,33 @@ class View
         return rtrim($path, '/') . '/';
     }
 
+    private function initializeDependencies(): void
+    {
+        if (empty($this->baseDir)) {
+            $this->baseDir = $this->normalizePath($this->viewsPath);
+        }
+
+        $this->configSettings->LoadSettings();
+        $this->templateEngine->setBaseDir($this->baseDir);
+    }
+
     public function render(string $templatePath, array $params = [], bool $useTheme = true): string
     {
         try {
-            if ($useTheme) {
-                $themeDir = $this->baseDir . "themes/" . $this->configSettings->theme . "/";
-                $templateFullPath = $themeDir . ltrim($templatePath, '/');
+            $this->initializeDependencies();
 
-                if (!file_exists($templateFullPath)) {
-                    $fallbackPath = $this->baseDir . "themes/default/" . ltrim($templatePath, '/');
-                    if (file_exists($fallbackPath)) {
-                        $templateFullPath = $fallbackPath;
-                    } else {
-                        throw new ViewException("Template not found in active theme nor default: $templateFullPath");
-                    }
-                }
-            } else {
-                $templateFullPath = $this->baseDir . ltrim($templatePath, '/');
-                if (!file_exists($templateFullPath)) {
-                    throw new ViewException("Template not found in base views: $templateFullPath");
-                }
-            }
+            // --- Idioma ---
+            $sessionLang = $_SESSION['lang'] ?? 'en';
+            $this->langManager->setCurrentLang($sessionLang);
+            $this->langManager->load($sessionLang, LOCAL_DIR . '/resources/lang');
 
+            $templateFullPath = $this->resolveTemplatePath($templatePath, $useTheme);
             $content = file_get_contents($templateFullPath);
             if ($content === false) {
                 throw new ViewException("Failed to read template file: $templateFullPath");
             }
 
             $params = $this->getDefaultParams($params);
-
             $output = $this->templateEngine->processTemplate($content, $params);
 
             return $this->parsePlaceholders($output, $params);
@@ -76,7 +73,31 @@ class View
         }
     }
 
-    public function getDefaultParams(array $params = []): array
+    private function resolveTemplatePath(string $templatePath, bool $useTheme): string
+    {
+        if ($useTheme) {
+            $themeDir = $this->baseDir . "themes/" . $this->configSettings->theme . "/";
+            $templateFullPath = $themeDir . ltrim($templatePath, '/');
+
+            if (!file_exists($templateFullPath)) {
+                $fallbackPath = $this->baseDir . "themes/default/" . ltrim($templatePath, '/');
+                if (file_exists($fallbackPath)) {
+                    $templateFullPath = $fallbackPath;
+                } else {
+                    throw new ViewException("Template not found in active theme nor default: $templateFullPath");
+                }
+            }
+        } else {
+            $templateFullPath = $this->baseDir . ltrim($templatePath, '/');
+            if (!file_exists($templateFullPath)) {
+                throw new ViewException("Template not found in base views: $templateFullPath");
+            }
+        }
+
+        return $templateFullPath;
+    }
+
+    private function getDefaultParams(array $params = []): array
     {
         return array_merge([
             'title' => $this->configSettings->title,
@@ -90,7 +111,7 @@ class View
         ], $params);
     }
 
-    public function parsePlaceholders(string $text, array $extraParams = []): string
+    private function parsePlaceholders(string $text, array $extraParams = []): string
     {
         $params = $this->getDefaultParams($extraParams);
 
@@ -119,6 +140,8 @@ class View
     public function setViewsPath(string $viewsPath): void
     {
         $this->viewsPath = $viewsPath;
+        $this->baseDir = $this->normalizePath($viewsPath);
+        $this->templateEngine->setBaseDir($this->baseDir);
     }
 
     public function getBaseDir(): string
@@ -129,5 +152,6 @@ class View
     public function setBaseDir(string $baseDir): void
     {
         $this->baseDir = $baseDir;
+        $this->templateEngine->setBaseDir($baseDir);
     }
 }

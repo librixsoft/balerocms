@@ -40,4 +40,11 @@ class LangManager
     {
         return $this->currentLang;
     }
+
+    public function setCurrentLang(string $lang): void
+    {
+        $this->currentLang = $lang;
+    }
+
+
 }
