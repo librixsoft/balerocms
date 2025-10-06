@@ -12,6 +12,8 @@ services:
     volumes:
       - ./:/app
     working_dir: /app
+    environment:
+      - XDEBUG_MODE=coverage
     command: sh -c "php bin/cache_routes.php && tail -f /dev/null" # Generar cache de Balero
   # -----------------------------
   # LAMP Stack (Apache + PHP, sin MySQL)
