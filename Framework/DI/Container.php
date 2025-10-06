@@ -77,7 +77,7 @@ class Container
             $constructor = $reflector->getConstructor();
             $instance = ($constructor && $constructor->getNumberOfParameters() > 0)
                 ? $this->createWithConstructor($reflector, $constructor)
-                : $reflector->newInstance();
+                : $this->createWithoutConstructor($reflector);
 
             // --- Inyección de propiedades #[Inject] ---
             foreach ($reflector->getProperties() as $prop) {
@@ -125,5 +125,16 @@ class Container
             }
         }
         return $reflector->newInstanceArgs($params);
+    }
+
+    /**
+     * Crea una instancia de la clase sin pasar parámetros al constructor
+     *
+     * @param ReflectionClass $reflector Reflección de la clase a instanciar
+     * @return object Instancia creada sin argumentos
+     */
+    private function createWithoutConstructor(ReflectionClass $reflector): object
+    {
+        return $reflector->newInstance();
     }
 }
