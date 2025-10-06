@@ -6,7 +6,7 @@
  * Centraliza la creación de instancias de clases, soportando:
  * - Inyección por constructor
  * - Inyección de propiedades marcadas con #[Inject]
- * - Resolución delegada a un contenedor que implementa `resolve(string $className): object`
+ * - Resolución delegada a un contenedor que implementa `get(string $className): object`
  *
  * @author Anibal Gomez <balerocms@gmail.com>
  * @license GNU General Public License
