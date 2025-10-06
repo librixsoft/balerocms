@@ -14,7 +14,10 @@ services:
     working_dir: /app
     environment:
       - XDEBUG_MODE=coverage
-    command: sh -c "php bin/cache_routes.php && tail -f /dev/null" # Generar cache de Balero
+    command:
+      - sh
+      - -c
+      - "git config --global --add safe.directory /app; php bin/cache_routes.php; tail -f /dev/null"
   # -----------------------------
   # LAMP Stack (Apache + PHP, sin MySQL)
   # -----------------------------
