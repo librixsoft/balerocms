@@ -8,8 +8,13 @@ use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
 use Framework\Core\View;
 use Framework\Testing\TestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestDox;
 
 #[SetupTestContainer]
+#[CoversClass(TestController::class)]
+#[TestDox('Test del controlador TestController')]
 class TestControllerTest extends TestCase
 {
     #[InjectMocks]
@@ -24,6 +29,8 @@ class TestControllerTest extends TestCase
         parent::setUp();
     }
 
+    #[Test]
+    #[TestDox('Verifica que getNotification llame al render correctamente')]
     public function testGetNotificationCallsRender(): void
     {
         $viewMock = $this->getMock(View::class);
@@ -39,6 +46,8 @@ class TestControllerTest extends TestCase
         $this->assertSame('rendered content', $result);
     }
 
+    #[Test]
+    #[TestDox('Verifica que testModelConnectMethod invoque connect del modelo')]
     public function testModelConnectIsCalled(): void
     {
         $modelMock = $this->getMock(TestModel::class);

@@ -11,4 +11,5 @@ node_modules/
 /vendor/
 /cache/controllers.cache.php
 .phpunit.result.cache
-build/
+/build/
+.phpunit.cache/

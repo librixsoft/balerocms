@@ -98,22 +98,22 @@ npm install
 
 ## Run Unit Tests
 
-Create tests in `tests/Framework` and run:
+Create tests in `Tests/Framework` and run:
 
 ```bash
-composer install
-composer test
+
+docker compose exec phpunit composer install
+docker compose exec phpunit composer test
+
 ```
 
 ## Generate code coverage with Docker + PHPUnit
 
 ```bash
 docker compose run --rm phpunit \
-  php -d xdebug.mode=coverage ./vendor/bin/phpunit \
-  -c phpunit.xml \
-  --coverage-clover build/logs/coverage.xml \
-  --coverage-filter Framework \
-  --coverage-filter App
+  php -d xdebug.mode=coverage ./vendor/bin/phpunit \    
+  --configuration phpunit.xml \                                  
+  --coverage-clover ./build/clover.xml
 ```
 
 It will create: build/logs/coverage.xml

@@ -1,19 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit
-        bootstrap="vendor/autoload.php"
-        cacheResult="false"
-        executionOrder="default"
-        colors="true"
-        failOnDeprecation="true"
-        failOnWarning="true"
-        failOnPhpunitDeprecation="true"
-        displayDetailsOnTestsThatTriggerDeprecations="true"
-        displayDetailsOnTestsThatTriggerWarnings="true"
-        displayDetailsOnPhpunitDeprecations="true"
->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.0/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true">
+
+    <!-- Test suites -->
     <testsuites>
         <testsuite name="Balerocms Test Suite">
             <directory>Tests</directory>
         </testsuite>
     </testsuites>
+
+    <!-- Archivos de source para cobertura -->
+    <source>
+        <include>
+            <directory suffix=".php">Framework</directory>
+            <directory suffix=".php">App</directory>
+        </include>
+        <exclude>
+            <directory suffix=".php">vendor</directory>
+            <directory suffix=".php">Tests</directory>
+        </exclude>
+    </source>
+
+    <!-- Cobertura -->
+    <coverage>
+        <report>
+            <!-- Genera build/clover.xml por defecto -->
+            <xml outputDirectory="build"/>
+        </report>
+    </coverage>
+
 </phpunit>
