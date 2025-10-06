@@ -103,7 +103,7 @@ Create tests in `Tests/Framework` and run:
 ```bash
 
 docker compose exec phpunit composer install
-docker compose exec phpunit composer test
+docker compose exec -e XDEBUG_MODE=coverage phpunit composer test
 
 ```
 
