@@ -7,7 +7,7 @@ use Framework\Attributes\Controller;
 use Framework\Core\View;
 use Framework\Http\Get;
 
-#[Controller('/test-with-contructor')]
+#[Controller('/other')]
 class TestControllerWithConstructor
 {
 
