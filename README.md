@@ -111,9 +111,8 @@ docker compose exec phpunit composer test
 
 ```bash
 docker compose run --rm phpunit \
-  php -d xdebug.mode=coverage ./vendor/bin/phpunit \    
-  --configuration phpunit.xml \                                  
-  --coverage-clover ./build/clover.xml
+  php -d xdebug.mode=coverage ./vendor/bin/phpunit \
+  --configuration phpunit.xml
 ```
 
 It will create: build/clover.xml

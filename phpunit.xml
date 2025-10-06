@@ -26,8 +26,10 @@
     <!-- Cobertura -->
     <coverage>
         <report>
-            <!-- Genera build/clover.xml por defecto -->
-            <xml outputDirectory="build"/>
+            <!-- Genera reporte Clover -->
+            <clover outputFile="build/clover.xml"/>
+            <!-- Opcional: también puedes agregar HTML -->
+            <html outputDirectory="build/coverage-html"/>
         </report>
     </coverage>
 
