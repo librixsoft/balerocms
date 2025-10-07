@@ -9,28 +9,28 @@ use Framework\Exceptions\RouterException;
 use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
 
+/**
+ * Router principal de la aplicación
+ *
+ * Responsabilidades:
+ * - Inicializar sesión y configuración base
+ * - Encontrar el controller que maneja la ruta solicitada
+ * - Instanciar el controller vía Container
+ * - Delegar a BaseController para routing interno y ejecución
+ */
 class Router
 {
-
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
     private Container $container;
     private ErrorConsole $errorConsole;
 
-    /**
-     * Router constructor.
-     *
-     * @param RequestHelper $requestHelper Helper for accessing HTTP request information
-     * @param ConfigSettings $configSettings Global application configuration
-     * @param Container $container Dependency injection container
-     */
     public function __construct(
         RequestHelper $requestHelper,
         ConfigSettings $configSettings,
         Container $container,
         ErrorConsole $errorConsole
-    )
-    {
+    ) {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
         $this->container = $container;
@@ -38,70 +38,137 @@ class Router
     }
 
     /**
-     * Initializes the application and resolves the controller matching the requested path.
+     * Inicializa la aplicación y ejecuta el controller/método correspondiente
      *
-     * - Starts the session if not already active.
-     * - Sets the session language.
-     * - Attempts to load controllers from cache.
-     * - If cache does not exist, scans the controllers directory.
-     * - Finds the controller that matches the requested URL.
-     * - Instantiates the controller using the dependency container.
+     * Flujo:
+     * 1. Inicia sesión y configura basepath
+     * 2. Encuentra el controller que maneja la ruta
+     * 3. Instancia el controller (Container)
+     * 4. Ejecuta el routing interno (BaseController)
      *
-     * @throws RouterException If no controller is found for the requested path or instantiation fails.
+     * @throws RouterException Si no se encuentra controller o falla la instanciación
      */
     public function initBalero(): void
+    {
+        $this->initializeSession();
+        $this->initializeBasepath();
+
+        $requestedPath = $this->requestHelper->getPath();
+        $matchedController = $this->findMatchingController($requestedPath);
+
+        if (!$matchedController) {
+            throw new RouterException("No controller found for path: {$requestedPath}");
+        }
+
+        $this->executeController($matchedController);
+    }
+
+    /**
+     * Inicializa la sesión y el idioma
+     */
+    private function initializeSession(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
         $_SESSION['lang'] = $_SESSION['lang'] ?? $this->configSettings->language ?? 'en';
-        $this->configSettings->basepath = $this->configSettings->basepath ?: rtrim($this->configSettings->getFullBasepath(), '/') . '/';
+    }
 
-        $requestedPath = $this->requestHelper->getPath();
+    /**
+     * Configura el basepath de la aplicación
+     */
+    private function initializeBasepath(): void
+    {
+        if (empty($this->configSettings->basepath)) {
+            $this->configSettings->basepath = rtrim(
+                    $this->configSettings->getFullBasepath(),
+                    '/'
+                ) . '/';
+        }
+    }
+
+    /**
+     * Encuentra el controller que coincide con la ruta solicitada
+     *
+     * Prioriza el cache, si no existe escanea directorios
+     *
+     * @param string $requestedPath Ruta solicitada (ej: /installer/)
+     * @return string|null FQCN del controller o null si no se encuentra
+     */
+    private function findMatchingController(string $requestedPath): ?string
+    {
         $cacheFile = LOCAL_DIR . '/cache/controllers.cache.php';
 
         if (file_exists($cacheFile)) {
-            $controllers = require $cacheFile;
+            return $this->findFromCache($cacheFile, $requestedPath);
+        }
 
-            $matchedControllerEntry = array_filter(
-                $controllers,
-                fn($controller) => str_starts_with($requestedPath, $controller['path'])
-            );
+        $this->errorConsole->warning("Routes cache file does not exist: $cacheFile");
+        return $this->findByScan($requestedPath);
+    }
 
-            $matchedControllerEntry = array_shift($matchedControllerEntry);
+    /**
+     * Busca controller desde el archivo de cache
+     *
+     * @param string $cacheFile Ruta del archivo cache
+     * @param string $requestedPath Ruta solicitada
+     * @return string|null FQCN del controller encontrado
+     */
+    private function findFromCache(string $cacheFile, string $requestedPath): ?string
+    {
+        $controllers = require $cacheFile;
 
-            if (!$matchedControllerEntry) {
-                throw new RouterException("No controller found for path: {$requestedPath}");
-            }
+        $matchedControllerEntry = array_filter(
+            $controllers,
+            fn($controller) => str_starts_with($requestedPath, $controller['path'])
+        );
 
-            $matchedController = $matchedControllerEntry['class'];
-        } else {
-            if (!file_exists($cacheFile)) {
-                $this->errorConsole->warning("Routes cache file does not exist: ' . $cacheFile ");
-            }
+        $matchedControllerEntry = array_shift($matchedControllerEntry);
+        return $matchedControllerEntry['class'] ?? null;
+    }
 
-            $controllers = $this->getControllersFromNamespace(
-                'App\\Controllers',
-                LOCAL_DIR . '/App/Controllers'
-            );
+    /**
+     * Busca controller escaneando el directorio App/Controllers
+     *
+     * @param string $requestedPath Ruta solicitada
+     * @return string|null FQCN del controller encontrado
+     */
+    private function findByScan(string $requestedPath): ?string
+    {
+        $controllers = $this->getControllersFromNamespace(
+            'App\\Controllers',
+            LOCAL_DIR . '/App/Controllers'
+        );
 
-            $baseController = $this->container->get(BaseController::class);
-            $matchedController = null;
+        $baseController = $this->container->get(BaseController::class);
 
-            // Mantener foreach aquí como estaba
-            foreach ($controllers as $className) {
-                $pathUrl = $baseController->getControllerPathUrl($className);
-                if (str_starts_with($requestedPath, $pathUrl)) {
-                    $matchedController = $className;
-                    break;
-                }
+        foreach ($controllers as $className) {
+            $pathUrl = $baseController->getControllerPathUrl($className);
+            if (str_starts_with($requestedPath, $pathUrl)) {
+                return $className;
             }
         }
 
-        // Instantiate the controller
+        return null;
+    }
+
+    /**
+     * Instancia y ejecuta el controller encontrado
+     *
+     * @param string $matchedController FQCN del controller
+     * @throws RouterException Si falla la instanciación o ejecución
+     */
+    private function executeController(string $matchedController): void
+    {
         try {
-            $this->container->get($matchedController);
+            // 1. Instanciar controller (Container resuelve dependencias)
+            $controllerInstance = $this->container->get($matchedController);
+
+            // 2. Ejecutar routing interno y método correspondiente
+            $baseController = $this->container->get(BaseController::class);
+            $baseController->initControllerAndRoute($controllerInstance);
+
         } catch (\Throwable $e) {
             throw new RouterException(
                 "Error loading controller '$matchedController': " . $e->getMessage(),
@@ -112,11 +179,13 @@ class Router
     }
 
     /**
-     * If cache fails scans a directory of controllers and returns all classes within the given namespace.
+     * Escanea directorio de controllers y retorna todas las clases encontradas
      *
-     * @param string $namespace Base namespace to search for classes
-     * @param string $path Physical directory path containing the controllers
-     * @return string[] Array of fully-qualified class names found
+     * Recursivo: escanea subdirectorios (ej: ApiControllers, AdminControllers)
+     *
+     * @param string $namespace Namespace base (ej: App\Controllers)
+     * @param string $path Ruta física del directorio
+     * @return string[] Array de FQCN de controllers encontrados
      */
     private function getControllersFromNamespace(string $namespace, string $path): array
     {
@@ -131,7 +200,7 @@ class Router
             $fullPath = $path . DIRECTORY_SEPARATOR . $file;
 
             if (is_dir($fullPath)) {
-                // Recursive scan for subfolders (e.g., ApiControllers, AdminControllers, etc.)
+                // Escaneo recursivo de subdirectorios
                 $controllers = array_merge(
                     $controllers,
                     $this->getControllersFromNamespace($namespace . '\\' . $file, $fullPath)
@@ -139,7 +208,7 @@ class Router
             } elseif (pathinfo($file, PATHINFO_EXTENSION) === 'php') {
                 $className = $namespace . '\\' . pathinfo($file, PATHINFO_FILENAME);
 
-                // Check that the class exists (PSR-4 autoload will load it)
+                // Verificar que la clase existe (autoload PSR-4)
                 if (class_exists($className)) {
                     $controllers[] = $className;
                 }
