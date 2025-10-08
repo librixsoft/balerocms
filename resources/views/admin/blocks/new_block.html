@@ -6,79 +6,60 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Bootstrap CSS -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/css/dashboard.css" rel="stylesheet">
     <link href="assets/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/summernote.min.css" rel="stylesheet">
 
+    <!-- Quill CSS -->
+    <link href="assets/css/quill.snow.css" rel="stylesheet">
+
+    <!-- Vue 3 + Quill JS -->
+    <script src="assets/js/vue.global.prod.js"></script>
+    <script src="assets/js/quill.min.js"></script>
+
+    <!-- jQuery & Bootstrap Bundle -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/summernote.min.js"></script>
 </head>
 <body>
 
 <%-- @include "admin/includes/navbar.html" -->
-<div class="container-fluid">
+<div class="container-fluid" id="app">
     <div class="row">
         <%-- @include "admin/includes/sidebar.html" -->
-        <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
+        <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
             <div class="row mb-3">
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">{admin.new_block}</h5>
                     </div>
                     <div class="card-body">
-                        <form action="./admin/blocks/new" method="post">
+                        <form @submit.prevent="submitForm">
                             <div class="mb-3">
                                 <label class="form-label" for="block_name">{admin.name}</label>
-                                <input class="form-control" id="block_name" name="name" required type="text" value="">
+                                <input type="text" id="block_name" class="form-control" v-model="blockName" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label" for="sort_order">{admin.order}</label>
-                                <input class="form-control" id="sort_order" name="sort_order" required
-                                       type="number" value="{next_sort_order}">
+                                <input type="number" id="sort_order" class="form-control" v-model.number="sortOrder" required>
                             </div>
 
                             <div class="mb-3">
                                 <label class="form-label" for="block_content">{admin.content}</label>
-                                <textarea class="form-control summernote" id="block_content" name="content"></textarea>
+                                <!-- Quill editor -->
+                                <div id="quill-editor" style="height:350px;"></div>
                             </div>
 
                             <div class="text-end">
-                                <button class="btn btn-sm btn-success" type="submit">
+                                <button type="submit" class="btn btn-sm btn-success">
                                     <i class="fas fa-plus"></i> {admin.create}
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
-
-                <script>
-                    $(document).ready(function () {
-                        $('.summernote').summernote({
-                            height: 350,
-                            callbacks: {
-                                onImageUpload: function (files) {
-                                    var data = new FormData();
-                                    data.append("file", files[0]);
-                                    $.ajax({
-                                        url: "{basepath}admin/uploader",
-                                        type: "POST",
-                                        data: data,
-                                        cache: false,
-                                        contentType: false,
-                                        processData: false,
-                                        success: function (url) {
-                                            $('.summernote').summernote('insertImage', url);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-                    });
-                </script>
-
             </div>
         </main>
     </div>
@@ -88,6 +69,43 @@
     </footer>
 </div>
 
-<script src="assets/js/scripts.js"></script>
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                blockName: '',
+                sortOrder: {next_sort_order},
+                quill: null
+            }
+        },
+        mounted() {
+            this.quill = new Quill('#quill-editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ header: [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ list: 'ordered' }, { list: 'bullet' }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                }
+            });
+        },
+        methods: {
+            submitForm() {
+                const content = this.quill.root.innerHTML;
+                console.log("Block name:", this.blockName);
+                console.log("Sort order:", this.sortOrder);
+                console.log("Content HTML:", content);
+
+                // Aquí puedes hacer un fetch/AJAX para enviar los datos al backend
+            }
+        }
+    }).mount('#app');
+</script>
+
 </body>
 </html>
