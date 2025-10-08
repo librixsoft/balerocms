@@ -6,14 +6,19 @@
     <title>Installing...</title>
 
     <link href="{basepath}favicon.ico" rel="shortcut icon">
-
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
+        html {
+            background: #e0f2ff; /* fallback */
+            background-image: linear-gradient(to bottom, hsla(200, 80%, 85%, .8), hsla(210, 80%, 95%, .3));
+            font-size: 100%;
+            min-height: 100%;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background: #f0f4fb;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -22,18 +27,56 @@
             font-family: sans-serif;
         }
 
-        .cloud {
-            width: 220px;
-            height: auto;
-            margin-bottom: 30px;
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px; /* separación ajustada */
         }
 
+        /* Nube */
+        .cloud {
+            background-color: #fff;
+            background-image: linear-gradient(hsla(0,0%,0%,0), hsla(0,0%,0%,.1));
+            border-radius: 1em;
+            box-shadow: inset 0 0 0 1px hsla(0,0%,100%,.5);
+            display: inline-block;
+            height: 1em;
+            width: 3em;
+            position: relative;
+            filter: drop-shadow(0 2px 3px hsla(0,0%,0%,.25));
+        }
+        .cloud.big {
+            transform: scale(3);
+        }
+        .cloud:after,
+        .cloud:before {
+            background-color: #fff;
+            content: '';
+            border-radius: 100%;
+            position: absolute;
+        }
+        .cloud:after {
+            background-image: linear-gradient(hsla(0,0%,0%,0) 50%, hsla(0,0%,0%,.025));
+            height: 1em;
+            width: 1em;
+            right: .4em;
+            top: -.5em;
+        }
+        .cloud:before {
+            background-image: linear-gradient(hsla(0,0%,0%,0) 50%, hsla(0,0%,0%,.075));
+            height: 1.6em;
+            width: 1.6em;
+            left: .4em;
+            top: -.75em;
+        }
+
+        /* Barra de progreso */
         .progress-container {
             width: 260px;
-            height: 12px;
+            height: 8px; /* más delgada */
             background: #ddd;
-            border-radius: 6px;
-            margin-bottom: 10px;
+            border-radius: 4px;
             overflow: hidden;
             box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
         }
@@ -42,36 +85,48 @@
             height: 100%;
             width: 0;
             background-color: #007BFF;
-            animation: load 5s linear forwards;
+            background-image: repeating-linear-gradient(
+                    45deg,
+                    rgba(255,255,255,0.3),
+                    rgba(255,255,255,0.3) 10px,
+                    rgba(0,0,0,0) 10px,
+                    rgba(0,0,0,0) 20px
+            );
+            animation: load 5s linear forwards, stripes 1s linear infinite;
         }
 
         @keyframes load {
-            to {
-                width: 100%;
-            }
+            to { width: 100%; }
         }
 
+        @keyframes stripes {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+
+        /* Texto */
         .message {
             color: #444;
-            font-size: 1.2rem;
+            font-size: 1rem;      /* tamaño más pequeño */
+            margin-top: 5px;      /* antes -10px, ahora lo subimos un poco más abajo */
         }
     </style>
 
     <script>
         setTimeout(() => {
-            window.location.href = "index.php";
+             window.location.href = "index.php";
         }, 5000);
     </script>
 </head>
 <body>
 
-<img alt="Cloud" class="cloud" src="assets/images/installer/cloud.png">
-
-<div class="progress-container">
-    <div class="progress-bar"></div>
+<div class="loader-container">
+    <i class="cloud big"></i>
+    <div class="message">Mounting system...</div>
+    <div class="progress-container">
+        <div class="progress-bar"></div>
+    </div>
 </div>
-
-<div class="message">Mounting system...</div>
 
 </body>
 </html>
