@@ -10,7 +10,7 @@ use Framework\Core\Model;
 
 class InstallerModel
 {
-    private string $tablesSqlPath = LOCAL_DIR . "/Modules/Installer/sql/tables.sql";
+    private string $tablesSqlPath = LOCAL_DIR . '/App/sql/tables.sql';
 
     #[Inject]
     private Model $model;

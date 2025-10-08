@@ -37,7 +37,9 @@ class ConfigSettings
     private array $data = [];
 
     // Constructor limpio para DI automático
-    public function __construct() {}
+    public function __construct() {
+        $this->getHandler();
+    }
 
     // Lazy handler
     private function getHandler(): JSONHandler
