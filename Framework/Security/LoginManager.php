@@ -10,24 +10,28 @@ namespace Framework\Security;
 
 use Framework\Core\ConfigSettings;
 use Framework\Http\RequestHelper;
-use Framework\Static\Hash;
+use Framework\Utils\Hash;
 
 class LoginManager
 {
     private Security $security;
     private ConfigSettings $config;
     private RequestHelper $requestHelper;
+    private Hash $hash;
+
     private string $message = '';
 
     public function __construct(
         Security $security,
         ConfigSettings $config,
-        RequestHelper $requestHelper
+        RequestHelper $requestHelper,
+        Hash $hash
     )
     {
         $this->security = $security;
         $this->config = $config;
         $this->requestHelper = $requestHelper;
+        $this->hash = $hash;
     }
 
     /**
@@ -53,7 +57,7 @@ class LoginManager
             $usr = $this->requestHelper->post('usr', '');
             $pwd = $this->requestHelper->post('pwd', '');
 
-            $verify = Hash::verify_hash($pwd, $this->config->pass);
+            $verify = $this->hash->verify_hash($pwd, $this->config->pass);
 
             if ($usr === $this->config->username && $verify) {
                 $value = base64_encode($usr . ':' . $this->config->pass);
