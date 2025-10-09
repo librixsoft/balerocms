@@ -40,7 +40,6 @@ createApp({
                 ['bold', 'italic', 'underline', 'strike'],
                 [{ list: 'ordered' }, { list: 'bullet' }],
                 ['link', 'image'],
-                ['clean'],
                 ['html']
             ];
 
