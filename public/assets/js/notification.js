@@ -1,29 +1,39 @@
-/**
- * Balero CMS Notification Flash Messages JS Lib
- * @param key SESSION key
- */
 // notification.js
-function deleteMessage(key) {
-    const formData = new FormData();
-    formData.append('key', key);
+window.NotificationHelper = {
+    dismissAlert(key, event) {
+        const alert = event.target.closest('.alert');
+        if (!alert) return;
 
-    fetch('notification/', {
-        method: 'POST',
-        body: formData
-    })
-        .then(res => res.json())
-        .then(data => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+
+        this.deleteMessage(key);
+    },
+
+    async deleteMessage(key) {
+        const formData = new FormData();
+        formData.append('key', key);
+
+        try {
+            const response = await fetch('notification/', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
             console.log(data.status, data.message);
-        })
-        .catch(err => console.error('Error deleting flash message:', err));
-}
+            return data;
+        } catch (err) {
+            console.error('Error deleting flash message:', err);
+        }
+    },
 
-document.addEventListener('DOMContentLoaded', () => {
-    const alerts = document.querySelectorAll('.alert-dismissible');
-    alerts.forEach(alert => {
-        alert.addEventListener('closed.bs.alert', () => {
-            const key = alert.id.replace('alert-', '');
-            deleteMessage(key);
+    init() {
+        const alerts = document.querySelectorAll('.alert-dismissible');
+        alerts.forEach(alert => {
+            alert.addEventListener('closed.bs.alert', () => {
+                const key = alert.getAttribute('data-key');
+                if (key) this.deleteMessage(key);
+            });
         });
-    });
-});
+    }
+};

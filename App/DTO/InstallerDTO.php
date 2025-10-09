@@ -32,24 +32,23 @@ class InstallerDTO
 
     public function fromRequest(RequestHelper $request): self
     {
-        $dto = new self();
+        $this->dbhost = $request->post('dbhost') ?? '';
+        $this->dbuser = $request->post('dbuser') ?? '';
+        $this->dbpass = $request->post('dbpass') ?? '';
+        $this->dbname = $request->post('dbname') ?? '';
+        $this->title = $request->post('title') ?? '';
+        $this->url = $request->post('url') ?? '';
+        $this->description = $request->post('description') ?? '';
+        $this->keywords = $request->post('keywords') ?? '';
+        $this->basepath = $request->post('basepath') ?? '';
+        $this->username = $request->post('username') ?? '';
+        $this->passwd = $request->post('passwd') ?? '';
+        $this->passwd2 = $request->post('passwd2') ?? '';
+        $this->firstname = $request->post('firstname') ?? '';
+        $this->lastname = $request->post('lastname') ?? '';
+        $this->email = $request->post('email') ?? '';
 
-        $dto->dbhost = $request->post('dbhost') ?? '';
-        $dto->dbuser = $request->post('dbuser') ?? '';
-        $dto->dbpass = $request->post('dbpass') ?? '';
-        $dto->dbname = $request->post('dbname') ?? '';
-        $dto->title = $request->post('title') ?? '';
-        $dto->url = $request->post('url') ?? '';
-        $dto->description = $request->post('description') ?? '';
-        $dto->keywords = $request->post('keywords') ?? '';
-        $dto->basepath = $request->post('basepath') ?? '';
-        $dto->username = $request->post('username') ?? '';
-        $dto->passwd = $request->post('passwd') ?? '';
-        $dto->passwd2 = $request->post('passwd2') ?? '';
-        $dto->firstname = $request->post('firstname') ?? '';
-        $dto->lastname = $request->post('lastname') ?? '';
-        $dto->email = $request->post('email') ?? '';
-
-        return $dto;
+        return $this;
     }
+
 }
