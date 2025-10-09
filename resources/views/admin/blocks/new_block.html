@@ -6,19 +6,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS PRIMERO -->
     <link href="assets/css/vendor/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/dashboard.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
     <link href="assets/css/vendor/all.min.css" rel="stylesheet">
 
     <!-- Quill CSS -->
     <link href="assets/css/vendor/quill.snow.css" rel="stylesheet">
 
-    <!-- Vue 3 + Quill JS -->
+    <!-- Custom styles AL FINAL para que sobrescriba Bootstrap -->
+    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
+
     <script src="assets/js/vendor/vue.global.prod.js"></script>
     <script src="assets/js/vendor/quill.min.js"></script>
-
-    <!-- jQuery & Bootstrap Bundle -->
     <script src="assets/js/vendor/jquery.min.js"></script>
     <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
 
@@ -50,142 +51,62 @@
 </head>
 <body>
 
-<%-- @include "admin/includes/navbar.html" -->
-<div class="container-fluid" id="app">
-    <div class="row">
-        <%-- @include "admin/includes/sidebar.html" -->
-        <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
-            <div class="row mb-3">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">{admin.new_block}</h5>
-                    </div>
-                    <div class="card-body">
-                        <form @submit.prevent="submitForm">
-                            <div class="mb-3">
-                                <label class="form-label" for="block_name">{admin.name}</label>
-                                <input type="text" id="block_name" class="form-control" v-model="blockName" required>
-                            </div>
+<div id="app">
+    <%-- @include "admin/includes/navbar.html" -->
+    <div class="container-fluid">
+        <div class="row">
+            <%-- @include "admin/includes/sidebar.html" -->
+            <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4">
+                <div class="row mb-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">{admin.new_block}</h5>
+                        </div>
+                        <div class="card-body">
+                            <form @submit.prevent="submitForm">
+                                <div class="mb-3">
+                                    <label class="form-label" for="block_name">{admin.name}</label>
+                                    <input type="text" id="block_name" class="form-control" v-model="blockName" required>
+                                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label" for="sort_order">{admin.order}</label>
-                                <input type="number" id="sort_order" class="form-control" v-model.number="sortOrder" required>
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="sort_order">{admin.order}</label>
+                                    <input type="number" id="sort_order" class="form-control" v-model.number="sortOrder" required>
+                                </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">{admin.content}</label>
-                                <!-- Quill editor -->
-                                <div id="quill-editor" style="height:350px;"></div>
-                            </div>
+                                <div class="mb-3">
+                                    <label class="form-label">{admin.content}</label>
+                                    <!-- Quill editor -->
+                                    <div id="quill-editor" style="height:350px;"></div>
+                                </div>
 
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="fas fa-plus"></i> {admin.create}
-                                </button>
-                            </div>
-                        </form>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="fas fa-plus"></i> {admin.create}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
+        <hr>
+        <footer>
+            <p>Powered by <a href="#">Balero CMS</a>.</p>
+        </footer>
     </div>
-    <hr>
-    <footer>
-        <p>Powered by <a href="#">Balero CMS</a>.</p>
-    </footer>
 </div>
 
+<!-- Configuración para el editor -->
 <script>
-    const { createApp } = Vue;
-
-    createApp({
-        data() {
-            return {
-                blockName: '',
-                sortOrder: {next_sort_order},
-                quill: null,
-                isHtmlMode: false,
-                htmlContent: ''
-            }
-        },
-        mounted() {
-            // Crear el icono SVG personalizado para el botón HTML
-            const icons = Quill.import('ui/icons');
-            icons['html'] = '<svg viewBox="0 0 18 18"><polyline class="ql-stroke" points="5 7 3 9 5 11"></polyline><polyline class="ql-stroke" points="13 7 15 9 13 11"></polyline><line class="ql-stroke" x1="10" y1="5" x2="8" y2="13"></line></svg>';
-
-            // Agregar el botón HTML al toolbar
-            const toolbarOptions = [
-                [{ header: [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline', 'strike'],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                ['link', 'image'],
-                ['clean'],
-                ['html']
-            ];
-
-            this.quill = new Quill('#quill-editor', {
-                theme: 'snow',
-                modules: {
-                    toolbar: {
-                        container: toolbarOptions,
-                        handlers: {
-                            'html': this.toggleHtmlMode
-                        }
-                    }
-                }
-            });
-        },
-        methods: {
-            toggleHtmlMode() {
-                const editorContainer = document.getElementById('quill-editor');
-                const editor = this.quill.root;
-
-                if (!this.isHtmlMode) {
-                    // Cambiar a modo HTML
-                    this.htmlContent = editor.innerHTML;
-                    editor.innerText = this.htmlContent;
-                    editorContainer.classList.add('html-mode');
-                    editor.contentEditable = true;
-                    this.isHtmlMode = true;
-                } else {
-                    // Volver a modo visual
-                    const htmlText = editor.innerText;
-                    editor.innerHTML = htmlText;
-                    editorContainer.classList.remove('html-mode');
-                    this.isHtmlMode = false;
-                }
-            },
-            async submitForm() {
-                // Asegurarse de estar en modo visual antes de enviar
-                if (this.isHtmlMode) {
-                    this.toggleHtmlMode();
-                }
-
-                const content = this.quill.root.innerHTML;
-
-                const payload = new FormData();
-                payload.append('name', this.blockName);
-                payload.append('sort_order', this.sortOrder);
-                payload.append('content', content);
-
-                try {
-                    const response = await fetch('/admin/blocks/new', {
-                        method: 'POST',
-                        body: payload
-                    });
-
-                    if (response.ok) {
-                        window.location.href = '/admin/blocks';
-                    } else {
-                        console.error('Error al crear el bloque');
-                    }
-                } catch (err) {
-                    console.error('Fetch error:', err);
-                }
-            }
-        }
-    }).mount('#app');
+    window.BLOCK_CONFIG = {
+        nextSortOrder: {next_sort_order}
+    };
 </script>
+
+<script src="assets/js/admin-theme.js"></script>
+<script src="assets/js/editor.js"></script>
 
 </body>
 </html>

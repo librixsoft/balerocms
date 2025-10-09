@@ -1,6 +1,7 @@
-const { createApp } = Vue;
+// admin-theme.js - Funcionalidad común del tema
+// Este objeto se puede reutilizar en diferentes vistas
 
-createApp({
+window.AdminTheme = {
     data() {
         return {
             isDark: false
@@ -34,4 +35,11 @@ createApp({
     mounted() {
         this.loadTheme();
     }
-}).mount('#app');
+};
+
+// Para vistas que SOLO necesitan el tema (como settings.html)
+// Montar automáticamente si no hay otro código que lo necesite
+if (document.getElementById('app') && typeof Quill === 'undefined') {
+    const { createApp } = Vue;
+    createApp(window.AdminTheme).mount('#app');
+}
