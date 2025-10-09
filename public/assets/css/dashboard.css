@@ -543,3 +543,85 @@ body.dark-theme .sidebar-nav .nav-link {
 body.dark-theme .col-md-3 {
     border-right: 1px solid #404040 !important;
 }
+
+/* WHITE FONTS EDITOR */
+.ql-html {
+    width: 28px !important;
+}
+.ql-html .ql-stroke {
+    stroke: #444;
+}
+.ql-html svg {
+    width: 18px;
+    height: 18px;
+}
+#quill-editor.html-mode .ql-editor {
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+}
+#quill-editor.html-mode .ql-toolbar {
+    pointer-events: none;
+    opacity: 0.6;
+}
+#quill-editor.html-mode .ql-html {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/* Estilos para tema oscuro en Quill - MÁS ESPECÍFICOS */
+body.dark-theme .ql-toolbar.ql-snow {
+    background-color: #343a40 !important;
+    border-color: #495057 !important;
+}
+
+body.dark-theme .ql-toolbar .ql-stroke {
+    stroke: #adb5bd !important;
+}
+
+body.dark-theme .ql-toolbar .ql-fill {
+    fill: #adb5bd !important;
+}
+
+body.dark-theme .ql-toolbar .ql-picker-label {
+    color: #adb5bd !important;
+}
+
+body.dark-theme .ql-container.ql-snow {
+    background-color: #212529 !important;
+    border-color: #495057 !important;
+}
+
+body.dark-theme .ql-editor {
+    color: #f8f9fa !important;
+    background-color: #212529 !important;
+}
+
+/* FORZAR color blanco en TODO el contenido del editor */
+body.dark-theme .ql-editor *,
+body.dark-theme .ql-editor p,
+body.dark-theme .ql-editor h1,
+body.dark-theme .ql-editor h2,
+body.dark-theme .ql-editor h3,
+body.dark-theme .ql-editor h4,
+body.dark-theme .ql-editor h5,
+body.dark-theme .ql-editor h6,
+body.dark-theme .ql-editor span,
+body.dark-theme .ql-editor strong,
+body.dark-theme .ql-editor em,
+body.dark-theme .ql-editor u,
+body.dark-theme .ql-editor li,
+body.dark-theme .ql-editor ol,
+body.dark-theme .ql-editor ul {
+    color: #f8f9fa !important;
+}
+
+body.dark-theme .ql-editor.ql-blank::before {
+    color: #6c757d !important;
+}
+
+/* Modo HTML en tema oscuro */
+body.dark-theme #quill-editor.html-mode .ql-editor {
+    background-color: #1a1d20 !important;
+    color: #f8f9fa !important;
+}
