@@ -10,18 +10,18 @@
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 
     <!-- Bootstrap CSS PRIMERO -->
-    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/vendor/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link href="assets/css/all.min.css" rel="stylesheet">
+    <link href="assets/css/vendor/all.min.css" rel="stylesheet">
 
     <!-- Custom styles AL FINAL para que sobrescriba Bootstrap -->
     <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
 
-    <script src="assets/js/vue.global.prod.js"></script>
-    <script src="assets/js/quill.min.js"></script>
-    <script src="assets/js/jquery.min.js"></script>
-    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/vendor/vue.global.prod.js"></script>
+    <script src="assets/js/vendor/quill.min.js"></script>
+    <script src="assets/js/vendor/jquery.min.js"></script>
+    <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
 </head>
 
 <body>
@@ -144,45 +144,7 @@
     </div>
 </div>
 
-<script>
-    const { createApp } = Vue;
-
-    createApp({
-        data() {
-            return {
-                isDark: false
-            }
-        },
-        methods: {
-            toggleTheme() {
-                this.isDark = !this.isDark;
-                if (this.isDark) {
-                    document.body.classList.add('dark-theme');
-                    document.querySelector('.navbar').classList.remove('navbar-light', 'bg-light');
-                    document.querySelector('.navbar').classList.add('navbar-dark', 'bg-dark');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                    document.querySelector('.navbar').classList.remove('navbar-dark', 'bg-dark');
-                    document.querySelector('.navbar').classList.add('navbar-light', 'bg-light');
-                    localStorage.setItem('theme', 'light');
-                }
-            },
-            loadTheme() {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'dark') {
-                    this.isDark = true;
-                    document.body.classList.add('dark-theme');
-                    document.querySelector('.navbar').classList.remove('navbar-light', 'bg-light');
-                    document.querySelector('.navbar').classList.add('navbar-dark', 'bg-dark');
-                }
-            }
-        },
-        mounted() {
-            this.loadTheme();
-        }
-    }).mount('#app');  // <--- CAMBIO AQUÍ: de '#themeToggleApp' a '#app'
-</script>
+<script src="assets/js/admin-theme.js"></script>
 
 </body>
 </html>
