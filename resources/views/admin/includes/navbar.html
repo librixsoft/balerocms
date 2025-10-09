@@ -19,15 +19,16 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                 <!-- Dropdown Preview -->
                 <li class="nav-item dropdown">
+
                     <a
-                            aria-expanded="false"
-                            class="nav-link dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            href="#"
-                            id="previewDropdown"
-                            role="button"
+                    aria-expanded="false"
+                    class="nav-link dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    id="previewDropdown"
+                    role="button"
                     >
-                        Preview
+                    Preview
                     </a>
                     <ul aria-labelledby="previewDropdown" class="dropdown-menu">
                         <li><a class="dropdown-item" href="./" target="_blank">Front-End</a></li>
@@ -52,23 +53,37 @@
 
             </ul>
 
-            <!-- Dropdown usuario a la derecha -->
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+            <!-- Toggle de tema y Dropdown usuario a la derecha -->
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+
                 <li class="nav-item dropdown">
+
                     <a
-                            aria-expanded="false"
-                            class="nav-link dropdown-toggle"
-                            data-bs-toggle="dropdown"
-                            href="#"
-                            id="userDropdown"
-                            role="button"
+                    aria-expanded="false"
+                    class="nav-link dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    id="userDropdown"
+                    role="button"
                     >
-                        <i class="fas fa-user"></i> {username} ({email})
+                    <i class="fas fa-user"></i> {username} ({email})
                     </a>
                     <ul aria-labelledby="userDropdown" class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="./login/logout">{admin.logout}</a></li>
                     </ul>
                 </li>
+
+                <!-- Toggle Dark/Light Mode -->
+                <li class="nav-item me-3">
+                    <button
+                            @click="toggleTheme"
+                            class="btn btn-sm btn-outline-secondary"
+                            :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+                    >
+                        <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                    </button>
+                </li>
+
             </ul>
         </div>
     </div>

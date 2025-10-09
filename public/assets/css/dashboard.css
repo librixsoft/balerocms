@@ -337,5 +337,101 @@ footer {
     width: 150px;
 }
 
+/* ==================== TEMA OSCURO ==================== */
 
+/* Body y contenedor principal */
+body.dark-theme {
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .container-fluid {
+    background-color: #1a1a1a !important;
+}
+
+/* Cards */
+body.dark-theme .card {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .card-header {
+    background-color: #252525 !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .card-body {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+}
+
+/* Forms */
+body.dark-theme .form-control,
+body.dark-theme .form-select {
+    background-color: #3d3d3d !important;
+    border-color: #555 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .form-control:focus,
+body.dark-theme .form-select:focus {
+    background-color: #3d3d3d !important;
+    border-color: #6ea8fe !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme textarea.form-control {
+    background-color: #3d3d3d !important;
+    color: #e0e0e0 !important;
+}
+
+/* Labels y Legend */
+body.dark-theme label,
+body.dark-theme .col-form-label {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme legend {
+    color: #e0e0e0 !important;
+}
+
+/* Breadcrumbs */
+body.dark-theme .breadcrumb-item a {
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .breadcrumb-item.active {
+    color: #adb5bd !important;
+}
+
+/* Dropdown menus */
+body.dark-theme .dropdown-menu {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+body.dark-theme .dropdown-item {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .dropdown-item:hover {
+    background-color: #3d3d3d !important;
+    color: #ffffff !important;
+}
+
+/* Footer */
+body.dark-theme footer {
+    color: #adb5bd !important;
+}
+
+body.dark-theme footer a {
+    color: #6ea8fe !important;
+}
+
+/* HR */
+body.dark-theme hr {
+    border-color: #404040 !important;
+}
 

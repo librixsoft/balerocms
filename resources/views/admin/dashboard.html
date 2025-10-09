@@ -1,155 +1,188 @@
 <!DOCTYPE html>
 <html class="no-js">
-<head>
 
+<head>
     <title>Admin Home Page - {mod_name}</title>
     <link href="favicon.ico" rel="shortcut icon">
-    <!--  basepath -->
     <base href="{basepath}">
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 
-    <!-- Bootstrap CSS -->
+    <!-- Bootstrap CSS PRIMERO -->
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom styles -->
-    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
-
-    <!-- Font Awesome 6 -->
+    <!-- Font Awesome -->
     <link href="assets/css/all.min.css" rel="stylesheet">
 
-    <!-- Summernote CSS -->
-    <link href="assets/css/summernote.min.css" rel="stylesheet">
+    <!-- Custom styles AL FINAL para que sobrescriba Bootstrap -->
+    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
 
-    <!-- jQuery -->
+    <script src="assets/js/vue.global.prod.js"></script>
+    <script src="assets/js/quill.min.js"></script>
     <script src="assets/js/jquery.min.js"></script>
-
-    <!-- Bootstrap Bundle JS (con Popper incluido) -->
     <script src="assets/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Summernote JS -->
-    <!-- TODO: summernote deprecated, Vue 3 + TipTap editor will be implemented -->
-    <script src="assets/js/summernote.min.js"></script>
 </head>
+
 <body>
+<div id="app">
+    <%-- @include "admin/includes/navbar.html" -->
 
-<%-- @include "admin/includes/navbar.html" -->
+    <div class="container-fluid">
+        <div class="row">
 
-<div class="container-fluid">
-    <div class="row">
+            <!-- Incluimos el sidebar aquí -->
+            <%-- @include "admin/includes/sidebar.html" -->
 
-        <!-- Incluimos el sidebar aquí -->
-        <%-- @include "admin/includes/sidebar.html" -->
+            <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
+                <div class="row mb-3">
 
-        <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
-            <div class="row mb-3">
+                    <!-- dashboard dinamic content -->
+                    <!-- block -->
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="./admin">Dashboard</a></li>
+                                <li aria-current="page" class="breadcrumb-item active">{mod_name}</li>
+                            </ul>
+                        </div>
 
-                <!-- dashboard dinamic content -->
-                <!-- block -->
-                <div class="card">
-                    <div class="card-header">
-                        <ul class="breadcrumb mb-0">
-                            <li class="breadcrumb-item"><a href="./admin">Dashboard</a></li>
-                            <li aria-current="page" class="breadcrumb-item active">{mod_name}</li>
-                        </ul>
+                        <div class="card-body">
+
+                            <form action="./admin/settings" method="POST">
+                                <fieldset>
+                                    <legend>{admin.settings}</legend>
+
+                                    <div class="row mb-3">
+                                        <label for="core" class="col-sm-3 col-form-label text-end">Core</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" readonly class="form-control bg-secondary text-white" id="core" name="core" value="{core_version}">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <label for="language" class="col-sm-3 col-form-label text-end">{admin.language}</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" id="language" name="language">
+                                                <%-- @foreach languages as code => name -->
+                                                <%-- @if defaultLanguage == code -->
+                                                <option selected value="{code}">{name}</option>
+                                                <%-- @else -->
+                                                <option value="{code}">{name}</option>
+                                                <%-- @endif -->
+                                                <%-- @endforeach -->
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <label for="theme" class="col-sm-3 col-form-label text-end">{admin.theme}</label>
+                                        <div class="col-sm-9">
+                                            <select class="form-select" id="theme" name="theme">
+                                                <%-- @foreach themes as t -->
+                                                <%-- @if defaultTheme == t -->
+                                                <option selected value="{t}">{t}</option>
+                                                <%-- @else -->
+                                                <option value="{t}">{t}</option>
+                                                <%-- @endif -->
+                                                <%-- @endforeach -->
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <label for="typeahead" class="col-sm-3 col-form-label text-end">{admin.title}</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="typeahead" name="title"
+                                                   data-provide="typeahead" value="{txt_title}">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <label for="keywords" class="col-sm-3 col-form-label text-end">{admin.keywords}</label>
+                                        <div class="col-sm-9">
+                                            <input type="text" class="form-control" id="keywords" name="keywords" value="{txt_keywords}">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <label for="description" class="col-sm-3 col-form-label text-end">{admin.description}</label>
+                                        <div class="col-sm-9">
+                                            <textarea class="form-control" id="description" name="description" style="height:200px;">{txt_description}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <label for="footer" class="col-sm-3 col-form-label text-end">{admin.footer}</label>
+                                        <div class="col-sm-9">
+                                            <textarea class="form-control" id="footer" name="footer" style="height:200px;">{txt_footer}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="offset-sm-3 col-sm-9">
+                                            <button class="btn btn-primary" name="submit" type="submit">{admin.save_changes}</button>
+                                            <button class="btn btn-secondary" name="cancel" type="reset">{admin.cancel}</button>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </form>
+
+                        </div>
+
                     </div>
-
-                    <div class="card-body">
-
-                        <form action="./admin/settings" method="POST">
-                            <fieldset>
-                                <legend>{admin.settings}</legend>
-
-                                <div class="row mb-3">
-                                    <label for="core" class="col-sm-3 col-form-label text-end">Core</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" readonly class="form-control bg-secondary text-white" id="core" name="core" value="{core_version}">
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="language" class="col-sm-3 col-form-label text-end">{admin.language}</label>
-                                    <div class="col-sm-9">
-                                        <select class="form-select" id="language" name="language">
-                                            <%-- @foreach languages as code => name -->
-                                            <%-- @if defaultLanguage == code -->
-                                            <option selected value="{code}">{name}</option>
-                                            <%-- @else -->
-                                            <option value="{code}">{name}</option>
-                                            <%-- @endif -->
-                                            <%-- @endforeach -->
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="theme" class="col-sm-3 col-form-label text-end">{admin.theme}</label>
-                                    <div class="col-sm-9">
-                                        <select class="form-select" id="theme" name="theme">
-                                            <%-- @foreach themes as t -->
-                                            <%-- @if defaultTheme == t -->
-                                            <option selected value="{t}">{t}</option>
-                                            <%-- @else -->
-                                            <option value="{t}">{t}</option>
-                                            <%-- @endif -->
-                                            <%-- @endforeach -->
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="typeahead" class="col-sm-3 col-form-label text-end">{admin.title}</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" id="typeahead" name="title"
-                                               data-provide="typeahead" value="{txt_title}">
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="keywords" class="col-sm-3 col-form-label text-end">{admin.keywords}</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" id="keywords" name="keywords" value="{txt_keywords}">
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="description" class="col-sm-3 col-form-label text-end">{admin.description}</label>
-                                    <div class="col-sm-9">
-                                        <textarea class="form-control" id="description" name="description" style="height:200px;">{txt_description}</textarea>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <label for="footer" class="col-sm-3 col-form-label text-end">{admin.footer}</label>
-                                    <div class="col-sm-9">
-                                        <textarea class="form-control" id="footer" name="footer" style="height:200px;">{txt_footer}</textarea>
-                                    </div>
-                                </div>
-
-                                <div class="row mb-3">
-                                    <div class="offset-sm-3 col-sm-9">
-                                        <button class="btn btn-primary" name="submit" type="submit">{admin.save_changes}</button>
-                                        <button class="btn btn-secondary" name="cancel" type="reset">{admin.cancel}</button>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </form>
-
-                    </div>
+                    <!-- /block -->
+                    <!-- end dashboard dinamic content --->
 
                 </div>
-                <!-- /block -->
-                <!-- end dashboard dinamic content --->
-
-            </div>
-        </main>
+            </main>
+        </div>
+        <hr>
+        <footer>
+            <p>Powered by <a href="#">Balero CMS</a>.</p>
+        </footer>
     </div>
-    <hr>
-    <footer>
-        <p>Powered by <a href="#">Balero CMS</a>.</p>
-    </footer>
 </div>
+
+<script>
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                isDark: false
+            }
+        },
+        methods: {
+            toggleTheme() {
+                this.isDark = !this.isDark;
+                if (this.isDark) {
+                    document.body.classList.add('dark-theme');
+                    document.querySelector('.navbar').classList.remove('navbar-light', 'bg-light');
+                    document.querySelector('.navbar').classList.add('navbar-dark', 'bg-dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                    document.querySelector('.navbar').classList.remove('navbar-dark', 'bg-dark');
+                    document.querySelector('.navbar').classList.add('navbar-light', 'bg-light');
+                    localStorage.setItem('theme', 'light');
+                }
+            },
+            loadTheme() {
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark') {
+                    this.isDark = true;
+                    document.body.classList.add('dark-theme');
+                    document.querySelector('.navbar').classList.remove('navbar-light', 'bg-light');
+                    document.querySelector('.navbar').classList.add('navbar-dark', 'bg-dark');
+                }
+            }
+        },
+        mounted() {
+            this.loadTheme();
+        }
+    }).mount('#app');  // <--- CAMBIO AQUÍ: de '#themeToggleApp' a '#app'
+</script>
 
 </body>
 </html>
