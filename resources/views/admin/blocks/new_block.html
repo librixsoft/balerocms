@@ -95,13 +95,29 @@
             });
         },
         methods: {
-            submitForm() {
+            async submitForm() {
                 const content = this.quill.root.innerHTML;
-                console.log("Block name:", this.blockName);
-                console.log("Sort order:", this.sortOrder);
-                console.log("Content HTML:", content);
 
-                // Aquí puedes hacer un fetch/AJAX para enviar los datos al backend
+                const payload = new FormData();
+                payload.append('name', this.blockName);
+                payload.append('sort_order', this.sortOrder);
+                payload.append('content', content);
+
+                try {
+                    const response = await fetch('/admin/blocks/new', {
+                        method: 'POST',
+                        body: payload
+                    });
+
+                    if (response.ok) {
+                        // Redirige o muestra un mensaje de éxito
+                        window.location.href = '/admin/blocks';
+                    } else {
+                        console.error('Error al crear el bloque');
+                    }
+                } catch (err) {
+                    console.error('Fetch error:', err);
+                }
             }
         }
     }).mount('#app');
