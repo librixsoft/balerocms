@@ -119,13 +119,25 @@ class Router
     {
         $controllers = require $cacheFile;
 
-        $matchedControllerEntry = array_filter(
-            $controllers,
-            fn($controller) => str_starts_with($requestedPath, $controller['path'])
-        );
+        // 🔧 Ordenar rutas por longitud descendente (más específicas primero)
+        usort($controllers, fn($a, $b) => strlen($b['path']) <=> strlen($a['path']));
 
-        $matchedControllerEntry = array_shift($matchedControllerEntry);
-        return $matchedControllerEntry['class'] ?? null;
+        // Normalizar paths (sin slash final excepto la raíz)
+        $requestedPath = rtrim($requestedPath, '/') ?: '/';
+
+        foreach ($controllers as $controller) {
+            $path = rtrim($controller['path'], '/') ?: '/';
+
+            if ($requestedPath === $path) {
+                return $controller['class'];
+            }
+
+            if ($path !== '/' && str_starts_with($requestedPath, $path . '/')) {
+                return $controller['class'];
+            }
+        }
+
+        return null;
     }
 
     /**
