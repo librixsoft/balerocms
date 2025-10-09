@@ -2,7 +2,7 @@
  * Balero CMS Notification Flash Messages JS Lib
  * @param key SESSION key
  */
-
+// notification.js
 function deleteMessage(key) {
     const formData = new FormData();
     formData.append('key', key);
