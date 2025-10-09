@@ -435,3 +435,111 @@ body.dark-theme hr {
     border-color: #404040 !important;
 }
 
+/* ==================== SIDEBAR ==================== */
+
+/* Sidebar en modo claro */
+.sidebar-nav {
+    background-color: #ffffff;
+    border-radius: 0.25rem;
+}
+
+#sidebar .rounded {
+    background-color: transparent;
+}
+
+.sidebar-nav .nav-link {
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.sidebar-nav .nav-link.active {
+    background-color: #0d6efd;
+    color: #ffffff;
+}
+
+/* Sidebar en modo oscuro */
+body.dark-theme #sidebar {
+    background-color: transparent !important;
+}
+
+body.dark-theme .sidebar-nav {
+    background-color: #2d2d2d !important;
+    border: 1px solid #404040;
+}
+
+body.dark-theme #sidebar .rounded {
+    background-color: transparent !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link:hover {
+    background-color: #3d3d3d !important;
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link.active {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .sidebar-nav .badge {
+    background-color: #dc3545 !important;
+}
+
+/* ==================== BORDES EN TEMA OSCURO ==================== */
+
+/* Sidebar - quitar borde blanco */
+body.dark-theme #sidebar {
+    border: none !important;
+}
+
+body.dark-theme #sidebar .rounded {
+    border: none !important;
+}
+
+body.dark-theme .sidebar-nav,
+body.dark-theme #sidebar .bg-white {
+    border: 1px solid #404040 !important;
+}
+
+/* Navbar - quitar borde blanco */
+body.dark-theme .navbar {
+    background-color: #2d2d2d !important;
+    border-bottom: 1px solid #404040 !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+/* Si el navbar tiene alguna clase de borde de Bootstrap */
+body.dark-theme .navbar.border,
+body.dark-theme .navbar.border-bottom {
+    border-color: #404040 !important;
+}
+
+/* Quitar bordes blancos de todos los elementos en el sidebar */
+body.dark-theme #sidebar * {
+    border-color: #404040 !important;
+}
+
+/* Nav items del sidebar */
+body.dark-theme .sidebar-nav .nav-item {
+    border: none !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link {
+    border: none !important;
+}
+
+/* Container del sidebar */
+body.dark-theme .col-md-3 {
+    border-right: 1px solid #404040 !important;
+}
