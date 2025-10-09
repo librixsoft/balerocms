@@ -14,7 +14,7 @@
             "email": "hola@librixsoft.com"
         },
         "system": {
-            "installed": "yes"
+            "installed": "no"
         },
         "site": {
             "language": "en",
