@@ -21,6 +21,32 @@
     <!-- jQuery & Bootstrap Bundle -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .ql-html {
+            width: 28px !important;
+        }
+        .ql-html .ql-stroke {
+            stroke: #444;
+        }
+        .ql-html svg {
+            width: 18px;
+            height: 18px;
+        }
+        #quill-editor.html-mode .ql-editor {
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            background-color: #f8f9fa;
+        }
+        #quill-editor.html-mode .ql-toolbar {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        #quill-editor.html-mode .ql-html {
+            pointer-events: auto;
+            opacity: 1;
+        }
+    </style>
 </head>
 <body>
 
@@ -47,7 +73,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label" for="block_content">{admin.content}</label>
+                                <label class="form-label">{admin.content}</label>
                                 <!-- Quill editor -->
                                 <div id="quill-editor" style="height:350px;"></div>
                             </div>
@@ -77,25 +103,64 @@
             return {
                 blockName: '',
                 sortOrder: {next_sort_order},
-                quill: null
+                quill: null,
+                isHtmlMode: false,
+                htmlContent: ''
             }
         },
         mounted() {
+            // Crear el icono SVG personalizado para el botón HTML
+            const icons = Quill.import('ui/icons');
+            icons['html'] = '<svg viewBox="0 0 18 18"><polyline class="ql-stroke" points="5 7 3 9 5 11"></polyline><polyline class="ql-stroke" points="13 7 15 9 13 11"></polyline><line class="ql-stroke" x1="10" y1="5" x2="8" y2="13"></line></svg>';
+
+            // Agregar el botón HTML al toolbar
+            const toolbarOptions = [
+                [{ header: [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                ['link', 'image'],
+                ['clean'],
+                ['html']
+            ];
+
             this.quill = new Quill('#quill-editor', {
                 theme: 'snow',
                 modules: {
-                    toolbar: [
-                        [{ header: [1, 2, 3, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
+                    toolbar: {
+                        container: toolbarOptions,
+                        handlers: {
+                            'html': this.toggleHtmlMode
+                        }
+                    }
                 }
             });
         },
         methods: {
+            toggleHtmlMode() {
+                const editorContainer = document.getElementById('quill-editor');
+                const editor = this.quill.root;
+
+                if (!this.isHtmlMode) {
+                    // Cambiar a modo HTML
+                    this.htmlContent = editor.innerHTML;
+                    editor.innerText = this.htmlContent;
+                    editorContainer.classList.add('html-mode');
+                    editor.contentEditable = true;
+                    this.isHtmlMode = true;
+                } else {
+                    // Volver a modo visual
+                    const htmlText = editor.innerText;
+                    editor.innerHTML = htmlText;
+                    editorContainer.classList.remove('html-mode');
+                    this.isHtmlMode = false;
+                }
+            },
             async submitForm() {
+                // Asegurarse de estar en modo visual antes de enviar
+                if (this.isHtmlMode) {
+                    this.toggleHtmlMode();
+                }
+
                 const content = this.quill.root.innerHTML;
 
                 const payload = new FormData();
@@ -110,7 +175,6 @@
                     });
 
                     if (response.ok) {
-                        // Redirige o muestra un mensaje de éxito
                         window.location.href = '/admin/blocks';
                     } else {
                         console.error('Error al crear el bloque');
