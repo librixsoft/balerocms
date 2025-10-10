@@ -1,4 +1,6 @@
 // setup-wizard.js
+import NotificationSystem from './notification.js';
+
 const { createApp } = Vue;
 
 createApp({
@@ -23,41 +25,31 @@ createApp({
                 }
             ],
             alerts: [],
-            tooltipElement: null
+            tooltipElement: null,
+            notificationSystem: null
         };
     },
 
     mounted() {
-        // Leer alertas desde el contenedor oculto del servidor
-        this.loadServerAlerts();
+        // Inicializar sistema de notificaciones
+        this.notificationSystem = new NotificationSystem({ autoInit: false });
+        this.notificationSystem.loadServerAlerts();
+        this.alerts = this.notificationSystem.alerts;
 
-        // Crear el elemento tooltip una sola vez
+        // Crear el elemento tooltip
         this.tooltipElement = document.createElement('div');
         this.tooltipElement.className = 'custom-tooltip';
         document.body.appendChild(this.tooltipElement);
     },
 
     methods: {
-        // Cargar alertas desde el HTML del servidor
-        loadServerAlerts() {
-            const serverAlertsContainer = document.getElementById('server-alerts');
-            if (!serverAlertsContainer) return;
+        // Gestión de alertas
+        addAlert(type, message, key = null, dismissible = true) {
+            this.notificationSystem.addAlert(type, message, key, dismissible);
+        },
 
-            const alertElements = serverAlertsContainer.querySelectorAll('div[data-type]');
-            alertElements.forEach(element => {
-                const alert = {
-                    id: element.dataset.id,
-                    type: element.dataset.type,
-                    icon: element.dataset.icon,
-                    message: element.dataset.message,
-                    key: element.dataset.key || null,
-                    dismissible: element.dataset.dismissible !== 'false'
-                };
-                this.alerts.push(alert);
-            });
-
-            // Limpiar el contenedor después de leer
-            serverAlertsContainer.remove();
+        dismissAlert(alertId) {
+            this.notificationSystem.dismissAlert(alertId);
         },
 
         // Navegación entre pasos
@@ -79,56 +71,6 @@ createApp({
             }
         },
 
-        // Gestión de alertas
-        addAlert(type, message, key = null, dismissible = true) {
-            const id = key || `alert-${Date.now()}`;
-            const icons = {
-                danger: 'fas fa-exclamation-triangle',
-                warning: 'fas fa-exclamation-triangle',
-                success: 'fas fa-check-circle',
-                info: 'fas fa-info-circle'
-            };
-
-            this.alerts.push({
-                id,
-                type,
-                icon: icons[type] || 'fas fa-info-circle',
-                message,
-                key,
-                dismissible
-            });
-        },
-
-        dismissAlert(alertId) {
-            const index = this.alerts.findIndex(a => a.id === alertId);
-            if (index > -1) {
-                const alert = this.alerts[index];
-                this.alerts.splice(index, 1);
-
-                // Si la alerta tiene una key, notificar al servidor
-                if (alert.key) {
-                    this.deleteMessage(alert.key);
-                }
-            }
-        },
-
-        async deleteMessage(key) {
-            const formData = new FormData();
-            formData.append('key', key);
-
-            try {
-                const response = await fetch('notification/', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                console.log(data.status, data.message);
-                return data;
-            } catch (err) {
-                console.error('Error deleting flash message:', err);
-            }
-        },
-
         // Gestión de tooltips
         showTooltip(event, message) {
             if (!this.tooltipElement) return;
@@ -136,23 +78,19 @@ createApp({
             const icon = event.target;
             const rect = icon.getBoundingClientRect();
 
-            // Configurar contenido y mostrar
             this.tooltipElement.innerHTML = message;
             this.tooltipElement.style.display = 'block';
             this.tooltipElement.style.opacity = '1';
 
-            // Esperar un frame para obtener dimensiones correctas
             this.$nextTick(() => {
                 const tooltipRect = this.tooltipElement.getBoundingClientRect();
                 let left = rect.left + window.scrollX - 12;
                 let top = rect.bottom + window.scrollY + 8;
 
-                // Ajustar si se sale por la derecha
                 if (left + tooltipRect.width > window.innerWidth) {
                     left = window.innerWidth - tooltipRect.width - 20 + window.scrollX;
                 }
 
-                // Ajustar si se sale por la izquierda
                 if (left < 0) {
                     left = 10 + window.scrollX;
                 }
@@ -169,7 +107,6 @@ createApp({
             }
         },
 
-        // Cambio de idioma
         submitLanguageForm() {
             this.$refs.languageForm.submit();
         }
