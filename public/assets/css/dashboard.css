@@ -625,3 +625,42 @@ body.dark-theme #quill-editor.html-mode .ql-editor {
     background-color: #1a1d20 !important;
     color: #f8f9fa !important;
 }
+
+/* ==================== NAVBAR TEMA OSCURO ==================== */
+
+/* Forzar colores en navbar oscuro */
+body.dark-theme .navbar {
+    background-color: #2d2d2d !important;
+    border-bottom: 1px solid #404040 !important;
+}
+
+/* Links y texto del navbar en tema oscuro */
+body.dark-theme .navbar .navbar-brand,
+body.dark-theme .navbar .nav-link,
+body.dark-theme .navbar .navbar-text {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .navbar .nav-link:hover,
+body.dark-theme .navbar .nav-link:focus {
+    color: #ffffff !important;
+}
+
+/* Dropdown toggle en navbar oscuro */
+body.dark-theme .navbar .dropdown-toggle {
+    color: #e0e0e0 !important;
+}
+
+/* Navbar toggler (hamburger menu) en tema oscuro */
+body.dark-theme .navbar-toggler {
+    border-color: #555 !important;
+}
+
+body.dark-theme .navbar-toggler-icon {
+    filter: invert(1);
+}
+
+/* Active nav item */
+body.dark-theme .navbar .nav-link.active {
+    color: #6ea8fe !important;
+}

@@ -3,6 +3,7 @@
 
 class AdminTheme {
     constructor() {
+        // Definir el objeto Vue reutilizable
         window.AdminTheme = {
             data() {
                 return {
@@ -12,6 +13,7 @@ class AdminTheme {
             methods: {
                 toggleTheme() {
                     this.isDark = !this.isDark;
+                    this.applyThemeToBody();
                     localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
                 },
                 loadTheme() {
@@ -19,14 +21,18 @@ class AdminTheme {
                     if (savedTheme === 'dark') {
                         this.isDark = true;
                     }
+                    this.applyThemeToBody();
+                },
+                applyThemeToBody() {
+                    // Manipular el body directamente (fuera de Vue)
+                    if (this.isDark) {
+                        document.body.classList.add('dark-theme');
+                    } else {
+                        document.body.classList.remove('dark-theme');
+                    }
                 }
             },
             computed: {
-                themeClasses() {
-                    return {
-                        'dark-theme': this.isDark
-                    };
-                },
                 navbarClasses() {
                     return {
                         'navbar-dark': this.isDark,
@@ -38,11 +44,16 @@ class AdminTheme {
             },
             mounted() {
                 this.loadTheme();
+            },
+            watch: {
+                // Observar cambios en isDark
+                isDark() {
+                    this.applyThemeToBody();
+                }
             }
         };
 
-        // Para vistas que SOLO necesitan el tema (como settings.html)
-        // Montar automáticamente si no hay otro código que lo necesite
+        // Auto-montar en vistas simples (como settings.html)
         if (document.getElementById('app') && typeof Quill === 'undefined') {
             const { createApp } = Vue;
             createApp(window.AdminTheme).mount('#app');
@@ -50,4 +61,5 @@ class AdminTheme {
     }
 }
 
+// Auto-instanciar
 new AdminTheme();
