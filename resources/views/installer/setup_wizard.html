@@ -20,6 +20,166 @@
     <!-- Wizard CSS -->
     <link href="assets/css/setup_wizard.css" rel="stylesheet">
 
+    <style>
+        /* Alertas estilo Vue moderno */
+        .vue-alert {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vue-alert::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            opacity: 0.8;
+        }
+
+        .vue-alert-icon {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-size: 14px;
+        }
+
+        .vue-alert-content {
+            flex: 1;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .vue-alert-close {
+            flex-shrink: 0;
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin-left: 12px;
+            cursor: pointer;
+            color: #999;
+            font-size: 20px;
+            line-height: 1;
+            transition: color 0.2s;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vue-alert-close:hover {
+            color: #333;
+        }
+
+        /* Variantes de color */
+        .vue-alert-success {
+            border-left-color: #52c41a;
+            background: #f6ffed;
+        }
+
+        .vue-alert-success::before {
+            background: #52c41a;
+        }
+
+        .vue-alert-success .vue-alert-icon {
+            background: #52c41a;
+            color: white;
+        }
+
+        .vue-alert-danger {
+            border-left-color: #ff4d4f;
+            background: #fff2f0;
+        }
+
+        .vue-alert-danger::before {
+            background: #ff4d4f;
+        }
+
+        .vue-alert-danger .vue-alert-icon {
+            background: #ff4d4f;
+            color: white;
+        }
+
+        .vue-alert-warning {
+            border-left-color: #faad14;
+            background: #fffbe6;
+        }
+
+        .vue-alert-warning::before {
+            background: #faad14;
+        }
+
+        .vue-alert-warning .vue-alert-icon {
+            background: #faad14;
+            color: white;
+        }
+
+        .vue-alert-info {
+            border-left-color: #1890ff;
+            background: #e6f7ff;
+        }
+
+        .vue-alert-info::before {
+            background: #1890ff;
+        }
+
+        .vue-alert-info .vue-alert-icon {
+            background: #1890ff;
+            color: white;
+        }
+
+        /* Transiciones suaves */
+        .alert-enter-active {
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .alert-leave-active {
+            animation: slideOutRight 0.3s cubic-bezier(0.6, 0, 0.8, 0.4);
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        /* Contenedor de alertas */
+        .alerts-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -49,42 +209,53 @@
     </div>
     <%-- @endif -->
 
-    <!-- Alertas -->
-    <transition-group name="alert" tag="div">
+    <!-- Alertas iniciales (hidden, solo para pasar datos a Vue) -->
+    <div id="server-alerts" style="display: none;">
         <%-- @if !db_ok -->
-        <div key="db-error" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle"></i>
-            {installer.err_db_connection}
-        </div>
+        <div data-type="danger" data-icon="fas fa-exclamation-triangle" data-message="{installer.err_db_connection}" data-id="db-error" data-dismissible="false"></div>
         <%-- @endif -->
 
         <%-- @if mod_rewrite_enabled -->
-        <div key="mod-rewrite-ok" class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-check-circle"></i> {installer.mod_rewrite_ok}
-        </div>
+        <div data-type="success" data-icon="fas fa-check-circle" data-message="{installer.mod_rewrite_ok}" data-id="mod-rewrite-ok" data-dismissible="false"></div>
         <%-- @else -->
-        <div key="mod-rewrite-warning" class="alert alert-warning alert-dismissible fade show">
-            <i class="fas fa-exclamation-triangle"></i> {installer.mod_rewrite_not_ok}
-        </div>
+        <div data-type="success" data-icon="fas fa-exclamation-triangle" data-message="{installer.mod_rewrite_not_ok}" data-id="mod-rewrite-warning" data-dismissible="false"></div>
         <%-- @endif -->
 
         <%-- @if !config_writeable -->
-        <div key="config-error" class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-times-circle"></i> <strong>{installer.warning}:</strong> {installer.config_file_not_writable}
-        </div>
+        <div data-type="danger" data-icon="fas fa-times-circle" data-message="<strong>{installer.warning}:</strong> {installer.config_file_not_writable}" data-id="config-error" data-dismissible="false"></div>
         <%-- @else -->
-        <div key="config-ok" class="alert alert-success alert-dismissible fade show">
-            <i class="fas fa-info-circle"></i> {installer.config_file_writable}
-        </div>
+        <div data-type="success" data-icon="fas fa-info-circle" data-message="{installer.config_file_writable}" data-id="config-ok" data-dismissible="false"></div>
         <%-- @endif -->
 
         <%-- @foreach errors as key => value -->
-        <div :key="'error-{key}'" class="alert alert-danger alert-dismissible fade show">
-            <i class="fas fa-exclamation-triangle"></i> {value}
-            <button class="btn-close" @click="dismissAlert('errors.{key}', $event)" type="button"></button>
-        </div>
+        <div data-type="danger" data-icon="fas fa-exclamation-triangle" data-message="{value}" data-id="error-{key}" data-key="errors.{key}" data-dismissible="true"></div>
         <%-- @endforeach -->
-    </transition-group>
+    </div>
+
+    <!-- Alertas Vue modernas -->
+    <div class="alerts-container">
+        <transition-group name="alert" tag="div">
+            <div
+                    v-for="alert in alerts"
+                    :key="alert.id"
+                    :class="['vue-alert', `vue-alert-${alert.type}`]"
+                    role="alert"
+            >
+                <div class="vue-alert-icon">
+                    <i :class="alert.icon"></i>
+                </div>
+                <div class="vue-alert-content" v-html="alert.message"></div>
+                <button
+                        v-if="alert.dismissible !== false"
+                        class="vue-alert-close"
+                        @click="dismissAlert(alert.id)"
+                        aria-label="Close"
+                >
+                    ×
+                </button>
+            </div>
+        </transition-group>
+    </div>
 
     <!-- Wizard -->
     <div class="card mt-4">
@@ -335,7 +506,7 @@
     window.BLOCK_CONFIG = {
         step1_label: "{installer.dbconfig}",
         step2_label: "{installer.siteinfo}",
-        step3_label: "{installer.adminconfig}",
+        step3_label: "{installer.adminconfig}"
     };
 </script>
 
