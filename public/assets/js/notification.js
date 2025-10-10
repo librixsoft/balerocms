@@ -1,5 +1,5 @@
 // notification.js
-window.NotificationHelper = {
+class NotificationHelper {
     dismissAlert(key, event) {
         const alert = event.target.closest('.alert');
         if (!alert) return;
@@ -8,7 +8,7 @@ window.NotificationHelper = {
         bsAlert.close();
 
         this.deleteMessage(key);
-    },
+    }
 
     async deleteMessage(key) {
         const formData = new FormData();
@@ -25,7 +25,7 @@ window.NotificationHelper = {
         } catch (err) {
             console.error('Error deleting flash message:', err);
         }
-    },
+    }
 
     init() {
         const alerts = document.querySelectorAll('.alert-dismissible');
@@ -36,4 +36,6 @@ window.NotificationHelper = {
             });
         });
     }
-};
+}
+
+window.NotificationHelper = new NotificationHelper();
