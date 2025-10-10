@@ -1,45 +1,65 @@
+/* ===========================
+   Reset y contenedor global
+=========================== */
 html, body {
-    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
     width: 100%;
+    overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    background: #f8f9fa;
+}
+
+body {
+    margin: 0 !important;       /* eliminamos margen superior */
+    padding: 0 !important;
+    background: #f8f9fa;
 }
 
 .container {
     max-width: 100%;
-    overflow-x: hidden;
+    padding: 0 15px !important; /* separacion lateral de 15px */
+    margin: 0 auto !important;  /* sin margen superior, centrado horizontal */
 }
 
-body {
-    margin-top: 30px !important;
+#app {
+    margin-top: 0 !important;   /* pegado al borde superior */
+    padding: 0;                 /* sin padding extra */
 }
 
-/* Ajuste de labels e inputs*/
+
+/* ===========================
+   Formularios y labels
+=========================== */
 .row.align-items-center {
-    flex-wrap: nowrap; /* evitar que se dividan en varias líneas */
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin-bottom: 1rem;
 }
 
 .row.align-items-center > .col-3 {
-    flex: 0 0 180px; /* ancho fijo del label */
-    max-width: 180px; /* ancho máximo del label */
-    padding-right: 20px; /* espacio entre label e input */
-    text-align: right; /* alineación a la derecha */
+    flex: 0 0 180px;
+    max-width: 180px;
+    text-align: right;
+    padding-right: 20px;
 }
 
 .row.align-items-center > .col-9 {
-    flex: 1; /* ocupa el resto del espacio */
-    padding-left: 0; /* opcional, distancia mínima */
+    flex: 1;
+    padding-left: 0;
 }
 
 .col-form-label {
-    margin-bottom: 0; /* alinea verticalmente con el input */
+    margin-bottom: 0;
 }
 
-/* Input mínimo para evitar que quede demasiado pequeño */
 .row.align-items-center > .col-9 input,
 .row.align-items-center > .col-9 textarea {
     min-width: 150px;
 }
 
-/* Contenedor de input + ícono info */
+/* Input + icono info */
 .input-with-info {
     display: flex;
     align-items: center;
@@ -47,153 +67,306 @@ body {
 
 .input-with-info input,
 .input-with-info textarea {
-    flex: 1; /* ocupa todx el espacio disponible */
-    margin-right: 0.5rem; /* separación mínima entre input y el icono */
+    flex: 1;
+    margin-right: 0.5rem;
 }
 
 .input-with-info i {
     cursor: help;
-    color: #6c757d; /* gris bootstrap */
+    color: #6c757d;
 }
 
-.hd-btn {
-    background: transparent;
-    border: none;
-    cursor: pointer;
+/* ===========================
+   Botones estilo Vue moderno
+=========================== */
+.vue-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s;
-}
-
-.hd-btn:hover {
-    transform: translateY(-5px);
-}
-
-.hd-body {
-    width: 180px;
-    height: 160px;
-    background: #f5f5f5;
-    border-radius: 18px;
-    display: flex;
-    flex-direction: column; /* icono arriba, texto abajo */
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ccc;
-}
-
-.hd-body i {
-    font-size: 4rem;
-    color: #007aff;
-}
-
-.hd-text {
-    margin-top: 8px;
-    font-size: 1.3rem;
+    padding: 10px 20px;
+    font-size: 14px;
     font-weight: 500;
-    color: #888; /* gris más suave */
-    text-align: center;
-}
-
- .stepper-header {
-     display: flex;
-     align-items: center;
-     justify-content: space-between;
-     padding: 1rem;
- }
-
-.step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
-    position: relative;
-}
-
-.step-trigger {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: none;
-    border: none;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    border-radius: 6px;
     cursor: pointer;
-    padding: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    outline: none;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
 }
 
-.step-circle {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 50%;
-    background-color: #e9ecef;
+.vue-btn i {
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+.vue-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Botones por color */
+.vue-btn-primary {
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(24,144,255,0.3);
+}
+.vue-btn-primary:hover {
+    background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(24,144,255,0.4);
+}
+.vue-btn-primary:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(24,144,255,0.3); }
+
+.vue-btn-success {
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(82,196,26,0.3);
+}
+.vue-btn-success:hover {
+    background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(82,196,26,0.4);
+}
+.vue-btn-success:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(82,196,26,0.3); }
+
+.vue-btn-danger {
+    background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(255,77,79,0.3);
+}
+.vue-btn-danger:hover {
+    background: linear-gradient(135deg, #ff7875 0%, #ff4d4f 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255,77,79,0.4);
+}
+.vue-btn-danger:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(255,77,79,0.3); }
+
+.vue-btn-warning {
+    background: linear-gradient(135deg, #faad14 0%, #d48806 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(250,173,20,0.3);
+}
+.vue-btn-warning:hover {
+    background: linear-gradient(135deg, #ffc53d 0%, #faad14 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(250,173,20,0.4);
+}
+.vue-btn-warning:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(250,173,20,0.3); }
+
+.vue-btn-secondary {
+    background: #fff;
+    color: #595959;
+    border: 1px solid #d9d9d9;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.vue-btn-secondary:hover {
+    color: #1890ff;
+    border-color: #1890ff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.vue-btn-secondary:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+.vue-btn-info {
+    background: linear-gradient(135deg, #13c2c2 0%, #08979c 100%);
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(19,194,194,0.3);
+}
+.vue-btn-info:hover {
+    background: linear-gradient(135deg, #36cfc9 0%, #13c2c2 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(19,194,194,0.4);
+}
+.vue-btn-info:active { transform: translateY(0); box-shadow: 0 2px 4px rgba(19,194,194,0.3); }
+
+.vue-btn-sm { padding: 6px 12px; font-size: 12px; }
+.vue-btn-lg { padding: 14px 28px; font-size: 16px; }
+.vue-btn-block { display: flex; width: 100%; }
+
+/* ===========================
+   Alertas estilo Vue moderno
+=========================== */
+.vue-alert {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    border-left: 4px solid;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.vue-alert::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    opacity: 0.8;
+}
+
+.vue-alert-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
+    border-radius: 50%;
+    margin-right: 12px;
+    font-size: 14px;
 }
 
-.step.active .step-circle {
-    background-color: #0d6efd;
-    color: white;
-}
-
-.step.completed .step-circle {
-    background-color: #198754;
-    color: white;
-}
-
-.step-label {
-    font-size: 0.875rem;
-    color: #6c757d;
-    text-align: center;
-}
-
-.step.active .step-label {
-    color: #0d6efd;
-    font-weight: 600;
-}
-
-.step-line {
+.vue-alert-content {
     flex: 1;
-    height: 2px;
-    background-color: #e9ecef;
-    margin: 0 1rem;
-    align-self: flex-start;
-    margin-top: 1.5rem;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
 }
 
-.step.completed + .step-line {
-    background-color: #198754;
+.vue-alert-close {
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin-left: 12px;
+    cursor: pointer;
+    color: #999;
+    font-size: 20px;
+    line-height: 1;
+    transition: color 0.2s;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+.vue-alert-close:hover { color: #333; }
 
-.step-content {
-    display: none;
-    animation: fadeIn 0.3s ease;
-}
+/* Variantes de color */
+.vue-alert-success { border-left-color: #52c41a; background: #f6ffed; }
+.vue-alert-success::before { background: #52c41a; }
+.vue-alert-success .vue-alert-icon { background: #52c41a; color: white; }
 
-.step-content.active {
-    display: block;
-}
+.vue-alert-danger { border-left-color: #ff4d4f; background: #fff2f0; }
+.vue-alert-danger::before { background: #ff4d4f; }
+.vue-alert-danger .vue-alert-icon { background: #ff4d4f; color: white; }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+.vue-alert-warning { border-left-color: #faad14; background: #fffbe6; }
+.vue-alert-warning::before { background: #faad14; }
+.vue-alert-warning .vue-alert-icon { background: #faad14; color: white; }
 
+.vue-alert-info { border-left-color: #1890ff; background: #e6f7ff; }
+.vue-alert-info::before { background: #1890ff; }
+.vue-alert-info .vue-alert-icon { background: #1890ff; color: white; }
+
+.alert-enter-active { animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1); }
+.alert-leave-active { animation: slideOutRight 0.3s cubic-bezier(0.6,0,0.8,0.4); }
+
+@keyframes slideInRight { from {opacity:0; transform:translateX(100%);} to{opacity:1; transform:translateX(0);} }
+@keyframes slideOutRight { from{opacity:1; transform:translateX(0);} to{opacity:0; transform:translateX(100%);} }
+
+.alerts-container { position: relative; margin-bottom: 20px; }
+
+/* ===========================
+   Tooltips
+=========================== */
 .tooltip-icon {
     cursor: help;
     color: #6c757d;
     margin-left: 0.5rem;
+    transition: color 0.2s;
+}
+.tooltip-icon:hover { color: #0d6efd; }
+
+.custom-tooltip {
+    position: absolute;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 300px;
+    z-index: 10000;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.custom-tooltip[style*="display: block"] { opacity: 1; }
+.custom-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: 12px;
+    width: 8px;
+    height: 8px;
+    background: rgba(0,0,0,0.85);
+    transform: rotate(45deg);
 }
 
-.tooltip-icon:hover {
-    color: #0d6efd;
+/* ===========================
+   Wizard / Stepper
+=========================== */
+.stepper-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem; }
+.step { display: flex; flex-direction: column; align-items: center; flex: 1; position: relative; }
+.step-trigger { display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; padding: 0.5rem; }
+.step-circle { width: 3rem; height: 3rem; border-radius: 50%; background-color: #e9ecef; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.5rem; transition: all 0.3s ease; }
+.step.active .step-circle { background-color: #0d6efd; color: #fff; }
+.step.completed .step-circle { background-color: #198754; color: #fff; }
+.step-label { font-size: 0.875rem; color: #6c757d; text-align: center; }
+.step.active .step-label { color: #0d6efd; font-weight: 600; }
+.step-line { flex: 1; height: 2px; background-color: #e9ecef; margin: 0 1rem; align-self: flex-start; margin-top: 1.5rem; }
+.step.completed + .step-line { background-color: #198754; }
+.step-content { display: none; animation: fadeIn 0.3s ease; }
+.step-content.active { display: block; }
+
+@keyframes fadeIn { from {opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+/* ===========================
+   Iconos y Hot-Buttons
+=========================== */
+.hd-btn { background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+.hd-btn:hover { transform: translateY(-5px); }
+.hd-body { width: 180px; height: 160px; background: #f5f5f5; border-radius: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #ccc; }
+.hd-body i { font-size: 4rem; color: #007aff; }
+.hd-text { margin-top: 8px; font-size: 1.3rem; font-weight: 500; color: #888; text-align: center; }
+
+/* ===========================
+   Select estilo Vue
+=========================== */
+.vue-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 6px 30px 6px 12px;
+    font-size: 14px;
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
+.vue-select:hover { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+.vue-select:focus { outline: none; border-color: #40a9ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.25); }
+
+.select-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: #999; pointer-events: none; transition: color 0.2s; }
+.vue-select:hover + .select-icon { color: #1890ff; }
+
+/* ===========================
+   Contenedores de idioma / labels
+=========================== */
+.lang-form label { font-size: 14px; }
+.lang-selector { background: #fff; border-radius: 8px; padding: 10px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
