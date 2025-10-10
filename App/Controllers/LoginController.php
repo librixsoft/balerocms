@@ -57,7 +57,7 @@ class LoginController
         } else {
             $error = $this->loginManager->getMessage();
             $this->flash->set('login_error', $error);
-            $this->redirect->tto('/login/');
+            $this->redirect->to('/login/');
         }
     }
 

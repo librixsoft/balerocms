@@ -12,7 +12,7 @@ use Framework\Core\ConfigSettings;
 
 class Redirect
 {
-    protected ConfigSettings $config;
+    private ConfigSettings $config;
 
     public function __construct(ConfigSettings $config)
     {
