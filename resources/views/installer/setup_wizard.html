@@ -54,7 +54,7 @@
     </div>
     <%-- @endif -->
 
-    <!-- Alertas iniciales (hidden, solo para pasar datos a Vue) -->
+    <!-- Alertas iniciales (hidden, solo para pasar datos) -->
     <div id="server-alerts" style="display: none;">
         <%-- @if !db_ok -->
         <div data-type="danger" data-icon="fas fa-exclamation-triangle" data-message="{installer.err_db_connection}" data-id="db-error" data-dismissible="false"></div>
@@ -77,30 +77,8 @@
         <%-- @endforeach -->
     </div>
 
-    <!-- Alertas Vue modernas -->
-    <div class="alerts-container">
-        <transition-group name="alert" tag="div">
-            <div
-                    v-for="alert in alerts"
-                    :key="alert.id"
-                    :class="['vue-alert', `vue-alert-${alert.type}`]"
-                    role="alert"
-            >
-                <div class="vue-alert-icon">
-                    <i :class="alert.icon"></i>
-                </div>
-                <div class="vue-alert-content" v-html="alert.message"></div>
-                <button
-                        v-if="alert.dismissible !== false"
-                        class="vue-alert-close"
-                        @click="dismissAlert(alert.id)"
-                        aria-label="Close"
-                >
-                    ×
-                </button>
-            </div>
-        </transition-group>
-    </div>
+    <!-- Contenedor de notificaciones -->
+    <div id="notifications" class="alerts-container"></div>
 
     <!-- Wizard -->
     <div class="card mt-4">

@@ -14,11 +14,12 @@
     <!-- Bootstrap CSS -->
     <link href="assets/css/vendor/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom styles -->
-    <link href="assets/css/login.css" rel="stylesheet">
-
     <!-- Font Awesome 6 -->
     <link href="assets/css/vendor/all.min.css" rel="stylesheet">
+
+    <!-- Custom styles - IMPORTANTE: después de Bootstrap para sobrescribir -->
+    <link href="assets/css/login.css" rel="stylesheet">
+    <link href="assets/css/notification.css" rel="stylesheet">
 
     <!-- Bootstrap Bundle (incluye Popper) -->
     <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
@@ -35,6 +36,9 @@
                 </div>
                 <div class="card-body">
 
+                    <!-- Contenedor de notificaciones -->
+                    <div id="notifications" class="alerts-container"></div>
+
                     <form action="./login" method="POST">
                         <div class="mb-3">
                             <input class="form-control" id="username" name="usr" placeholder="{login.username}"
@@ -45,14 +49,6 @@
                             <input class="form-control" id="password" name="pwd" placeholder="{login.password}"
                                    type="password">
                         </div>
-
-                        <%-- @if login_error -->
-                        <div class="alert alert-danger alert-dismissible fade show" id="alert-login_error" role="alert">
-                            <i class="fas fa-exclamation-triangle"></i> {login_error}
-                            <button class="btn-close" data-bs-dismiss="alert" onclick="deleteMessage('login_error')"
-                                    type="button"></button>
-                        </div>
-                        <%-- @endif -->
 
                         <div class="d-grid">
                             <button class="btn btn-primary" name="login" type="submit">
@@ -73,7 +69,22 @@
     </div>
 </div>
 
-<script src="assets/js/notification.js"></script>
+<!-- Contenedor oculto para alertas del servidor -->
+<%-- @if login_error -->
+<div id="server-alerts" style="display: none;">
+    <div data-id="login_error"
+         data-type="danger"
+         data-icon="fas fa-exclamation-triangle"
+         data-message="{login_error}"
+         data-key="login_error"
+         data-dismissible="true">
+    </div>
+</div>
+<%-- @endif -->
+
+<!-- Módulos independientes -->
+<script type="module" src="assets/js/notification.js"></script>
+<script type="module" src="assets/js/login.js"></script>
 
 </body>
 </html>

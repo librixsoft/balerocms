@@ -55,14 +55,33 @@ class NotificationSystem {
         const index = this.alerts.findIndex(a => a.id === alertId);
         if (index > -1) {
             const alert = this.alerts[index];
-            this.alerts.splice(index, 1);
 
-            if (alert.key) {
-                this.deleteMessage(alert.key);
-            }
+            // Agregar clase de salida
+            const alertElement = this.container.querySelector(`[data-alert-id="${alertId}"]`);
+            if (alertElement) {
+                alertElement.style.animation = 'slideOut 0.3s ease-out forwards';
 
-            if (this.container) {
-                this.render();
+                setTimeout(() => {
+                    this.alerts.splice(index, 1);
+
+                    if (alert.key) {
+                        this.deleteMessage(alert.key);
+                    }
+
+                    if (this.container) {
+                        this.render();
+                    }
+                }, 300);
+            } else {
+                this.alerts.splice(index, 1);
+
+                if (alert.key) {
+                    this.deleteMessage(alert.key);
+                }
+
+                if (this.container) {
+                    this.render();
+                }
             }
         }
     }
@@ -104,26 +123,33 @@ class NotificationSystem {
     }
 
     createAlertElement(alert) {
+        // Contenedor principal con estilos Vue
         const div = document.createElement('div');
-        div.className = `alert alert-${alert.type} alert-dismissible fade show`;
+        div.className = `vue-alert vue-alert-${alert.type}`;
         div.setAttribute('role', 'alert');
         div.dataset.alertId = alert.id;
 
+        // Icono
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'vue-alert-icon';
         const icon = document.createElement('i');
         icon.className = alert.icon;
+        iconDiv.appendChild(icon);
 
-        const span = document.createElement('span');
-        span.innerHTML = alert.message;
+        // Contenido
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'vue-alert-content';
+        contentDiv.innerHTML = alert.message;
 
-        div.appendChild(icon);
-        div.appendChild(document.createTextNode(' '));
-        div.appendChild(span);
+        div.appendChild(iconDiv);
+        div.appendChild(contentDiv);
 
+        // Botón de cerrar
         if (alert.dismissible) {
             const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'btn-close';
+            button.className = 'vue-alert-close';
             button.setAttribute('aria-label', 'Close');
+            button.innerHTML = '×';
             button.addEventListener('click', () => {
                 this.dismissAlert(alert.id);
             });

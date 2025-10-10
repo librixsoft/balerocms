@@ -24,7 +24,6 @@ createApp({
                     icon: 'fas fa-user-shield'
                 }
             ],
-            alerts: [],
             tooltipElement: null,
             notificationSystem: null
         };
@@ -32,11 +31,15 @@ createApp({
 
     mounted() {
         // Inicializar sistema de notificaciones
-        this.notificationSystem = new NotificationSystem({ autoInit: false });
-        this.notificationSystem.loadServerAlerts();
-        this.alerts = this.notificationSystem.alerts;
+        this.notificationSystem = new NotificationSystem({
+            container: '#notifications',
+            autoInit: true
+        });
 
-        // Crear el elemento tooltip
+        // Cargar alertas del servidor
+        this.notificationSystem.loadServerAlerts();
+
+        // Crear el elemento tooltip una sola vez
         this.tooltipElement = document.createElement('div');
         this.tooltipElement.className = 'custom-tooltip';
         document.body.appendChild(this.tooltipElement);
@@ -78,19 +81,23 @@ createApp({
             const icon = event.target;
             const rect = icon.getBoundingClientRect();
 
+            // Configurar contenido y mostrar
             this.tooltipElement.innerHTML = message;
             this.tooltipElement.style.display = 'block';
             this.tooltipElement.style.opacity = '1';
 
+            // Esperar un frame para obtener dimensiones correctas
             this.$nextTick(() => {
                 const tooltipRect = this.tooltipElement.getBoundingClientRect();
                 let left = rect.left + window.scrollX - 12;
                 let top = rect.bottom + window.scrollY + 8;
 
+                // Ajustar si se sale por la derecha
                 if (left + tooltipRect.width > window.innerWidth) {
                     left = window.innerWidth - tooltipRect.width - 20 + window.scrollX;
                 }
 
+                // Ajustar si se sale por la izquierda
                 if (left < 0) {
                     left = 10 + window.scrollX;
                 }
@@ -107,6 +114,7 @@ createApp({
             }
         },
 
+        // Cambio de idioma
         submitLanguageForm() {
             this.$refs.languageForm.submit();
         }
