@@ -54,7 +54,7 @@
     </div>
     <%-- @endif -->
 
-    <!-- Alertas iniciales (hidden, solo para pasar datos) -->
+    <!-- Notification Loader / Definition -->
     <div id="server-alerts" style="display: none;">
         <%-- @if !db_ok -->
         <div data-type="danger" data-icon="fas fa-exclamation-triangle" data-message="{installer.err_db_connection}" data-id="db-error" data-dismissible="false"></div>
@@ -77,7 +77,7 @@
         <%-- @endforeach -->
     </div>
 
-    <!-- Contenedor de notificaciones -->
+    <!-- Render Contenedor de notificaciones -->
     <div id="notifications" class="alerts-container"></div>
 
     <!-- Wizard -->
