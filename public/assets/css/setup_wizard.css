@@ -27,7 +27,6 @@ body {
     padding: 0;                 /* sin padding extra */
 }
 
-
 /* ===========================
    Formularios y labels
 =========================== */
@@ -185,95 +184,6 @@ body {
 .vue-btn-sm { padding: 6px 12px; font-size: 12px; }
 .vue-btn-lg { padding: 14px 28px; font-size: 16px; }
 .vue-btn-block { display: flex; width: 100%; }
-
-/* ===========================
-   Alertas estilo Vue moderno
-=========================== */
-.vue-alert {
-    display: flex;
-    align-items: flex-start;
-    padding: 16px 20px;
-    margin-bottom: 12px;
-    border-radius: 8px;
-    border-left: 4px solid;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    position: relative;
-    overflow: hidden;
-}
-
-.vue-alert::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    opacity: 0.8;
-}
-
-.vue-alert-icon {
-    flex-shrink: 0;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    margin-right: 12px;
-    font-size: 14px;
-}
-
-.vue-alert-content {
-    flex: 1;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #333;
-}
-
-.vue-alert-close {
-    flex-shrink: 0;
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-left: 12px;
-    cursor: pointer;
-    color: #999;
-    font-size: 20px;
-    line-height: 1;
-    transition: color 0.2s;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.vue-alert-close:hover { color: #333; }
-
-/* Variantes de color */
-.vue-alert-success { border-left-color: #52c41a; background: #f6ffed; }
-.vue-alert-success::before { background: #52c41a; }
-.vue-alert-success .vue-alert-icon { background: #52c41a; color: white; }
-
-.vue-alert-danger { border-left-color: #ff4d4f; background: #fff2f0; }
-.vue-alert-danger::before { background: #ff4d4f; }
-.vue-alert-danger .vue-alert-icon { background: #ff4d4f; color: white; }
-
-.vue-alert-warning { border-left-color: #faad14; background: #fffbe6; }
-.vue-alert-warning::before { background: #faad14; }
-.vue-alert-warning .vue-alert-icon { background: #faad14; color: white; }
-
-.vue-alert-info { border-left-color: #1890ff; background: #e6f7ff; }
-.vue-alert-info::before { background: #1890ff; }
-.vue-alert-info .vue-alert-icon { background: #1890ff; color: white; }
-
-.alert-enter-active { animation: slideInRight 0.4s cubic-bezier(0.16,1,0.3,1); }
-.alert-leave-active { animation: slideOutRight 0.3s cubic-bezier(0.6,0,0.8,0.4); }
-
-@keyframes slideInRight { from {opacity:0; transform:translateX(100%);} to{opacity:1; transform:translateX(0);} }
-@keyframes slideOutRight { from{opacity:1; transform:translateX(0);} to{opacity:0; transform:translateX(100%);} }
-
-.alerts-container { position: relative; margin-bottom: 20px; }
 
 /* ===========================
    Tooltips

@@ -44,7 +44,7 @@ class LoginController
     {
         $params = [];
         if ($this->flash->has('login_error')) {
-            $params['login_error'] = Flash::get('login_error');
+            $params['login_error'] = $this->flash->get('login_error');
         }
         return $this->view->render("admin/login.html", $params, false);
     }
