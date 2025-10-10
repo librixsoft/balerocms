@@ -179,6 +179,207 @@
             position: relative;
             margin-bottom: 20px;
         }
+
+        /* Botones estilo Vue moderno */
+        .vue-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            line-height: 1.5;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            text-decoration: none;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .vue-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .vue-btn i {
+            margin-right: 6px;
+            font-size: 14px;
+        }
+
+        /* Botón Primary (Azul) */
+        .vue-btn-primary {
+            background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);
+        }
+
+        .vue-btn-primary:hover {
+            background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+            box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .vue-btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(24, 144, 255, 0.3);
+        }
+
+        /* Botón Success (Verde) */
+        .vue-btn-success {
+            background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(82, 196, 26, 0.3);
+        }
+
+        .vue-btn-success:hover {
+            background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%);
+            box-shadow: 0 4px 12px rgba(82, 196, 26, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .vue-btn-success:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(82, 196, 26, 0.3);
+        }
+
+        /* Botón Danger (Rojo) */
+        .vue-btn-danger {
+            background: linear-gradient(135deg, #ff4d4f 0%, #cf1322 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(255, 77, 79, 0.3);
+        }
+
+        .vue-btn-danger:hover {
+            background: linear-gradient(135deg, #ff7875 0%, #ff4d4f 100%);
+            box-shadow: 0 4px 12px rgba(255, 77, 79, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .vue-btn-danger:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(255, 77, 79, 0.3);
+        }
+
+        /* Botón Warning (Amarillo) */
+        .vue-btn-warning {
+            background: linear-gradient(135deg, #faad14 0%, #d48806 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(250, 173, 20, 0.3);
+        }
+
+        .vue-btn-warning:hover {
+            background: linear-gradient(135deg, #ffc53d 0%, #faad14 100%);
+            box-shadow: 0 4px 12px rgba(250, 173, 20, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .vue-btn-warning:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(250, 173, 20, 0.3);
+        }
+
+        /* Botón Secondary (Gris) */
+        .vue-btn-secondary {
+            background: white;
+            color: #595959;
+            border: 1px solid #d9d9d9;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .vue-btn-secondary:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .vue-btn-secondary:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Botón Info (Cyan) */
+        .vue-btn-info {
+            background: linear-gradient(135deg, #13c2c2 0%, #08979c 100%);
+            color: white;
+            box-shadow: 0 2px 4px rgba(19, 194, 194, 0.3);
+        }
+
+        .vue-btn-info:hover {
+            background: linear-gradient(135deg, #36cfc9 0%, #13c2c2 100%);
+            box-shadow: 0 4px 12px rgba(19, 194, 194, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .vue-btn-info:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(19, 194, 194, 0.3);
+        }
+
+        /* Tamaños de botones */
+        .vue-btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .vue-btn-lg {
+            padding: 14px 28px;
+            font-size: 16px;
+        }
+
+        /* Botón block (ancho completo) */
+        .vue-btn-block {
+            display: flex;
+            width: 100%;
+        }
+
+        /* Tooltip personalizado */
+        .tooltip-icon {
+            margin-left: 8px;
+            color: #1890ff;
+            cursor: help;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .tooltip-icon:hover {
+            color: #40a9ff;
+        }
+
+        .custom-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            line-height: 1.4;
+            max-width: 300px;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .custom-tooltip[style*="display: block"] {
+            opacity: 1;
+        }
+
+        .custom-tooltip::before {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: 12px;
+            width: 8px;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.85);
+            transform: rotate(45deg);
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -218,7 +419,7 @@
         <%-- @if mod_rewrite_enabled -->
         <div data-type="success" data-icon="fas fa-check-circle" data-message="{installer.mod_rewrite_ok}" data-id="mod-rewrite-ok" data-dismissible="false"></div>
         <%-- @else -->
-        <div data-type="success" data-icon="fas fa-exclamation-triangle" data-message="{installer.mod_rewrite_not_ok}" data-id="mod-rewrite-warning" data-dismissible="false"></div>
+        <div data-type="warning" data-icon="fas fa-exclamation-triangle" data-message="{installer.mod_rewrite_not_ok}" data-id="mod-rewrite-warning" data-dismissible="false"></div>
         <%-- @endif -->
 
         <%-- @if !config_writeable -->
@@ -336,7 +537,13 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary" @click.prevent="nextStep" type="button">{btn_save}</button>
+                    <div class="d-flex justify-content-end">
+                        <button class="vue-btn vue-btn-primary" @click.prevent="nextStep" type="button">
+                            <i class="fas fa-save"></i>
+                            {installer.save}
+                        </button>
+                    </div>
+
                 </div>
 
                 <!-- TAB 2: Site Info -->
@@ -406,7 +613,14 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-primary" @click.prevent="nextStep" type="button">{installer.save}</button>
+                    <div class="d-flex justify-content-end">
+                        <button class="vue-btn vue-btn-primary" @click.prevent="nextStep" type="button">
+                            <i class="fas fa-save"></i>
+                            {installer.save}
+                        </button>
+                    </div>
+
+
                 </div>
 
                 <!-- TAB 3: Admin Config -->
@@ -484,7 +698,13 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-success" type="submit">{installer.save}</button>
+                    <div class="d-flex justify-content-end">
+                        <button class="vue-btn vue-btn-success" type="submit">
+                            <i class="fas fa-check-circle"></i>
+                            {installer.finish}
+                        </button>
+                    </div>
+
                 </div>
 
             </form>

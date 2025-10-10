@@ -30,6 +30,11 @@ createApp({
     mounted() {
         // Leer alertas desde el contenedor oculto del servidor
         this.loadServerAlerts();
+
+        // Crear el elemento tooltip una sola vez
+        this.tooltipElement = document.createElement('div');
+        this.tooltipElement.className = 'custom-tooltip';
+        document.body.appendChild(this.tooltipElement);
     },
 
     methods: {
@@ -126,24 +131,41 @@ createApp({
 
         // Gestión de tooltips
         showTooltip(event, message) {
+            if (!this.tooltipElement) return;
+
             const icon = event.target;
             const rect = icon.getBoundingClientRect();
 
-            if (!this.tooltipElement) {
-                this.tooltipElement = document.createElement('div');
-                this.tooltipElement.className = 'custom-tooltip';
-                document.body.appendChild(this.tooltipElement);
-            }
-
-            this.tooltipElement.textContent = message;
+            // Configurar contenido y mostrar
+            this.tooltipElement.innerHTML = message;
             this.tooltipElement.style.display = 'block';
-            this.tooltipElement.style.left = `${rect.left + window.scrollX}px`;
-            this.tooltipElement.style.top = `${rect.bottom + window.scrollY + 5}px`;
+            this.tooltipElement.style.opacity = '1';
+
+            // Esperar un frame para obtener dimensiones correctas
+            this.$nextTick(() => {
+                const tooltipRect = this.tooltipElement.getBoundingClientRect();
+                let left = rect.left + window.scrollX - 12;
+                let top = rect.bottom + window.scrollY + 8;
+
+                // Ajustar si se sale por la derecha
+                if (left + tooltipRect.width > window.innerWidth) {
+                    left = window.innerWidth - tooltipRect.width - 20 + window.scrollX;
+                }
+
+                // Ajustar si se sale por la izquierda
+                if (left < 0) {
+                    left = 10 + window.scrollX;
+                }
+
+                this.tooltipElement.style.left = `${left}px`;
+                this.tooltipElement.style.top = `${top}px`;
+            });
         },
 
         hideTooltip() {
             if (this.tooltipElement) {
                 this.tooltipElement.style.display = 'none';
+                this.tooltipElement.style.opacity = '0';
             }
         },
 
