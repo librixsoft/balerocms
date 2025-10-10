@@ -664,3 +664,29 @@ body.dark-theme .navbar-toggler-icon {
 body.dark-theme .navbar .nav-link.active {
     color: #6ea8fe !important;
 }
+
+/* Editor */
+
+.ql-html {
+    width: 28px !important;
+}
+.ql-html .ql-stroke {
+    stroke: #444;
+}
+.ql-html svg {
+    width: 18px;
+    height: 18px;
+}
+#quill-editor.html-mode .ql-editor {
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+}
+#quill-editor.html-mode .ql-toolbar {
+    pointer-events: none;
+    opacity: 0.6;
+}
+#quill-editor.html-mode .ql-html {
+    pointer-events: auto;
+    opacity: 1;
+}
