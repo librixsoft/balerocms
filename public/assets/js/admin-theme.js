@@ -1,9 +1,13 @@
-// admin-theme.js - Funcionalidad común del tema
-// Este objeto se puede reutilizar en diferentes vistas
+// admin-theme.js - Funcionalidad común del tema + editor
+// Proporciona una base reutilizable para todas las vistas admin
+
+import Editor from './editor.js';
+
+console.log('admin-theme.js cargado');
 
 class AdminTheme {
     constructor() {
-        // Definir el objeto Vue reutilizable
+        // Definir el objeto Vue reutilizable base
         window.AdminTheme = {
             data() {
                 return {
@@ -24,7 +28,6 @@ class AdminTheme {
                     this.applyThemeToBody();
                 },
                 applyThemeToBody() {
-                    // Manipular el body directamente (fuera de Vue)
                     if (this.isDark) {
                         document.body.classList.add('dark-theme');
                     } else {
@@ -46,20 +49,71 @@ class AdminTheme {
                 this.loadTheme();
             },
             watch: {
-                // Observar cambios en isDark
                 isDark() {
                     this.applyThemeToBody();
                 }
             }
         };
 
-        // Auto-montar en vistas simples (como settings.html)
-        if (document.getElementById('app') && typeof Quill === 'undefined') {
-            const { createApp } = Vue;
-            createApp(window.AdminTheme).mount('#app');
+        // Auto-montar solo si es una vista simple (sin Quill)
+        this.autoMount();
+    }
+
+    autoMount() {
+        if (document.getElementById('app')) {
+            // Si no hay Quill, montar con AdminTheme solo
+            if (typeof Quill === 'undefined') {
+                const { createApp } = Vue;
+                const instance = createApp(window.AdminTheme).mount('#app');
+                window.vueInstance = instance;
+            }
+            // Si hay Quill, se montará desde Editor usando createExtendedApp
         }
+    }
+
+    /**
+     * Crear aplicación Vue con funcionalidad extendida
+     * @param {Object} extensionMethods - Métodos adicionales para la instancia Vue
+     * @param {Object} extensionData - Datos adicionales para la instancia Vue
+     */
+    static createExtendedApp(extensionMethods = {}, extensionData = {}) {
+        const { createApp } = Vue;
+
+        const appConfig = {
+            data() {
+                return {
+                    ...window.AdminTheme.data.call(this),
+                    ...extensionData
+                }
+            },
+            methods: {
+                ...window.AdminTheme.methods,
+                ...extensionMethods
+            },
+            computed: window.AdminTheme.computed,
+            mounted: function() {
+                window.AdminTheme.mounted.call(this);
+            },
+            watch: window.AdminTheme.watch
+        };
+
+        const app = createApp(appConfig);
+        const instance = app.mount('#app');
+
+        // Guardar la instancia globalmente para que Editor pueda accederla
+        window.vueInstance = instance;
+
+        return instance;
     }
 }
 
+// Exponer el método estático globalmente para que Editor pueda usarlo
+window.AdminThemeClass = AdminTheme;
+
 // Auto-instanciar
 new AdminTheme();
+
+// Si Quill está disponible, instanciar el editor DESPUÉS de que AdminTheme esté listo
+if (typeof Quill !== 'undefined') {
+    new Editor();
+}

@@ -1,42 +1,23 @@
 // editor.js - Editor de bloques con Quill
-// Combina la funcionalidad del tema con el editor
+// Se integra con AdminTheme para usar una única instancia de Vue
 
-class BlockEditor {
+console.log('editor.js cargado');
+
+class Editor {
     constructor() {
-        const { createApp } = Vue;
+        console.log('Editor constructor called');
 
-        createApp({
-            data() {
-                return {
-                    // Datos del tema (heredados de AdminTheme)
-                    ...window.AdminTheme.data(),
-
-                    // Datos del editor de bloques
-                    blockName: '',
-                    sortOrder: window.BLOCK_CONFIG?.nextSortOrder || 0,
-                    quill: null,
-                    isHtmlMode: false,
-                    htmlContent: ''
-                }
-            },
-            mounted() {
-                // Cargar tema primero
-                window.AdminTheme.mounted.call(this);
-
-                // Inicializar Quill editor
-                this.initQuillEditor();
-            },
-            methods: {
-                // Importar métodos del tema
-                ...window.AdminTheme.methods,
-
-                // ========== Métodos del editor Quill ==========
+        // Llamar a createExtendedApp de AdminTheme
+        window.AdminThemeClass.createExtendedApp(
+            // extensionMethods
+            {
                 initQuillEditor() {
+                    console.log('Inicializando Quill');
+
                     // Crear el icono SVG personalizado para el botón HTML
                     const icons = Quill.import('ui/icons');
                     icons['html'] = '<svg viewBox="0 0 18 18"><polyline class="ql-stroke" points="5 7 3 9 5 11"></polyline><polyline class="ql-stroke" points="13 7 15 9 13 11"></polyline><line class="ql-stroke" x1="10" y1="5" x2="8" y2="13"></line></svg>';
 
-                    // Agregar el botón HTML al toolbar
                     const toolbarOptions = [
                         [{ header: [1, 2, 3, false] }],
                         ['bold', 'italic', 'underline', 'strike'],
@@ -51,7 +32,7 @@ class BlockEditor {
                             toolbar: {
                                 container: toolbarOptions,
                                 handlers: {
-                                    'html': this.toggleHtmlMode
+                                    'html': this.toggleHtmlMode.bind(this)
                                 }
                             }
                         }
@@ -106,9 +87,24 @@ class BlockEditor {
                         console.error('Fetch error:', err);
                     }
                 }
+            },
+            // extensionData
+            {
+                blockName: '',
+                sortOrder: window.BLOCK_CONFIG?.nextSortOrder || 0,
+                quill: null,
+                isHtmlMode: false,
+                htmlContent: ''
             }
-        }).mount('#app');
+        );
+
+        // Inicializar Quill después de que Vue esté montado
+        setTimeout(() => {
+            if (window.vueInstance && window.vueInstance.initQuillEditor) {
+                window.vueInstance.initQuillEditor();
+            }
+        }, 100);
     }
 }
 
-new BlockEditor();
+export default Editor;
