@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\NotificationModel;
 use Framework\Attributes\Controller;
+use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
 use Framework\Http\Get;
 use Framework\Http\Post;
@@ -22,6 +23,7 @@ class NotificationController
     private NotificationModel $model;
 
     #[Inject]
+    #[FlashStorage('_flash')]
     private Flash $flash;
 
     #[Get('/')]

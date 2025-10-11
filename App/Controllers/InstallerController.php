@@ -6,6 +6,7 @@ use App\DTO\InstallerDTO;
 use App\Models\InstallerModel;
 use App\Views\InstallerViewModel;
 use Framework\Attributes\Controller;
+use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
 use Framework\Core\View;
 use Framework\Http\Get;
@@ -28,6 +29,7 @@ class InstallerController
     private InstallerViewModel $installerViewModel;
 
     #[Inject]
+    #[FlashStorage('_flash')]
     private Flash $flash;
 
     #[Inject]

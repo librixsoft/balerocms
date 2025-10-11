@@ -3,12 +3,13 @@
 namespace App\Controllers;
 
 use Framework\Attributes\Controller;
+use Framework\Attributes\FlashStorage;
 use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\Auth;
 use Framework\Http\RequestHelper;
 use Framework\Core\View;
-use Framework\Utils\AdminFlash;
+use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
 use Framework\IO\Uploader;
 use App\Models\AdminModel;
@@ -26,7 +27,7 @@ class AdminController
     private View $view;
     private RequestHelper $request;
     private Validator $validator;
-    private AdminFlash $flash;
+    private Flash $flash;
 
     public function __construct(
         AdminModel $model,
@@ -36,7 +37,8 @@ class AdminController
         View $view,
         RequestHelper $request,
         Validator $validator,
-        AdminFlash $flash,
+        #[FlashStorage('_admin_flash')]
+        Flash $flash,
     )
     {
         $this->model = $model;

@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use Framework\Attributes\Controller;
+use Framework\Attributes\FlashStorage;
 use Framework\Core\View;
 use Framework\Http\Get;
 use Framework\Http\Post;
@@ -18,6 +19,7 @@ class LoginController
     private View $view;
     private LoginModel $model;
     private LoginViewModel $viewModel;
+    #[FlashStorage('_flash')]
     private Flash $flash;
     private Redirect $redirect;
     private LoginManager $loginManager;

@@ -3,13 +3,14 @@
 namespace App\Controllers;
 
 use Framework\Attributes\Controller;
+use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
 use Framework\Http\Auth;
 use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\JsonResponse;
 use Framework\Http\RequestHelper;
-use Framework\Utils\AdminFlash;
+use Framework\Utils\Flash;
 
 #[Controller('/admin/notification')]
 #[Auth(required: true)]
@@ -19,7 +20,8 @@ class AdminNotificationController
     private RequestHelper $requestHelper;
 
     #[Inject]
-    private AdminFlash $flash;
+    #[FlashStorage('_admin_flash')]
+    private Flash $flash;
 
     /**
      * Clave del namespace para separar notificaciones del admin del frontend

@@ -6,6 +6,7 @@
  * Centraliza la creación de instancias de clases, soportando:
  * - Inyección por constructor
  * - Inyección de propiedades marcadas con #[Inject]
+ * - Resolución del atributo #[FlashStorage] para Flash
  * - Resolución delegada a un contenedor que implementa `get(string $className): object`
  *
  * @author Anibal Gomez
@@ -14,10 +15,12 @@
 
 namespace Framework\DI;
 
+use Framework\Attributes\FlashStorage;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionMethod;
 use Framework\Attributes\Inject;
+use Framework\Utils\Flash;
 use Framework\Exceptions\ContainerException;
 use Throwable;
 
@@ -54,12 +57,22 @@ class DependencyFactory
             $params = [];
             foreach ($constructor->getParameters() as $param) {
                 $type = $param->getType();
+
                 if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
                     $params[] = $param->isDefaultValueAvailable() ? $param->getDefaultValue() : null;
+                    continue;
+                }
+
+                $flashStorageAttrs = $param->getAttributes(FlashStorage::class);
+
+                if (!empty($flashStorageAttrs) && $type->getName() === Flash::class) {
+                    $flashKey = $flashStorageAttrs[0]->newInstance()->key;
+                    $params[] = new Flash($flashKey);
                 } else {
                     $params[] = $this->resolverContainer->get($type->getName());
                 }
             }
+
             return $reflector->newInstanceArgs($params);
         } catch (Throwable $e) {
             throw new ContainerException(
@@ -108,8 +121,16 @@ class DependencyFactory
                 $type = $prop->getType();
                 if (!$type instanceof ReflectionNamedType) continue;
 
+                $flashStorageAttrs = $prop->getAttributes(FlashStorage::class);
+
                 $prop->setAccessible(true);
-                $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
+
+                if (!empty($flashStorageAttrs) && $type->getName() === Flash::class) {
+                    $flashKey = $flashStorageAttrs[0]->newInstance()->key;
+                    $prop->setValue($instance, new Flash($flashKey));
+                } else {
+                    $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
+                }
             }
         } catch (Throwable $e) {
             throw new ContainerException(
