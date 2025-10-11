@@ -12,6 +12,7 @@ use App\Views\LoginViewModel;
 use Framework\Security\LoginManager;
 use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
+use Framework\Utils\Translator;
 
 #[Controller('/login')]
 class LoginController
@@ -19,18 +20,20 @@ class LoginController
     private View $view;
     private LoginModel $model;
     private LoginViewModel $viewModel;
-    #[FlashStorage('_flash')]
     private Flash $flash;
     private Redirect $redirect;
     private LoginManager $loginManager;
+    private Translator $translator;
 
     public function __construct(
         LoginModel $model,
         LoginViewModel $viewModel,
+        #[FlashStorage('_flash')]
         Flash $flash,
         Redirect $redirect,
         View $view,
-        LoginManager $loginManager
+        LoginManager $loginManager,
+        Translator $translator
     )
     {
         $this->model = $model;
@@ -39,6 +42,7 @@ class LoginController
         $this->redirect = $redirect;
         $this->view = $view;
         $this->loginManager = $loginManager;
+        $this->translator = $translator;
     }
 
     #[Get('/')]
@@ -57,7 +61,7 @@ class LoginController
         if ($this->loginManager->handleLogin()) {
             $this->redirect->to('/admin/settings');
         } else {
-            $error = $this->loginManager->getMessage();
+            $error = $this->translator->trans($this->loginManager->getMessage());
             $this->flash->set('login_error', $error);
             $this->redirect->to('/login/');
         }

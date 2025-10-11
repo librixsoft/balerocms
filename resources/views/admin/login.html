@@ -31,7 +31,8 @@
                 </div>
                 <div class="card-body">
 
-                    <!-- Render Contenedor de notificaciones -->                    <div id="notifications" class="alerts-container"></div>
+                    <!-- Render Contenedor de notificaciones -->
+                    <div id="notifications" class="alerts-container"></div>
                     <form action="./login" method="POST">
                         <div class="mb-3">
                             <input class="form-control" id="username" name="usr" placeholder="{login.username}"
@@ -62,22 +63,8 @@
     </div>
 </div>
 
-<!-- Notification Loader / Definition -->
-<%-- @if login_error -->
-<div id="server-alerts" style="display: none;">
-    <div data-id="login_error"
-         data-type="danger"
-         data-icon="fas fa-exclamation-triangle"
-         data-message="{login_error}"
-         data-key="login_error"
-         data-dismissible="true">
-    </div>
-</div>
-<%-- @endif -->
-
 <!-- Módulos independientes -->
 <script type="module" src="assets/js/notification.js"></script>
-<script type="module" src="assets/js/login.js"></script>
 
 </body>
 </html>
