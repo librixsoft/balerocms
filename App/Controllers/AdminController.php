@@ -8,10 +8,12 @@ use Framework\Http\Post;
 use Framework\Http\Auth;
 use Framework\Http\RequestHelper;
 use Framework\Core\View;
+use Framework\Utils\AdminFlash;
 use Framework\Utils\Redirect;
 use Framework\IO\Uploader;
 use App\Models\AdminModel;
 use App\Views\AdminViewModel;
+use Framework\Utils\Validator;
 
 #[Controller('/admin')]
 #[Auth(required: true)]
@@ -23,6 +25,8 @@ class AdminController
     private Redirect $redirect;
     private View $view;
     private RequestHelper $request;
+    private Validator $validator;
+    private AdminFlash $flash;
 
     public function __construct(
         AdminModel $model,
@@ -30,7 +34,9 @@ class AdminController
         AdminViewModel $viewModel,
         Redirect $redirect,
         View $view,
-        RequestHelper $request
+        RequestHelper $request,
+        Validator $validator,
+        AdminFlash $flash,
     )
     {
         $this->model = $model;
@@ -39,6 +45,8 @@ class AdminController
         $this->redirect = $redirect;
         $this->view = $view;
         $this->request = $request;
+        $this->validator = $validator;
+        $this->flash = $flash;
     }
 
     #[Get('/')]
@@ -76,6 +84,15 @@ class AdminController
             'language' => $this->request->post("language"),
             'footer' => $this->request->post("footer"),
         ];
+
+        $this->validator->input($data)
+            ->required('title', 'El título es requerido.');
+
+        if ($this->validator->fails()) {
+            $this->flash->set('errors', $this->validator->errors());
+            $this->redirect->to('/admin/settings');
+            return;
+        }
 
         $this->model->updateSettings($data);
         $this->redirect->to('/admin/settings');
