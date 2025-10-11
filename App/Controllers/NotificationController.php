@@ -28,9 +28,20 @@ class NotificationController
     #[JsonResponse]
     public function getNotification()
     {
+        // Obtiene todos los valores almacenados en la sesión flash
+        $allFlash = $_SESSION['_flash'] ?? [];
+
+        // Si no hay nada, devolver vacío
+        if (empty($allFlash)) {
+            return [
+                'status' => 'empty',
+                'errors' => []
+            ];
+        }
+
         return [
-            'status' => 'success',
-            'message' => "Endpoint /notification is up."
+            'status' => 'ok',
+            'data' => $allFlash
         ];
     }
 
