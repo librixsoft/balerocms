@@ -1,197 +1,160 @@
 // notification.js
 
 /**
- * Sistema de notificaciones independiente
+ * Sistema de notificaciones como componente Vue independiente
  */
-class NotificationSystem {
-    constructor(options = {}) {
-        this.alerts = [];
-        this.container = options.container || null;
-        this.autoInit = options.autoInit !== false;
+export function createNotificationSystem() {
+    const { createApp } = Vue;
 
-        if (this.autoInit && this.container) {
-            this.init();
-        }
-    }
+    return createApp({
+        data() {
+            return {
+                alerts: []
+            };
+        },
 
-    init() {
-        if (typeof this.container === 'string') {
-            this.container = document.querySelector(this.container);
-        }
+        methods: {
+            /**
+             * Añade una nueva alerta
+             */
+            addAlert(type, message, key = null, dismissible = true) {
+                const id = key || `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                const icons = {
+                    danger: 'fas fa-exclamation-triangle',
+                    warning: 'fas fa-exclamation-triangle',
+                    success: 'fas fa-check-circle',
+                    info: 'fas fa-info-circle'
+                };
 
-        if (this.container) {
-            this.render();
-        }
-    }
+                const alert = {
+                    id,
+                    type,
+                    icon: icons[type] || 'fas fa-info-circle',
+                    message,
+                    key,
+                    dismissible
+                };
 
-    addAlert(type, message, key = null, dismissible = true) {
-        const id = key || `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const icons = {
-            danger: 'fas fa-exclamation-triangle',
-            warning: 'fas fa-exclamation-triangle',
-            success: 'fas fa-check-circle',
-            info: 'fas fa-info-circle'
-        };
+                this.alerts.push(alert);
+                return alert;
+            },
 
-        const alert = {
-            id,
-            type,
-            icon: icons[type] || 'fas fa-info-circle',
-            message,
-            key,
-            dismissible
-        };
+            /**
+             * Descarta una alerta con animación
+             */
+            dismissAlert(alertId) {
+                const index = this.alerts.findIndex(a => a.id === alertId);
+                if (index > -1) {
+                    const alert = this.alerts[index];
 
-        this.alerts.push(alert);
+                    // Buscar el elemento y agregar animación de salida
+                    const alertElement = this.$el.querySelector(`[data-alert-id="${alertId}"]`);
+                    if (alertElement) {
+                        alertElement.style.animation = 'slideOut 0.3s ease-out forwards';
 
-        if (this.container) {
-            this.render();
-        }
-
-        return alert;
-    }
-
-    dismissAlert(alertId) {
-        const index = this.alerts.findIndex(a => a.id === alertId);
-        if (index > -1) {
-            const alert = this.alerts[index];
-
-            // Agregar clase de salida
-            const alertElement = this.container.querySelector(`[data-alert-id="${alertId}"]`);
-            if (alertElement) {
-                alertElement.style.animation = 'slideOut 0.3s ease-out forwards';
-
-                setTimeout(() => {
-                    this.alerts.splice(index, 1);
-
-                    if (alert.key) {
-                        this.deleteMessage(alert.key);
+                        setTimeout(() => {
+                            this.alerts.splice(index, 1);
+                            if (alert.key) {
+                                this.deleteMessage(alert.key);
+                            }
+                        }, 300);
+                    } else {
+                        this.alerts.splice(index, 1);
+                        if (alert.key) {
+                            this.deleteMessage(alert.key);
+                        }
                     }
-
-                    if (this.container) {
-                        this.render();
-                    }
-                }, 300);
-            } else {
-                this.alerts.splice(index, 1);
-
-                if (alert.key) {
-                    this.deleteMessage(alert.key);
                 }
+            },
 
-                if (this.container) {
-                    this.render();
+            /**
+             * Limpia todas las alertas
+             */
+            clearAll() {
+                this.alerts = [];
+            },
+
+            /**
+             * Elimina un mensaje del servidor
+             */
+            async deleteMessage(key) {
+                const formData = new FormData();
+                formData.append('key', key);
+
+                try {
+                    const response = await fetch('notification/', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await response.json();
+                    console.log(data.status, data.message);
+                    return data;
+                } catch (err) {
+                    console.error('Error deleting flash message:', err);
+                    throw err;
                 }
-            }
-        }
-    }
+            },
 
-    clearAll() {
-        this.alerts = [];
-        if (this.container) {
-            this.render();
-        }
-    }
+            /**
+             * Carga alertas desde el servidor
+             */
+            async loadServerAlerts() {
+                try {
+                    const response = await fetch('notification/');
+                    const json = await response.json();
 
-    async deleteMessage(key) {
-        const formData = new FormData();
-        formData.append('key', key);
+                    if (json.status !== 'ok') return;
 
-        try {
-            const response = await fetch('notification/', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await response.json();
-            console.log(data.status, data.message);
-            return data;
-        } catch (err) {
-            console.error('Error deleting flash message:', err);
-            throw err;
-        }
-    }
+                    const serverData = json.data || {};
 
-    render() {
-        if (!this.container) return;
+                    for (const [key, value] of Object.entries(serverData)) {
+                        let type = 'info';
+                        if (key === 'errors') type = 'danger';
+                        if (key === 'success') type = 'success';
+                        if (key === 'warnings') type = 'warning';
 
-        this.container.innerHTML = '';
-
-        this.alerts.forEach(alert => {
-            const alertElement = this.createAlertElement(alert);
-            this.container.appendChild(alertElement);
-        });
-    }
-
-    createAlertElement(alert) {
-        // Contenedor principal con estilos Vue
-        const div = document.createElement('div');
-        div.className = `vue-alert vue-alert-${alert.type}`;
-        div.setAttribute('role', 'alert');
-        div.dataset.alertId = alert.id;
-
-        // Icono
-        const iconDiv = document.createElement('div');
-        iconDiv.className = 'vue-alert-icon';
-        const icon = document.createElement('i');
-        icon.className = alert.icon;
-        iconDiv.appendChild(icon);
-
-        // Contenido
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'vue-alert-content';
-        contentDiv.innerHTML = alert.message;
-
-        div.appendChild(iconDiv);
-        div.appendChild(contentDiv);
-
-        // Botón de cerrar
-        if (alert.dismissible) {
-            const button = document.createElement('button');
-            button.className = 'vue-alert-close';
-            button.setAttribute('aria-label', 'Close');
-            button.innerHTML = '×';
-            button.addEventListener('click', () => {
-                this.dismissAlert(alert.id);
-            });
-            div.appendChild(button);
-        }
-
-        return div;
-    }
-
-    async loadServerAlerts() {
-        try {
-            const response = await fetch('notification/');
-            const json = await response.json();
-
-            if (json.status !== 'ok') return;
-
-            const serverData = json.data || {};
-
-            for (const [key, value] of Object.entries(serverData)) {
-                let type = 'info';
-                if (key === 'errors') type = 'danger';
-                if (key === 'success') type = 'success';
-                if (key === 'warnings') type = 'warning';
-
-                if (value && typeof value === 'object') {
-                    for (const [subKey, msg] of Object.entries(value)) {
-                        this.addAlert(type, msg, `${key}.${subKey}`);
+                        if (value && typeof value === 'object') {
+                            for (const [subKey, msg] of Object.entries(value)) {
+                                this.addAlert(type, msg, `${key}.${subKey}`);
+                            }
+                        } else {
+                            this.addAlert(type, String(value), key);
+                        }
                     }
-                } else {
-                    this.addAlert(type, String(value), key);
+                } catch (err) {
+                    console.error('Error loading server alerts:', err);
                 }
             }
+        },
 
-            if (this.container) this.render();
-
-        } catch (err) {
-            console.error('Error loading server alerts:', err);
-        }
-    }
-
-
-
+        template: `
+            <div class="notifications-container">
+                <transition-group name="alert" tag="div">
+                    <div 
+                        v-for="alert in alerts" 
+                        :key="alert.id"
+                        :class="['vue-alert', 'vue-alert-' + alert.type]"
+                        :data-alert-id="alert.id"
+                        role="alert"
+                    >
+                        <div class="vue-alert-icon">
+                            <i :class="alert.icon"></i>
+                        </div>
+                        <div class="vue-alert-content" v-html="alert.message"></div>
+                        <button 
+                            v-if="alert.dismissible"
+                            class="vue-alert-close"
+                            aria-label="Close"
+                            @click="dismissAlert(alert.id)"
+                        >
+                            ×
+                        </button>
+                    </div>
+                </transition-group>
+            </div>
+        `
+    });
 }
 
-export default NotificationSystem;
+// Export por defecto
+export default createNotificationSystem;

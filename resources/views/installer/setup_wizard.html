@@ -17,6 +17,7 @@
     <script src="assets/js/vendor/vue.global.prod.js"></script>
 
 </head>
+
 <body class="bg-light">
 
 <!-- Idioma -->
@@ -42,307 +43,310 @@
 
 <div class="container my-1">
 
-    <%-- @if fields_valid AND db_ok AND mod_rewrite_enabled AND config_writable -->
-    <div class="text-center my-5">
-        <form action="installer/progressBar" method="POST">
-            <button aria-label="{btn_install}" class="hd-btn" type="submit">
-                <div class="hd-body">
-                    <i class="fas fa-download"></i>
-                    <div class="hd-text">{btn_install}</div>
-                </div>
-            </button>
-        </form>
-    </div>
-    <%-- @endif -->
+    <!-- Contenedor de notificaciones Vue independiente (FUERA de #app) -->
+    <div id="notifications"></div>
 
-    <%-- @if !db_ok -->
-    <div class="vue-alert vue-alert-danger" role="alert" data-alert-id="db-error">
-        <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="vue-alert-content">{installer.err_db_connection}</div>
-    </div>
-    <%-- @endif -->
+    <div id="app">
 
-    <%-- @if mod_rewrite_enabled -->
-    <div class="vue-alert vue-alert-success" role="alert" data-alert-id="mod-rewrite-ok">
-        <div class="vue-alert-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="vue-alert-content">{installer.mod_rewrite_ok}</div>
-    </div>
-    <%-- @else -->
-    <div class="vue-alert vue-alert-warning" role="alert" data-alert-id="mod-rewrite-warning">
-        <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="vue-alert-content">{installer.mod_rewrite_not_ok}</div>
-    </div>
-    <%-- @endif -->
+        <%-- @if fields_valid AND db_ok AND mod_rewrite_enabled AND config_writable -->
+        <div class="text-center my-5">
+            <form action="installer/progressBar" method="POST">
+                <button aria-label="{btn_install}" class="hd-btn" type="submit">
+                    <div class="hd-body">
+                        <i class="fas fa-download"></i>
+                        <div class="hd-text">{btn_install}</div>
+                    </div>
+                </button>
+            </form>
+        </div>
+        <%-- @endif -->
 
-    <%-- @if !config_writeable -->
-    <div class="vue-alert vue-alert-danger" role="alert" data-alert-id="config-error">
-        <div class="vue-alert-icon"><i class="fas fa-times-circle"></i></div>
-        <div class="vue-alert-content"><strong>{installer.warning}:</strong> {installer.config_file_not_writable}</div>
-    </div>
-    <%-- @else -->
-    <div class="vue-alert vue-alert-success" role="alert" data-alert-id="config-ok">
-        <div class="vue-alert-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="vue-alert-content">{installer.config_file_writable}</div>
-    </div>
-    <%-- @endif -->
+        <%-- @if !db_ok -->
+        <div class="vue-alert vue-alert-danger" role="alert" data-alert-id="db-error">
+            <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="vue-alert-content">{installer.err_db_connection}</div>
+        </div>
+        <%-- @endif -->
 
-    <!-- Render Contenedor de notificaciones -->
-    <div id="notifications" class="alerts-container"></div>
+        <%-- @if mod_rewrite_enabled -->
+        <div class="vue-alert vue-alert-success" role="alert" data-alert-id="mod-rewrite-ok">
+            <div class="vue-alert-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="vue-alert-content">{installer.mod_rewrite_ok}</div>
+        </div>
+        <%-- @else -->
+        <div class="vue-alert vue-alert-warning" role="alert" data-alert-id="mod-rewrite-warning">
+            <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="vue-alert-content">{installer.mod_rewrite_not_ok}</div>
+        </div>
+        <%-- @endif -->
 
-    <!-- Wizard -->
-    <div id="app"  class="card mt-4">
-        <div class="card-header">
-            <div class="stepper-header">
-                <div
-                        v-for="(step, index) in steps"
-                        :key="step.id"
-                        :class="['step', { active: currentStep === index, completed: index < currentStep }]"
-                >
-                    <button
-                            class="step-trigger"
-                            type="button"
-                            @click="goToStep(index)"
+        <%-- @if !config_writeable -->
+        <div class="vue-alert vue-alert-danger" role="alert" data-alert-id="config-error">
+            <div class="vue-alert-icon"><i class="fas fa-times-circle"></i></div>
+            <div class="vue-alert-content"><strong>{installer.warning}:</strong> {installer.config_file_not_writable}</div>
+        </div>
+        <%-- @else -->
+        <div class="vue-alert vue-alert-success" role="alert" data-alert-id="config-ok">
+            <div class="vue-alert-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="vue-alert-content">{installer.config_file_writable}</div>
+        </div>
+        <%-- @endif -->
+
+        <!-- Wizard -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <div class="stepper-header">
+                    <div
+                            v-for="(step, index) in steps"
+                            :key="step.id"
+                            :class="['step', { active: currentStep === index, completed: index < currentStep }]"
                     >
-                        <span class="step-circle">
-                            <i :class="step.icon"></i>
-                        </span>
-                        <span class="step-label">{{ step.label }}</span>
-                    </button>
-                    <div v-if="index < steps.length - 1" class="step-line"></div>
+                        <button
+                                class="step-trigger"
+                                type="button"
+                                @click="goToStep(index)"
+                        >
+                            <span class="step-circle">
+                                <i :class="step.icon"></i>
+                            </span>
+                            <span class="step-label">{{ step.label }}</span>
+                        </button>
+                        <div v-if="index < steps.length - 1" class="step-line"></div>
+                    </div>
                 </div>
+            </div>
+
+            <div class="card-body">
+                <form action="installer/install" method="POST">
+
+                    <!-- TAB 1: DB Config -->
+                    <div :class="['step-content', { active: currentStep === 0 }]">
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="dbhost">{installer.dbhost}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="dbhost"
+                                        name="dbhost"
+                                        value="{txt_dbhost}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="dbuser">{installer.dbusername}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="dbuser"
+                                        name="dbuser"
+                                        value="{txt_dbuser}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="dbpass">{installer.dbpass}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="dbpass"
+                                        name="dbpass"
+                                        type="password"
+                                        value="{txt_dbpass}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="dbname">{installer.dbname}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="dbname"
+                                        name="dbname"
+                                        value="{txt_dbname}"
+                                >
+                                <div class="form-text">{installer.dbname_note}</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button class="vue-btn vue-btn-primary" @click.prevent="nextStep" type="button">
+                                <i class="fas fa-save"></i>
+                                {installer.save}
+                            </button>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 2: Site Info -->
+                    <div :class="['step-content', { active: currentStep === 1 }]">
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label text-end" for="basepath">{installer.basepath}</label>
+                            <div class="col-9 d-flex align-items-center">
+                                <input
+                                        class="form-control"
+                                        id="basepath"
+                                        name="basepath"
+                                        value="{txt_basepath}"
+                                >
+                                <i
+                                        class="fas fa-info-circle tooltip-icon"
+                                        @mouseenter="showTooltip($event, '{installer.basepath_note}')"
+                                        @mouseleave="hideTooltip"
+                                ></i>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="title">{installer.title}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="title"
+                                        name="title"
+                                        value="{title}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="url">{installer.url}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="url"
+                                        name="url"
+                                        value="{txt_url}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="keywords">{installer.keywords}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="keywords"
+                                        name="keywords"
+                                        value="{keywords}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="description">{installer.description}</label>
+                            <div class="col-9">
+                    <textarea
+                            class="form-control"
+                            id="description"
+                            name="description"
+                            rows="4"
+                    >{description}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button class="vue-btn vue-btn-primary" @click.prevent="nextStep" type="button">
+                                <i class="fas fa-save"></i>
+                                {installer.save}
+                            </button>
+                        </div>
+
+
+                    </div>
+
+                    <!-- TAB 3: Admin Config -->
+                    <div :class="['step-content', { active: currentStep === 2 }]">
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="username">{installer.administrator}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="username"
+                                        name="username"
+                                        value="{username}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="passwd">{installer.pass}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="passwd"
+                                        name="passwd"
+                                        type="password"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="passwd2">{installer.retype}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="passwd2"
+                                        name="passwd2"
+                                        type="password"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="firstname">{installer.firstname}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="firstname"
+                                        name="firstname"
+                                        value="{txt_firstname}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="lastname">{installer.lastname}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="lastname"
+                                        name="lastname"
+                                        value="{txt_lastname}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-3 col-form-label" for="email">{installer.email}</label>
+                            <div class="col-9">
+                                <input
+                                        class="form-control"
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        value="{txt_email}"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button class="vue-btn vue-btn-success" type="submit">
+                                <i class="fas fa-check-circle"></i>
+                                {installer.finish}
+                            </button>
+                        </div>
+
+                    </div>
+
+                </form>
+
             </div>
         </div>
 
-        <div class="card-body">
-            <form action="installer/install" method="POST">
-
-                <!-- TAB 1: DB Config -->
-                <div :class="['step-content', { active: currentStep === 0 }]">
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="dbhost">{installer.dbhost}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="dbhost"
-                                    name="dbhost"
-                                    value="{txt_dbhost}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="dbuser">{installer.dbusername}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="dbuser"
-                                    name="dbuser"
-                                    value="{txt_dbuser}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="dbpass">{installer.dbpass}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="dbpass"
-                                    name="dbpass"
-                                    type="password"
-                                    value="{txt_dbpass}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="dbname">{installer.dbname}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="dbname"
-                                    name="dbname"
-                                    value="{txt_dbname}"
-                            >
-                            <div class="form-text">{installer.dbname_note}</div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button class="vue-btn vue-btn-primary" @click.prevent="nextStep" type="button">
-                            <i class="fas fa-save"></i>
-                            {installer.save}
-                        </button>
-                    </div>
-
-                </div>
-
-                <!-- TAB 2: Site Info -->
-                <div :class="['step-content', { active: currentStep === 1 }]">
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label text-end" for="basepath">{installer.basepath}</label>
-                        <div class="col-9 d-flex align-items-center">
-                            <input
-                                    class="form-control"
-                                    id="basepath"
-                                    name="basepath"
-                                    value="{txt_basepath}"
-                            >
-                            <i
-                                    class="fas fa-info-circle tooltip-icon"
-                                    @mouseenter="showTooltip($event, '{installer.basepath_note}')"
-                                    @mouseleave="hideTooltip"
-                            ></i>
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="title">{installer.title}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="title"
-                                    name="title"
-                                    value="{title}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="url">{installer.url}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="url"
-                                    name="url"
-                                    value="{txt_url}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="keywords">{installer.keywords}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="keywords"
-                                    name="keywords"
-                                    value="{keywords}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="description">{installer.description}</label>
-                        <div class="col-9">
-                <textarea
-                        class="form-control"
-                        id="description"
-                        name="description"
-                        rows="4"
-                >{description}</textarea>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button class="vue-btn vue-btn-primary" @click.prevent="nextStep" type="button">
-                            <i class="fas fa-save"></i>
-                            {installer.save}
-                        </button>
-                    </div>
-
-
-                </div>
-
-                <!-- TAB 3: Admin Config -->
-                <div :class="['step-content', { active: currentStep === 2 }]">
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="username">{installer.administrator}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="username"
-                                    name="username"
-                                    value="{username}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="passwd">{installer.pass}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="passwd"
-                                    name="passwd"
-                                    type="password"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="passwd2">{installer.retype}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="passwd2"
-                                    name="passwd2"
-                                    type="password"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="firstname">{installer.firstname}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="firstname"
-                                    name="firstname"
-                                    value="{txt_firstname}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="lastname">{installer.lastname}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="lastname"
-                                    name="lastname"
-                                    value="{txt_lastname}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="row mb-3 align-items-center">
-                        <label class="col-3 col-form-label" for="email">{installer.email}</label>
-                        <div class="col-9">
-                            <input
-                                    class="form-control"
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    value="{txt_email}"
-                            >
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end">
-                        <button class="vue-btn vue-btn-success" type="submit">
-                            <i class="fas fa-check-circle"></i>
-                            {installer.finish}
-                        </button>
-                    </div>
-
-                </div>
-
-            </form>
-
-        </div>
     </div>
-
 </div>
 
 <footer class="text-center py-3 bg-light mt-4">
