@@ -55,28 +55,36 @@
     </div>
     <%-- @endif -->
 
-    <!-- Notification Loader / Definition -->
-    <div id="server-alerts" style="display: none;">
-        <%-- @if !db_ok -->
-        <div data-type="danger" data-icon="fas fa-exclamation-triangle" data-message="{installer.err_db_connection}" data-id="db-error" data-dismissible="false"></div>
-        <%-- @endif -->
-
-        <%-- @if mod_rewrite_enabled -->
-        <div data-type="success" data-icon="fas fa-check-circle" data-message="{installer.mod_rewrite_ok}" data-id="mod-rewrite-ok" data-dismissible="false"></div>
-        <%-- @else -->
-        <div data-type="warning" data-icon="fas fa-exclamation-triangle" data-message="{installer.mod_rewrite_not_ok}" data-id="mod-rewrite-warning" data-dismissible="false"></div>
-        <%-- @endif -->
-
-        <%-- @if !config_writeable -->
-        <div data-type="danger" data-icon="fas fa-times-circle" data-message="<strong>{installer.warning}:</strong> {installer.config_file_not_writable}" data-id="config-error" data-dismissible="false"></div>
-        <%-- @else -->
-        <div data-type="success" data-icon="fas fa-check-circle" data-message="{installer.config_file_writable}" data-id="config-ok" data-dismissible="false"></div>
-        <%-- @endif -->
-
-        <%-- @foreach errors as key => value -->
-        <div data-type="danger" data-icon="fas fa-exclamation-triangle" data-message="{value}" data-id="error-{key}" data-key="errors.{key}" data-dismissible="true"></div>
-        <%-- @endforeach -->
+    <%-- @if !db_ok -->
+    <div class="vue-alert vue-alert-danger" role="alert" data-alert-id="db-error">
+        <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="vue-alert-content">{installer.err_db_connection}</div>
     </div>
+    <%-- @endif -->
+
+    <%-- @if mod_rewrite_enabled -->
+    <div class="vue-alert vue-alert-success" role="alert" data-alert-id="mod-rewrite-ok">
+        <div class="vue-alert-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="vue-alert-content">{installer.mod_rewrite_ok}</div>
+    </div>
+    <%-- @else -->
+    <div class="vue-alert vue-alert-warning" role="alert" data-alert-id="mod-rewrite-warning">
+        <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+        <div class="vue-alert-content">{installer.mod_rewrite_not_ok}</div>
+    </div>
+    <%-- @endif -->
+
+    <%-- @if !config_writeable -->
+    <div class="vue-alert vue-alert-danger" role="alert" data-alert-id="config-error">
+        <div class="vue-alert-icon"><i class="fas fa-times-circle"></i></div>
+        <div class="vue-alert-content"><strong>{installer.warning}:</strong> {installer.config_file_not_writable}</div>
+    </div>
+    <%-- @else -->
+    <div class="vue-alert vue-alert-success" role="alert" data-alert-id="config-ok">
+        <div class="vue-alert-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="vue-alert-content">{installer.config_file_writable}</div>
+    </div>
+    <%-- @endif -->
 
     <!-- Render Contenedor de notificaciones -->
     <div id="notifications" class="alerts-container"></div>

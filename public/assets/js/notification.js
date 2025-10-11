@@ -159,29 +159,39 @@ class NotificationSystem {
         return div;
     }
 
-    loadServerAlerts(containerId = 'server-alerts') {
-        const serverAlertsContainer = document.getElementById(containerId);
-        if (!serverAlertsContainer) return;
+    async loadServerAlerts() {
+        try {
+            const response = await fetch('notification/');
+            const json = await response.json();
 
-        const alertElements = serverAlertsContainer.querySelectorAll('div[data-type]');
-        alertElements.forEach(element => {
-            const alert = {
-                id: element.dataset.id,
-                type: element.dataset.type,
-                icon: element.dataset.icon,
-                message: element.dataset.message,
-                key: element.dataset.key || null,
-                dismissible: element.dataset.dismissible !== 'false'
-            };
-            this.alerts.push(alert);
-        });
+            if (json.status !== 'ok') return;
 
-        serverAlertsContainer.remove();
+            const serverData = json.data || {};
 
-        if (this.container) {
-            this.render();
+            for (const [key, value] of Object.entries(serverData)) {
+                let type = 'info';
+                if (key === 'errors') type = 'danger';
+                if (key === 'success') type = 'success';
+                if (key === 'warnings') type = 'warning';
+
+                if (value && typeof value === 'object') {
+                    for (const [subKey, msg] of Object.entries(value)) {
+                        this.addAlert(type, msg, `${key}.${subKey}`);
+                    }
+                } else {
+                    this.addAlert(type, String(value), key);
+                }
+            }
+
+            if (this.container) this.render();
+
+        } catch (err) {
+            console.error('Error loading server alerts:', err);
         }
     }
+
+
+
 }
 
 export default NotificationSystem;
