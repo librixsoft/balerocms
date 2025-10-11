@@ -22,7 +22,7 @@
 
 <!-- Idioma -->
 <div class="lang-selector d-flex justify-content-end mb-4">
-    <form class="lang-form d-inline-flex align-items-center m-0" method="get" ref="languageForm">
+    <form class="lang-form d-inline-flex align-items-center m-0" method="get">
         <label for="lang" class="me-2 mb-0 fw-medium text-secondary">
             <i class="fas fa-globe me-1 text-primary"></i> Idioma:
         </label>
@@ -31,7 +31,7 @@
                     class="vue-select"
                     id="lang"
                     name="lang"
-                    @change="submitLanguageForm"
+                    onchange="this.form.submit()"
             >
                 <option value="en" {lang_selected_en}>English</option>
                 <option value="es" {lang_selected_es}>Español</option>
