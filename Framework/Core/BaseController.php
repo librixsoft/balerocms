@@ -103,42 +103,54 @@ class BaseController
     {
         $this->initBasePath();
 
-        $httpMethod = $_SERVER['REQUEST_METHOD'];
+        $httpMethod    = $_SERVER['REQUEST_METHOD'];
         $requestedPath = $this->requestHelper->getPath();
 
         $instanceToScan = $controllerInstance ?? $this;
-        $className = get_class($instanceToScan);
+        $className      = get_class($instanceToScan);
 
-        //usamos helpers en vez de repetir reflection
         $pathUrl   = $this->getControllerPathUrl($className);
         $classAuth = $this->getControllerAuth($className);
 
         $reflection = new ReflectionClass($instanceToScan);
-        $methods = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
+        $methods    = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
             foreach ($method->getAttributes() as $attribute) {
-                $attrName = $attribute->getName();
+                $attrName      = $attribute->getName();
                 $routeInstance = $attribute->newInstance();
 
                 if (
                     ($attrName === Get::class && $httpMethod === 'GET') ||
                     ($attrName === Post::class && $httpMethod === 'POST')
                 ) {
-                    // Ruta completa: base del controller + target del método
+                    // Combinar path base del controller + target del método
                     $routePath = rtrim($pathUrl, '/') . '/' . ltrim($routeInstance->target, '/');
                     $routePath = rtrim($routePath, '/');
 
-                    if ($requestedPath === $routePath) {
+                    // Extraer parámetros dinámicos {param}
+                    $pattern = preg_replace('#\{([^/]+)\}#', '(?P<$1>[^/]+)', $routePath);
+                    $pattern = '#^' . $pattern . '$#';
+
+                    if (preg_match($pattern, $requestedPath, $matches)) {
+                        // Extraer parámetros nombrados
+                        $params = array_filter(
+                            $matches,
+                            fn($key) => !is_int($key),
+                            ARRAY_FILTER_USE_KEY
+                        );
+
                         // Auth de método o clase
                         $methodAuthAttr = $method->getAttributes(AuthAttr::class);
-                        $auth = !empty($methodAuthAttr) ? $methodAuthAttr[0]->newInstance() : $classAuth;
+                        $auth = !empty($methodAuthAttr)
+                            ? $methodAuthAttr[0]->newInstance()
+                            : $classAuth;
 
                         if ($auth && $auth->required && !$this->loginManager->isLoggedIn()) {
                             throw new ControllerException("Unauthorized access - login required");
                         }
 
-                        $this->runMethod($method, [], $instanceToScan);
+                        $this->runMethod($method, $params, $instanceToScan);
                         return;
                     }
                 }
@@ -162,7 +174,14 @@ class BaseController
         $controllerInstance ??= $this;
         $this->initLanguage();
 
-        $result = $method->invoke($controllerInstance, ...$params);
+        // Ajustar parámetros por nombre
+        $methodParams = [];
+        foreach ($method->getParameters() as $param) {
+            $name = $param->getName();
+            $methodParams[] = $params[$name] ?? null;
+        }
+
+        $result = $method->invoke($controllerInstance, ...$methodParams);
 
         $jsonAttribute = $method->getAttributes(JsonResponse::class);
 

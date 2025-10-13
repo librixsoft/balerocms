@@ -157,7 +157,7 @@ class AdminModel
             $sql = "SELECT * FROM block WHERE id = ? LIMIT 1";
             $this->model->getDb()->query($sql, [$id]);
             $this->model->getDb()->get();
-            $row = $this->db->getRow() ?? [];
+            $row = $this->model->getDb()->getRow() ?? [];
 
             return [
                 'id' => $row['id'] ?? 0,
