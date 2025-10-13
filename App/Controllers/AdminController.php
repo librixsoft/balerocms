@@ -116,8 +116,8 @@ class AdminController
     {
         $params = $this->viewModel->getAllPagesParams([
             'pages' => $this->model->getVirtualPages(),
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/pages/pages.html", $params, false);
@@ -143,8 +143,8 @@ class AdminController
     {
         $params = $this->viewModel->getEditPageParams([
             'page' => $this->model->getPageById($id),
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/pages/edit_page.html", $params, false);
@@ -186,8 +186,8 @@ class AdminController
     {
         $params = $this->viewModel->getAllBlocksParams([
             'blocks' => $this->model->getBlocks(),
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/blocks/blocks.html", $params, false);
@@ -202,8 +202,8 @@ class AdminController
 
         $params = $this->viewModel->getNewBlockParams([
             'next_sort_order' => $nextSort,
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/blocks/new_block.html", $params, false);
@@ -227,8 +227,8 @@ class AdminController
     {
         $params = $this->viewModel->getEditBlockParams([
             'block' => $this->model->getBlockById($id),
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/blocks/edit_block.html", $params, false);
