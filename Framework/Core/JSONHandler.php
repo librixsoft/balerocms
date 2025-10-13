@@ -71,7 +71,11 @@ class JSONHandler
 
     public function save(): void
     {
-        $json = json_encode($this->data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        $json = json_encode(
+            $this->data,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
+
         if (file_put_contents($this->file, $json) === false) {
             throw new JSONHandlerException("Could not save JSON file: " . $this->file);
         }

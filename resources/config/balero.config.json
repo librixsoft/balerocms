@@ -19,12 +19,12 @@
         "site": {
             "language": "en",
             "title": "Balero CMS",
-            "url": "http:\/\/www.balerocms.com\/",
+            "url": "http://www.balerocms.com/",
             "description": "Description...",
             "keywords": "content, management, system",
-            "basepath": "http:\/\/localhost:8080\/",
+            "basepath": "http://localhost:8080/",
             "theme": "default",
-            "footer": "© {year} Your Company. All rights reserved.\n"
+            "footer": "© {year} Your Company. All rights reserved."
         }
     }
 }
