@@ -68,8 +68,8 @@ class AdminController
     {
         $params = $this->viewModel->getSettingsParams([
             'virtual_pages' => $this->model->getVirtualPages(),
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/dashboard.html", $params, false);

@@ -2,64 +2,65 @@
 
 namespace App\Models;
 
-use Framework\Database\MySQL;
 use Framework\Core\ConfigSettings;
-use Framework\Exceptions\ControllerException;
+use Framework\Core\Model;
+use Framework\Exceptions\ModelException;
 use Framework\Utils\Utils;
 use Throwable;
 
 class AdminModel
 {
-    private MySQL $db;
+
     private ConfigSettings $configSettings;
+    private Model $model;
     private Utils $utils;
 
-    public function __construct(
-        MySQL $db,
-        ConfigSettings $configSettings,
-        Utils $utils
-    )
+
+    public function __construct(ConfigSettings $configSettings, Model $model, Utils $utils)
     {
-        $this->db = $db;
         $this->configSettings = $configSettings;
+        $this->model = $model;
         $this->utils = $utils;
-        if (!$this->db->isStatus()) {
-            $this->db->connect(
-                $this->configSettings->dbhost,
-                $this->configSettings->dbuser,
-                $this->configSettings->dbpass,
-                $this->configSettings->dbname
-            );
-        }
     }
+
 
     public function getPageById(int $id): ?array
     {
-        $sql = "SELECT * FROM page WHERE id = ? LIMIT 1";
-        $this->db->query($sql, [$id]);
-        $this->db->get();
+        $id = (int)$id;
+        $sql = "SELECT * FROM page WHERE id = {$id} LIMIT 1";
 
-        $rows = $this->db->getRows();
+        $this->model->getDb()->query($sql);
+        $this->model->getDb()->get();
+
+        $rows = $this->model->getDb()->getRows();
+
         return $rows[0] ?? null;
     }
 
     public function updatePage(int $id, array $data): bool
     {
-        $sql = "UPDATE page SET virtual_title = ?, static_url = ?, virtual_content = ? WHERE id = ?";
+        $sql = "UPDATE page SET 
+        virtual_title = ?, 
+        static_url = ?, 
+        virtual_content = ? 
+        WHERE id = ?";
+
         $params = [
             $data['virtual_title'],
             $data['static_url'],
             $data['virtual_content'],
             $id
         ];
-        $this->db->query($sql, $params);
+
+        $this->model->getDb()->query($sql, $params);
+
         return true;
     }
 
     public function createPage(array $data): bool
     {
-        $sql = "INSERT INTO page (virtual_title, static_url, virtual_content, visible, created_at)
-                VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO page (virtual_title, static_url, virtual_content, visible, created_at) VALUES (?, ?, ?, ?, ?)";
+
         $params = [
             $data['virtual_title'],
             $data['static_url'],
@@ -67,36 +68,53 @@ class AdminModel
             $data['visible'],
             $data['date'],
         ];
-        $this->db->query($sql, $params);
+
+        $this->model->getDb()->query($sql, $params);
+
         return true;
+    }
+
+    public function getPagesCount(): int
+    {
+        $pages = $this->getVirtualPages();
+        return count($pages);
     }
 
     public function getVirtualPages(): array
     {
         try {
             $sql = "SELECT * FROM page WHERE visible = 1 ORDER BY id ASC";
-            $this->db->query($sql);
-            $this->db->get();
+            $this->model->getDb()->query($sql);
+            $this->model->getDb()->get();
 
-            $rows = $this->db->getRows() ?? [];
+            $rows = $this->model->getDb()->getRows() ?? [];
+
             foreach ($rows as &$row) {
                 $slug = $this->utils->slugify($row['static_url']);
                 $row['url'] = "{$slug}";
             }
+
             return $rows;
         } catch (Throwable $e) {
-            throw new ControllerException("Error fetching virtual pages: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error fetching virtual pages: " . $e->getMessage(), previous: $e);
         }
+    }
+
+    public function getBlocksCount(): int
+    {
+        $blocks = $this->getBlocks();
+        return count($blocks);
     }
 
     public function getBlocks(): array
     {
         try {
             $sql = "SELECT * FROM block ORDER BY sort_order ASC";
-            $this->db->query($sql);
-            $this->db->get();
+            $this->model->getDb()->query($sql);
+            $this->model->getDb()->get();
 
-            $rows = $this->db->getRows() ?? [];
+            $rows = $this->model->getDb()->getRows() ?? [];
+
             foreach ($rows as &$row) {
                 $row = [
                     'id' => $row['id'] ?? 0,
@@ -105,9 +123,10 @@ class AdminModel
                     'content' => $row['content'] ?? '',
                 ];
             }
+
             return $rows;
         } catch (Throwable $e) {
-            throw new ControllerException("Error fetching blocks: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error fetching blocks: " . $e->getMessage(), previous: $e);
         }
     }
 
@@ -124,10 +143,11 @@ class AdminModel
     public function deletePage(int $id): bool
     {
         try {
-            $this->db->query("DELETE FROM page WHERE id = ?", [$id]);
+            $sql = "DELETE FROM page WHERE id = ?";
+            $this->model->getDb()->query($sql, [$id]);
             return true;
         } catch (Throwable $e) {
-            throw new ControllerException("Error deleting page: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error deleting page: " . $e->getMessage(), previous: $e);
         }
     }
 
@@ -135,8 +155,8 @@ class AdminModel
     {
         try {
             $sql = "SELECT * FROM block WHERE id = ? LIMIT 1";
-            $this->db->query($sql, [$id]);
-            $this->db->get();
+            $this->model->getDb()->query($sql, [$id]);
+            $this->model->getDb()->get();
             $row = $this->db->getRow() ?? [];
 
             return [
@@ -146,14 +166,14 @@ class AdminModel
                 'content' => $row['content'] ?? '',
             ];
         } catch (Throwable $e) {
-            throw new ControllerException("Error fetching block by ID: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error fetching block by ID: " . $e->getMessage(), previous: $e);
         }
     }
 
     public function createBlock(array $data): bool
     {
         try {
-            $sortOrder = is_numeric($data['sort_order'] ?? null)
+            $sortOrder = isset($data['sort_order']) && is_numeric($data['sort_order'])
                 ? (int)$data['sort_order']
                 : 1;
 
@@ -163,17 +183,17 @@ class AdminModel
                 $sortOrder,
                 $data['content'] ?? '',
             ];
-            $this->db->query($sql, $params);
+            $this->model->getDb()->query($sql, $params);
             return true;
         } catch (Throwable $e) {
-            throw new ControllerException("Error creating block: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error creating block: " . $e->getMessage(), previous: $e);
         }
     }
 
     public function updateBlock(int $id, array $data): bool
     {
         try {
-            $sortOrder = is_numeric($data['sort_order'] ?? null)
+            $sortOrder = (isset($data['sort_order']) && is_numeric($data['sort_order']))
                 ? (int)$data['sort_order']
                 : 1;
 
@@ -185,20 +205,21 @@ class AdminModel
                 $id
             ];
 
-            $this->db->query($sql, $params);
+            $this->model->getDb()->query($sql, $params);
             return true;
         } catch (Throwable $e) {
-            throw new ControllerException("Error updating block: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error updating block: " . $e->getMessage(), previous: $e);
         }
     }
 
     public function deleteBlock(int $id): bool
     {
         try {
-            $this->db->query("DELETE FROM block WHERE id = ?", [$id]);
+            $sql = "DELETE FROM block WHERE id = ?";
+            $this->model->getDb()->query($sql, [$id]);
             return true;
         } catch (Throwable $e) {
-            throw new ControllerException("Error deleting block: " . $e->getMessage(), previous: $e);
+            throw new ModelException("Error deleting block: " . $e->getMessage(), previous: $e);
         }
     }
 }
