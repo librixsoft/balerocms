@@ -5,17 +5,19 @@
     <base href="{basepath}">
     <link href="favicon.ico" rel="shortcut icon">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-
     <link href="assets/css/vendor/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
     <link href="assets/css/vendor/all.min.css" rel="stylesheet">
+    <link href="assets/css/notification.css" rel="stylesheet">
+    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
+    <link href="assets/css/vendor/quill.snow.css" rel="stylesheet">
 
-    <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/vendor/vue.global.prod.js"></script>
+    <script src="assets/js/vendor/quill.min.js"></script>
+
 </head>
 <body>
 
+<div id="app">
 <%-- @include "admin/includes/navbar.html" -->
 
 <div class="container-fluid">
@@ -76,35 +78,6 @@
                 </div>
                 <!-- /block -->
 
-                <script>
-                    $(document).ready(function () {
-                        $('.summernote').summernote({
-                            height: 350,
-                            callbacks: {
-                                onImageUpload: function (files) {
-                                    sendFile(files[0]);
-                                }
-                            }
-                        });
-
-                        function sendFile(file) {
-                            var data = new FormData();
-                            data.append("file", file);
-                            $.ajax({
-                                data: data,
-                                type: "POST",
-                                url: "{basepath}admin/uploader",
-                                cache: false,
-                                contentType: false,
-                                processData: false,
-                                success: function (url) {
-                                    $('.summernote').summernote('insertImage', url);
-                                }
-                            });
-                        }
-                    });
-                </script>
-
             </div>
         </main>
     </div>
@@ -113,6 +86,9 @@
         <p>Powered by <a href="#">Balero CMS</a>.</p>
     </footer>
 </div>
+</div>
+
+<script type="module" src="assets/js/admin-theme.js"></script>
 
 </body>
 </html>

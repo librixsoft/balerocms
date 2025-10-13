@@ -8,25 +8,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
 
-    <!-- Bootstrap CSS -->
     <link href="assets/css/vendor/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
-
-    <!-- Font Awesome 6 -->
     <link href="assets/css/vendor/all.min.css" rel="stylesheet">
+    <link href="assets/css/notification.css" rel="stylesheet">
+    <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
+    <link href="assets/css/vendor/quill.snow.css" rel="stylesheet">
 
-    <!-- Summernote CSS -->
-    <link href="assets/css/summernote.min.css" rel="stylesheet">
+    <script src="assets/js/vendor/vue.global.prod.js"></script>
+    <script src="assets/js/vendor/quill.min.js"></script>
 
-    <!-- jQuery -->
-    <script src="assets/js/vendor/jquery.min.js"></script>
-    <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/summernote.min.js"></script>
 </head>
+
 <body>
 
+<div id="app">
 <%-- @include "admin/includes/navbar.html" -->
-
 <div class="container-fluid">
     <div class="row">
         <%-- @include "admin/includes/sidebar.html" -->
@@ -60,8 +56,7 @@
                                 <div class="mb-3 row">
                                     <label class="col-sm-2 col-form-label" for="virtual_content">{admin.content}</label>
                                     <div class="col-sm-10">
-                                        <textarea class="summernote"
-                                                  name="virtual_content">{page.virtual_content}</textarea>
+                                        <div id="quill-editor" style="height:350px;"></div>
                                     </div>
                                 </div>
 
@@ -69,8 +64,8 @@
                                     <label class="col-sm-2 col-form-label" for="visible">{admin.visible}</label>
                                     <div class="col-sm-10">
                                         <select class="form-select w-auto" id="visible" name="visible">
-                                            <option value="1" {page.visible_selected}>{admin.enabled}</option>
-                                            <option value="0" {page.hidden_selected}>{admin.disabled}</option>
+                                            <option value="1" selected="{page.visible_selected}">{admin.enabled}</option>
+                                            <option value="0" selected="{page.hidden_selected}">{admin.disabled}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -103,46 +98,9 @@
         <p>{admin.powered_by} <a href="#">Balero CMS</a>.</p>
     </footer>
 </div>
+</div>
 
-<script>
-    $(document).ready(function () {
-        $('.summernote').summernote({
-            height: 350,
-            callbacks: {
-                onImageUpload: function (files) {
-                    sendFile(files[0]);
-                }
-            }
-        });
-
-        function sendFile(file) {
-            var data = new FormData();
-            data.append("file", file);
-            $.ajax({
-                data: data,
-                type: "POST",
-                url: "{basepath}admin/uploader",
-                cache: false,
-                contentType: false,
-                processData: false,
-                success: function (url) {
-                    $('.summernote').summernote('insertImage', url);
-                }
-            });
-        }
-
-        // Auto-generar slug para static_url al modificar título
-        $('#virtual_title').on('input', function () {
-            var title = $(this).val();
-            var slug = title.toLowerCase()
-                .replace(/[^\w\s-]/g, '')
-                .trim()
-                .replace(/[\s_-]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-            $('#static_url').val(slug);
-        });
-    });
-</script>
+<script type="module" src="assets/js/admin-theme.js"></script>
 
 </body>
 </html>

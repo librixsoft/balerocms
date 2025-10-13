@@ -104,8 +104,8 @@ class AdminController
     public function getPages()
     {
         $params = $this->viewModel->getPagesParams([
-            //'pages_count' => $this->model->getPagesCount(),
-            //'blocks_count' => $this->model->getBlocksCount(),
+            'pages_count' => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
         return $this->view->render("admin/pages/new_page.html", $params, false);
