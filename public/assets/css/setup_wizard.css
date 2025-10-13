@@ -280,3 +280,67 @@ body {
 =========================== */
 .lang-form label { font-size: 14px; }
 .lang-selector { background: #fff; border-radius: 8px; padding: 10px 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+/* ===========================
+   Inputs
+=========================== */
+
+ .form-control, .form-select, textarea {
+     border: 2px solid #e5e7eb;
+     border-radius: 8px;
+     padding: 10px 14px;
+     font-size: 14px;
+     transition: all 0.3s ease;
+     background-color: #fafbfc;
+     color: #1f2937;
+ }
+
+.form-control:focus, .form-select:focus, textarea:focus {
+    background-color: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.form-control:hover:not(:focus),
+.form-select:hover:not(:focus),
+textarea:hover:not(:focus) {
+    border-color: #d1d5db;
+    background-color: #fff;
+}
+
+.form-control::placeholder {
+    color: #9ca3af;
+}
+
+textarea {
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+}
+
+.form-control[type="password"] {
+    letter-spacing: 0.1em;
+}
+
+.form-control[type="email"] {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper .form-control:focus + .input-border {
+    width: 100%;
+}
+
+.input-border {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    transition: width 0.3s ease;
+}
