@@ -690,3 +690,151 @@ body.dark-theme .navbar .nav-link.active {
     pointer-events: auto;
     opacity: 1;
 }
+
+/* ==================== TABLAS TEMA OSCURO ==================== */
+
+/* ==================== TABLAS TEMA OSCURO ==================== */
+
+/* Tabla básica */
+body.dark-theme .table {
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+}
+
+/* Thead */
+body.dark-theme .table thead th {
+    background-color: #252525 !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Table-light en tema oscuro */
+body.dark-theme .table-light {
+    background-color: #252525 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .table-light th,
+body.dark-theme .table-light td {
+    background-color: #252525 !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+}
+
+/* Tbody */
+body.dark-theme .table tbody td {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Filas striped */
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #2d2d2d !important;
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(even) {
+    background-color: #252525 !important;
+}
+
+/* Hover en filas */
+body.dark-theme .table-hover tbody tr:hover {
+    background-color: #3d3d3d !important;
+    color: #ffffff !important;
+}
+
+/* Bordes de tabla */
+body.dark-theme .table-bordered {
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+body.dark-theme .table-bordered th,
+body.dark-theme .table-bordered td {
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Todos los bordes de celdas */
+body.dark-theme .table th,
+body.dark-theme .table td {
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Links dentro de tablas */
+body.dark-theme .table a {
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .table a:hover {
+    color: #8bb9fe !important;
+}
+
+/* Botones dentro de tablas - mantener sus colores */
+body.dark-theme .table .btn-info {
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #000 !important;
+}
+
+body.dark-theme .table .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}ed tbody tr:nth-of-type(odd) {
+     background-color: #2d2d2d !important;
+ }
+
+body.dark-theme .table-striped tbody tr:nth-of-type(even) {
+    background-color: #252525 !important;
+}
+
+/* Hover en filas */
+body.dark-theme .table-hover tbody tr:hover {
+    background-color: #3d3d3d !important;
+    color: #ffffff !important;
+}
+
+/* Bordes de tabla */
+body.dark-theme .table-bordered {
+    border-color: #2d2d2d !important;
+    border-width: 1px !important;
+}
+
+body.dark-theme .table-bordered th,
+body.dark-theme .table-bordered td {
+    border-color: #2d2d2d !important;
+    border-width: 1px !important;
+}
+
+/* Todos los bordes de celdas */
+body.dark-theme .table th,
+body.dark-theme .table td {
+    border-color: #2d2d2d !important;
+    border-width: 1px !important;
+}
+
+/* Links dentro de tablas */
+body.dark-theme .table a {
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .table a:hover {
+    color: #8bb9fe !important;
+}
+
+/* Botones dentro de tablas - mantener sus colores */
+body.dark-theme .table .btn-info {
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #000 !important;
+}
+
+body.dark-theme .table .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
