@@ -3,7 +3,7 @@
 .settings
 .buildpath
 .project
-public/assets/images
+public/assets/images/uploads
 .DS_Store
 .idea
 *.iml
