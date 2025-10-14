@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80">
   <!-- Icono </> -->
   <g id="icon">
-    <text x="10" y="52" 
-          font-family="'Courier New', 'Consolas', monospace" 
-          font-size="40" 
-          font-weight="700" 
+    <text x="10" y="52"
+          font-family="'Courier New', 'Consolas', monospace"
+          font-size="40"
+          font-weight="700"
           fill="#10B981"
           letter-spacing="-2">&lt;/&gt;</text>
   </g>
-  
+
   <!-- Texto BaleroCMS -->
-  <text x="85" y="52" 
-        font-family="'Helvetica Neue', 'Arial', sans-serif" 
-        font-size="32" 
-        font-weight="300" 
+  <text x="85" y="52"
+        font-family="'Helvetica Neue', 'Arial', sans-serif"
+        font-size="32"
+        font-weight="300"
         fill="#4B5563"
         letter-spacing="1">
-    Balero<tspan fill="#6B7280" font-weight="300">CMS</tspan>
+    Balero<tspan fill="#10B981" font-weight="300">CMS</tspan>
   </text>
 </svg>
