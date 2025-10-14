@@ -1,20 +1,86 @@
+/** -------------------------------------------------------------------------- **/
+/** CONFIGURACIÓN INICIAL Y GLOBAL                     **/
+/** -------------------------------------------------------------------------- **/
+
 html, body {
+    /* Previene el scroll horizontal no deseado en todo el documento */
     overflow-x: hidden;
     width: 100%;
 }
 
 .container {
+    /* Asegura que el contenedor principal no cause scroll horizontal */
     max-width: 100%;
     overflow-x: hidden;
 }
+
+/** -------------------------------------------------------------------------- **/
+/** HOME PAGE & BODY                             **/
+/** -------------------------------------------------------------------------- **/
 
 /** Home Page **/
 body {
     padding-top: 0;
     padding-bottom: 40px;
-    background-color: #f5f5f5;
+    background-color: #f5f5f5; /* Fondo claro por defecto */
 }
 
+/* Ajuste de padding para el body en pantallas grandes (desktop) */
+@media (min-width: 979px) {
+    body {
+        padding-top: 60px; /* Deja espacio para un navbar fijo */
+    }
+}
+
+/* Espaciado genérico para campos de formulario o similar */
+.field {
+    padding: 4px;
+}
+
+/** -------------------------------------------------------------------------- **/
+/** LOGIN PAGE                                 **/
+/** -------------------------------------------------------------------------- **/
+
+/** Login Page **/
+#login {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+#login .form-signin {
+    max-width: 300px;
+    padding: 19px 29px 29px;
+    margin: 0 auto 20px;
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    /* Estilos de border-radius compatibles con navegadores antiguos */
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    /* Estilos de box-shadow compatibles con navegadores antiguos */
+    -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+    -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+}
+
+#login .form-signin .form-signin-heading,
+#login .form-signin .checkbox {
+    margin-bottom: 10px;
+}
+
+#login .form-signin input[type="text"],
+#login .form-signin input[type="password"] {
+    font-size: 16px;
+    height: auto;
+    margin-bottom: 15px;
+    padding: 7px 9px;
+}
+
+/** -------------------------------------------------------------------------- **/
+/** SIDEBAR (Legacy)                            **/
+/** -------------------------------------------------------------------------- **/
+
+/* Estilos originales o más antiguos del sidebar */
 #sidebar {
     margin-top: 8px;
     padding-top: 0px;
@@ -52,150 +118,17 @@ body {
 }
 
 
-@media (min-width: 979px) {
-    body {
-        padding-top: 60px;
-    }
-}
-
-.field {
-    padding: 4px;
-}
-
-/** Login Page **/
-#login {
-    padding-top: 40px;
-    padding-bottom: 40px;
-}
-
-#login .form-signin {
-    max-width: 300px;
-    padding: 19px 29px 29px;
-    margin: 0 auto 20px;
-    background-color: #fff;
-    border: 1px solid #e5e5e5;
-    -webkit-border-radius: 5px;
-    -moz-border-radius: 5px;
-    border-radius: 5px;
-    -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-    -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
-}
-
-#login .form-signin .form-signin-heading,
-#login .form-signin .checkbox {
-    margin-bottom: 10px;
-}
-
-#login .form-signin input[type="text"],
-#login .form-signin input[type="password"] {
-    font-size: 16px;
-    height: auto;
-    margin-bottom: 15px;
-    padding: 7px 9px;
-}
-
-/** 2 level sub menu **/
-.dropdown-menu-with-subs .sub-menu {
-    left: 100%;
-    position: absolute;
-    top: 0;
-    visibility: hidden;
-    margin-top: -1px;
-}
-
-.dropdown-menu-with-subs li:hover .sub-menu {
-    visibility: visible;
-    display: block;
-}
-
-.navbar {
-    border-bottom: 1px solid #dee2e6; /* gris claro estilo Bootstrap */
-}
-
-.navbar .sub-menu:before {
-    border-bottom: 7px solid transparent;
-    border-left: none;
-    border-right: 7px solid rgba(0, 0, 0, 0.2);
-    border-top: 7px solid transparent;
-    left: -7px;
-    top: 10px;
-}
-
-.navbar .sub-menu:after {
-    border-top: 6px solid transparent;
-    border-left: none;
-    border-right: 6px solid #fff;
-    border-bottom: 6px solid transparent;
-    left: 10px;
-    top: 11px;
-    left: -6px;
-}
-
-/** Global **/
-#content {
-    margin-left: 0px;
-    margin-top: 20px;
-}
-
-.hide-sidebar, .show-sidebar {
-    cursor: pointer;
-}
-
-.padd-bottom {
-    margin-bottom: 5px;
-}
-
-.breadcrumb {
-    margin: 0 0 0px;
-    padding: 10px 0px;
-    background-color: transparent;
-}
-
-.block {
-    border: 1px solid #ccc;
-    background: white;
-    margin-top: 0;
-    margin-bottom: 1em;
-    border-top: none;
-}
-
-.block-content {
-    margin: 1em;
-    min-height: .25em;
-}
-
-.block-header {
-    margin-bottom: 0px;
-    border-right: none;
-    border-left: none;
-    -webkit-border-radius: 0px;
-    -moz-border-radius: 0px;
-    border-radius: 0px;
-}
-
-.block-header div {
-    padding-top: 10px;
-}
-
-.easyPieChart {
-    margin: 0px auto;
-}
-
-.chart-bottom-heading {
-    margin-top: 5px;
-    text-align: center;
-}
-
-/** Side Bar **/
+/* Estilos de un componente tipo "Docs" de Bootstrap (probablemente sidebar antiguo) */
 .bs-docs-sidenav {
     max-width: 228px;
     margin: 30px 0 0;
     padding: 0;
     background-color: #fff;
+    /* Estilos de border-radius compatibles con navegadores antiguos */
     -webkit-border-radius: 6px;
     -moz-border-radius: 6px;
     border-radius: 6px;
+    /* Estilos de box-shadow compatibles con navegadores antiguos */
     -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
     -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
     box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
@@ -203,19 +136,21 @@ body {
 
 .bs-docs-sidenav > li > a {
     display: block;
-    width: 190px \9;
+    width: 190px \9; /* Hack para IE8 */
     margin: 0 0 -1px;
     padding: 8px 14px;
     border: 1px solid #e5e5e5;
 }
 
 .bs-docs-sidenav > li:first-child > a {
+    /* Estilos de border-radius compatibles con navegadores antiguos */
     -webkit-border-radius: 6px 6px 0 0;
     -moz-border-radius: 6px 6px 0 0;
     border-radius: 6px 6px 0 0;
 }
 
 .bs-docs-sidenav > li:last-child > a {
+    /* Estilos de border-radius compatibles con navegadores antiguos */
     -webkit-border-radius: 0 0 6px 6px;
     -moz-border-radius: 0 0 6px 6px;
     border-radius: 0 0 6px 6px;
@@ -227,12 +162,13 @@ body {
     padding: 9px 15px;
     border: 0;
     text-shadow: 0 1px 0 rgba(0, 0, 0, .15);
+    /* Estilos de box-shadow compatibles con navegadores antiguos */
     -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0 rgba(0, 0, 0, .1);
     -moz-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0 rgba(0, 0, 0, .1);
     box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
-/* Chevrons */
+/* Chevrons (flechas) */
 .bs-docs-sidenav .icon-chevron-right {
     float: right;
     margin-top: 2px;
@@ -253,6 +189,7 @@ body {
     opacity: 1;
 }
 
+/* Estilos para sidebar "Affix" (fijo en scroll) */
 .bs-docs-sidenav.affix {
     top: 40px;
 }
@@ -263,181 +200,11 @@ body {
     bottom: 270px;
 }
 
-/* Icons
-------------------------- */
-.the-icons {
-    margin-left: 0;
-    list-style: none;
-}
+/** -------------------------------------------------------------------------- **/
+/** SIDEBAR (Moderno)                             **/
+/** -------------------------------------------------------------------------- **/
 
-.the-icons li {
-    float: left;
-    width: 25%;
-    line-height: 25px;
-}
-
-.the-icons i:hover {
-    background-color: rgba(255, 0, 0, .25);
-}
-
-footer {
-    text-align: right;
-}
-
-/** Barra de paginacion **/
-
-#nav {
-    margin: 20px;
-
-}
-
-.pag-bar li a {
-    color: #FFFFFF;
-}
-
-.pag-bar li {
-    background: rgb(89, 143, 204); /* Old browsers */
-    background: -moz-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(89, 143, 204, 1)), color-stop(100%, rgba(0, 68, 204, 1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#598fcc', endColorstr='#0044cc', GradientType=0); /* IE6-9 */
-    color: #FFFFFF;
-    border-radius: 5px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    border: 1px solid #000000;
-    margin-left: 4px;
-    margin-right: 4px;
-    padding: 1px 5px 1px 5px;
-    display: inline-block;
-    font-family: "Segoe UI", "Lucida Grande", "Helvetica Neue", sans-serif;
-    font-size: 12px;
-}
-
-.pag-bar li:hover {
-    background: rgb(73, 155, 234); /* Old browsers */
-    background: -moz-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(73, 155, 234, 1)), color-stop(100%, rgba(32, 124, 229, 1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#499bea', endColorstr='#207ce5', GradientType=0); /* IE6-9 */
-    font-family: "Segoe UI", "Lucida Grande", "Helvetica Neue", sans-serif;
-    font-size: 12px;
-}
-
-/** fin de pag-bar **/
-
-.logo {
-    height: 40px;
-    width: 150px;
-}
-
-/* ==================== TEMA OSCURO ==================== */
-
-/* Body y contenedor principal */
-body.dark-theme {
-    background-color: #1a1a1a !important;
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .container-fluid {
-    background-color: #1a1a1a !important;
-}
-
-/* Cards */
-body.dark-theme .card {
-    background-color: #2d2d2d !important;
-    border-color: #404040 !important;
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .card-header {
-    background-color: #252525 !important;
-    border-color: #404040 !important;
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .card-body {
-    background-color: #2d2d2d !important;
-    color: #e0e0e0 !important;
-}
-
-/* Forms */
-body.dark-theme .form-control,
-body.dark-theme .form-select {
-    background-color: #3d3d3d !important;
-    border-color: #555 !important;
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .form-control:focus,
-body.dark-theme .form-select:focus {
-    background-color: #3d3d3d !important;
-    border-color: #6ea8fe !important;
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme textarea.form-control {
-    background-color: #3d3d3d !important;
-    color: #e0e0e0 !important;
-}
-
-/* Labels y Legend */
-body.dark-theme label,
-body.dark-theme .col-form-label {
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme legend {
-    color: #e0e0e0 !important;
-}
-
-/* Breadcrumbs */
-body.dark-theme .breadcrumb-item a {
-    color: #6ea8fe !important;
-}
-
-body.dark-theme .breadcrumb-item.active {
-    color: #adb5bd !important;
-}
-
-/* Dropdown menus */
-body.dark-theme .dropdown-menu {
-    background-color: #2d2d2d !important;
-    border-color: #404040 !important;
-}
-
-body.dark-theme .dropdown-item {
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .dropdown-item:hover {
-    background-color: #3d3d3d !important;
-    color: #ffffff !important;
-}
-
-/* Footer */
-body.dark-theme footer {
-    color: #adb5bd !important;
-}
-
-body.dark-theme footer a {
-    color: #6ea8fe !important;
-}
-
-/* HR */
-body.dark-theme hr {
-    border-color: #404040 !important;
-}
-
-/* ==================== SIDEBAR ==================== */
-
-/* Sidebar en modo claro */
+/* Sidebar en modo claro (usando una clase más genérica) */
 .sidebar-nav {
     background-color: #ffffff;
     border-radius: 0.25rem;
@@ -462,394 +229,70 @@ body.dark-theme hr {
     color: #ffffff;
 }
 
-/* Sidebar en modo oscuro */
-body.dark-theme #sidebar {
-    background-color: transparent !important;
-}
-
-body.dark-theme .sidebar-nav {
-    background-color: #2d2d2d !important;
-    border: 1px solid #404040;
-}
-
-body.dark-theme #sidebar .rounded {
-    background-color: transparent !important;
-}
-
-body.dark-theme .sidebar-nav .nav-link {
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .sidebar-nav .nav-link:hover {
-    background-color: #3d3d3d !important;
-    color: #6ea8fe !important;
-}
-
-body.dark-theme .sidebar-nav .nav-link.active {
-    background-color: #0d6efd !important;
-    color: #ffffff !important;
-}
-
-body.dark-theme .sidebar-nav .badge {
-    background-color: #dc3545 !important;
-}
-
-/* ==================== BORDES EN TEMA OSCURO ==================== */
-
-/* Sidebar - quitar borde blanco */
-body.dark-theme #sidebar {
-    border: none !important;
-}
-
-body.dark-theme #sidebar .rounded {
-    border: none !important;
-}
-
-body.dark-theme .sidebar-nav,
-body.dark-theme #sidebar .bg-white {
-    border: 1px solid #404040 !important;
-}
-
-/* Navbar - quitar borde blanco */
-body.dark-theme .navbar {
-    background-color: #2d2d2d !important;
-    border-bottom: 1px solid #404040 !important;
-    border-top: none !important;
-    border-left: none !important;
-    border-right: none !important;
-}
-
-/* Si el navbar tiene alguna clase de borde de Bootstrap */
-body.dark-theme .navbar.border,
-body.dark-theme .navbar.border-bottom {
-    border-color: #404040 !important;
-}
-
-/* Quitar bordes blancos de todos los elementos en el sidebar */
-body.dark-theme #sidebar * {
-    border-color: #404040 !important;
-}
-
-/* Nav items del sidebar */
-body.dark-theme .sidebar-nav .nav-item {
-    border: none !important;
-}
-
-body.dark-theme .sidebar-nav .nav-link {
-    border: none !important;
-}
-
-/* Container del sidebar */
-body.dark-theme .col-md-3 {
-    border-right: 1px solid #404040 !important;
-}
-
-/* WHITE FONTS EDITOR */
-.ql-html {
-    width: 28px !important;
-}
-.ql-html .ql-stroke {
-    stroke: #444;
-}
-.ql-html svg {
-    width: 18px;
-    height: 18px;
-}
-#quill-editor.html-mode .ql-editor {
-    font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
-    background-color: #f8f9fa;
-}
-#quill-editor.html-mode .ql-toolbar {
-    pointer-events: none;
-    opacity: 0.6;
-}
-#quill-editor.html-mode .ql-html {
-    pointer-events: auto;
-    opacity: 1;
-}
-
-/* Estilos para tema oscuro en Quill - MÁS ESPECÍFICOS */
-body.dark-theme .ql-toolbar.ql-snow {
-    background-color: #343a40 !important;
-    border-color: #495057 !important;
-}
-
-body.dark-theme .ql-toolbar .ql-stroke {
-    stroke: #adb5bd !important;
-}
-
-body.dark-theme .ql-toolbar .ql-fill {
-    fill: #adb5bd !important;
-}
-
-body.dark-theme .ql-toolbar .ql-picker-label {
-    color: #adb5bd !important;
-}
-
-body.dark-theme .ql-container.ql-snow {
-    background-color: #212529 !important;
-    border-color: #495057 !important;
-}
-
-body.dark-theme .ql-editor {
-    color: #f8f9fa !important;
-    background-color: #212529 !important;
-}
-
-/* FORZAR color blanco en TODO el contenido del editor */
-body.dark-theme .ql-editor *,
-body.dark-theme .ql-editor p,
-body.dark-theme .ql-editor h1,
-body.dark-theme .ql-editor h2,
-body.dark-theme .ql-editor h3,
-body.dark-theme .ql-editor h4,
-body.dark-theme .ql-editor h5,
-body.dark-theme .ql-editor h6,
-body.dark-theme .ql-editor span,
-body.dark-theme .ql-editor strong,
-body.dark-theme .ql-editor em,
-body.dark-theme .ql-editor u,
-body.dark-theme .ql-editor li,
-body.dark-theme .ql-editor ol,
-body.dark-theme .ql-editor ul {
-    color: #f8f9fa !important;
-}
-
-body.dark-theme .ql-editor.ql-blank::before {
-    color: #6c757d !important;
-}
-
-/* Modo HTML en tema oscuro */
-body.dark-theme #quill-editor.html-mode .ql-editor {
-    background-color: #1a1d20 !important;
-    color: #f8f9fa !important;
-}
+/** -------------------------------------------------------------------------- **/
+/** NAVBAR                                    **/
+/** -------------------------------------------------------------------------- **/
 
-/* ==================== NAVBAR TEMA OSCURO ==================== */
-
-/* Forzar colores en navbar oscuro */
-body.dark-theme .navbar {
-    background-color: #2d2d2d !important;
-    border-bottom: 1px solid #404040 !important;
-}
-
-/* Links y texto del navbar en tema oscuro */
-body.dark-theme .navbar .navbar-brand,
-body.dark-theme .navbar .nav-link,
-body.dark-theme .navbar .navbar-text {
-    color: #e0e0e0 !important;
-}
-
-body.dark-theme .navbar .nav-link:hover,
-body.dark-theme .navbar .nav-link:focus {
-    color: #ffffff !important;
-}
-
-/* Dropdown toggle en navbar oscuro */
-body.dark-theme .navbar .dropdown-toggle {
-    color: #e0e0e0 !important;
-}
-
-/* Navbar toggler (hamburger menu) en tema oscuro */
-body.dark-theme .navbar-toggler {
-    border-color: #555 !important;
-}
-
-body.dark-theme .navbar-toggler-icon {
-    filter: invert(1);
-}
-
-/* Active nav item */
-body.dark-theme .navbar .nav-link.active {
-    color: #6ea8fe !important;
-}
-
-/* Editor */
-
-.ql-html {
-    width: 28px !important;
-}
-.ql-html .ql-stroke {
-    stroke: #444;
-}
-.ql-html svg {
-    width: 18px;
-    height: 18px;
-}
-#quill-editor.html-mode .ql-editor {
-    font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
-    background-color: #f8f9fa;
-}
-#quill-editor.html-mode .ql-toolbar {
-    pointer-events: none;
-    opacity: 0.6;
-}
-#quill-editor.html-mode .ql-html {
-    pointer-events: auto;
-    opacity: 1;
-}
-
-/* ==================== TABLAS TEMA OSCURO ==================== */
-
-/* ==================== TABLAS TEMA OSCURO ==================== */
-
-/* Tabla básica */
-body.dark-theme .table {
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
-}
-
-/* Thead */
-body.dark-theme .table thead th {
-    background-color: #252525 !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
-    border-width: 1px !important;
-}
-
-/* Table-light en tema oscuro */
-body.dark-theme .table-light {
-    background-color: #252525 !important;
-    color: #e0e0e0 !important;
+/* Estilos de navbar Bootstrap */
+.navbar {
+    border-bottom: 1px solid #dee2e6; /* gris claro estilo Bootstrap */
 }
 
-body.dark-theme .table-light th,
-body.dark-theme .table-light td {
-    background-color: #252525 !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
+/* Estilos de sub-menú (2 niveles) */
+.dropdown-menu-with-subs .sub-menu {
+    left: 100%;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    margin-top: -1px;
 }
 
-/* Tbody */
-body.dark-theme .table tbody td {
-    background-color: #2d2d2d !important;
-    color: #e0e0e0 !important;
-    border-color: #404040 !important;
-    border-width: 1px !important;
+.dropdown-menu-with-subs li:hover .sub-menu {
+    visibility: visible;
+    display: block;
 }
 
-/* Filas striped */
-body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #2d2d2d !important;
+/* Estilos de flechas para sub-menús en navbar */
+.navbar .sub-menu:before {
+    border-bottom: 7px solid transparent;
+    border-left: none;
+    border-right: 7px solid rgba(0, 0, 0, 0.2);
+    border-top: 7px solid transparent;
+    left: -7px;
+    top: 10px;
 }
 
-body.dark-theme .table-striped tbody tr:nth-of-type(even) {
-    background-color: #252525 !important;
+.navbar .sub-menu:after {
+    border-top: 6px solid transparent;
+    border-left: none;
+    border-right: 6px solid #fff;
+    border-bottom: 6px solid transparent;
+    left: 10px;
+    top: 11px;
+    left: -6px;
 }
 
-/* Hover en filas */
-body.dark-theme .table-hover tbody tr:hover {
-    background-color: #3d3d3d !important;
-    color: #ffffff !important;
+.logo {
+    height: 40px;
+    width: 150px;
 }
 
-/* Bordes de tabla */
-body.dark-theme .table-bordered {
-    border-color: #404040 !important;
-    border-width: 1px !important;
-}
-
-body.dark-theme .table-bordered th,
-body.dark-theme .table-bordered td {
-    border-color: #404040 !important;
-    border-width: 1px !important;
-}
-
-/* Todos los bordes de celdas */
-body.dark-theme .table th,
-body.dark-theme .table td {
-    border-color: #404040 !important;
-    border-width: 1px !important;
-}
-
-/* Links dentro de tablas */
-body.dark-theme .table a {
-    color: #6ea8fe !important;
-}
-
-body.dark-theme .table a:hover {
-    color: #8bb9fe !important;
-}
-
-/* Botones dentro de tablas - mantener sus colores */
-body.dark-theme .table .btn-info {
-    background-color: #0dcaf0 !important;
-    border-color: #0dcaf0 !important;
-    color: #000 !important;
-}
-
-body.dark-theme .table .btn-danger {
-    background-color: #dc3545 !important;
-    border-color: #dc3545 !important;
-    color: #fff !important;
-}ed tbody tr:nth-of-type(odd) {
-     background-color: #2d2d2d !important;
- }
-
-body.dark-theme .table-striped tbody tr:nth-of-type(even) {
-    background-color: #252525 !important;
-}
+/** -------------------------------------------------------------------------- **/
+/** NAVBAR (Vue/Moderno)                         **/
+/** -------------------------------------------------------------------------- **/
 
-/* Hover en filas */
-body.dark-theme .table-hover tbody tr:hover {
-    background-color: #3d3d3d !important;
-    color: #ffffff !important;
+/* Variables CSS */
+:root {
+    --navbar-height: 60px;
+    --navbar-bg: #ffffff;
+    --navbar-text: #1f2937;
+    --navbar-border: rgba(0,0,0,0.08);
+    --dropdown-bg: #ffffff;
+    --dropdown-hover: #f3f4f6;
+    --user-avatar-bg: #3b82f6;
 }
-
-/* Bordes de tabla */
-body.dark-theme .table-bordered {
-    border-color: #2d2d2d !important;
-    border-width: 1px !important;
-}
-
-body.dark-theme .table-bordered th,
-body.dark-theme .table-bordered td {
-    border-color: #2d2d2d !important;
-    border-width: 1px !important;
-}
-
-/* Todos los bordes de celdas */
-body.dark-theme .table th,
-body.dark-theme .table td {
-    border-color: #2d2d2d !important;
-    border-width: 1px !important;
-}
-
-/* Links dentro de tablas */
-body.dark-theme .table a {
-    color: #6ea8fe !important;
-}
-
-body.dark-theme .table a:hover {
-    color: #8bb9fe !important;
-}
-
-/* Botones dentro de tablas - mantener sus colores */
-body.dark-theme .table .btn-info {
-    background-color: #0dcaf0 !important;
-    border-color: #0dcaf0 !important;
-    color: #000 !important;
-}
-
-body.dark-theme .table .btn-danger {
-    background-color: #dc3545 !important;
-    border-color: #dc3545 !important;
-    color: #fff !important;
-}
-
-     /* Variables CSS */
- :root {
-     --navbar-height: 60px;
-     --navbar-bg: #ffffff;
-     --navbar-text: #1f2937;
-     --navbar-border: rgba(0,0,0,0.08);
-     --dropdown-bg: #ffffff;
-     --dropdown-hover: #f3f4f6;
-     --user-avatar-bg: #3b82f6;
- }
 
+/* Variables para tema oscuro en el navbar moderno */
 [data-bs-theme="dark"] {
     --navbar-bg: #1f2937;
     --navbar-text: #f9fafb;
@@ -1035,6 +478,7 @@ body.dark-theme .table .btn-danger {
     padding: 0.25rem 1.5rem 0.25rem 0.5rem;
     outline: none;
     appearance: none;
+    /* Ícono SVG para la flecha del select */
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.25rem center;
@@ -1193,7 +637,7 @@ body {
     padding-top: var(--navbar-height);
 }
 
-/* Fix para dropdowns de Vue */
+/* Fix para dropdowns de Vue (control de visibilidad) */
 .nav-dropdown {
     position: relative;
     z-index: 1000;
@@ -1207,6 +651,7 @@ body {
 .dropdown-menu[style*="display: none"] {
     display: none !important;
 }
+
 /* Botones de iconos más pequeños y uniformes */
 .icon-button {
     background: none;
@@ -1249,6 +694,7 @@ body {
     margin: 0 0.75rem;
 }
 
+/* Separador en tema oscuro */
 [data-bs-theme="dark"] .navbar-separator {
     background: #555555;
 }
@@ -1277,4 +723,608 @@ body {
 /* Ajustar gap */
 .navbar-right {
     gap: 0.5rem;
+}
+
+/** -------------------------------------------------------------------------- **/
+/** GLOBAL                                   **/
+/** -------------------------------------------------------------------------- **/
+
+/** Global **/
+#content {
+    margin-left: 0px;
+    margin-top: 20px;
+}
+
+.hide-sidebar, .show-sidebar {
+    cursor: pointer;
+}
+
+.padd-bottom {
+    margin-bottom: 5px;
+}
+
+.breadcrumb {
+    margin: 0 0 0px;
+    padding: 10px 0px;
+    background-color: transparent;
+}
+
+/* Estilos para contenedores de contenido tipo "block" o "card" antiguo */
+.block {
+    border: 1px solid #ccc;
+    background: white;
+    margin-top: 0;
+    margin-bottom: 1em;
+    border-top: none;
+}
+
+.block-content {
+    margin: 1em;
+    min-height: .25em;
+}
+
+.block-header {
+    margin-bottom: 0px;
+    border-right: none;
+    border-left: none;
+    /* Estilos de border-radius compatibles con navegadores antiguos */
+    -webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    border-radius: 0px;
+}
+
+.block-header div {
+    padding-top: 10px;
+}
+
+/* Estilos para gráficos circulares (EasyPieChart) */
+.easyPieChart {
+    margin: 0px auto;
+}
+
+.chart-bottom-heading {
+    margin-top: 5px;
+    text-align: center;
+}
+
+/* Icons */
+.the-icons {
+    margin-left: 0;
+    list-style: none;
+}
+
+.the-icons li {
+    float: left;
+    width: 25%;
+    line-height: 25px;
+}
+
+.the-icons i:hover {
+    background-color: rgba(255, 0, 0, .25);
+}
+
+footer {
+    text-align: right;
+}
+
+/** -------------------------------------------------------------------------- **/
+/** PAGINACIÓN                                 **/
+/** -------------------------------------------------------------------------- **/
+
+/** Barra de paginacion **/
+#nav {
+    margin: 20px;
+}
+
+.pag-bar li a {
+    color: #FFFFFF;
+}
+
+.pag-bar li {
+    /* Gradientes y filtros para compatibilidad con navegadores antiguos */
+    background: rgb(89, 143, 204); /* Old browsers */
+    background: -moz-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(89, 143, 204, 1)), color-stop(100%, rgba(0, 68, 204, 1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(89, 143, 204, 1) 0%, rgba(0, 68, 204, 1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#598fcc', endColorstr='#0044cc', GradientType=0); /* IE6-9 */
+    color: #FFFFFF;
+    /* Estilos de border-radius compatibles con navegadores antiguos */
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    border: 1px solid #000000;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding: 1px 5px 1px 5px;
+    display: inline-block;
+    font-family: "Segoe UI", "Lucida Grande", "Helvetica Neue", sans-serif;
+    font-size: 12px;
+}
+
+.pag-bar li:hover {
+    /* Gradientes y filtros para hover */
+    background: rgb(73, 155, 234); /* Old browsers */
+    background: -moz-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(73, 155, 234, 1)), color-stop(100%, rgba(32, 124, 229, 1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom, rgba(73, 155, 234, 1) 0%, rgba(32, 124, 229, 1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#499bea', endColorstr='#207ce5', GradientType=0); /* IE6-9 */
+    font-family: "Segoe UI", "Lucida Grande", "Helvetica Neue", sans-serif;
+    font-size: 12px;
+}
+
+/** fin de pag-bar **/
+
+
+/** -------------------------------------------------------------------------- **/
+/** EDITOR DE TEXTO (Quill.js)                    **/
+/** -------------------------------------------------------------------------- **/
+
+.ql-html {
+    width: 28px !important;
+}
+.ql-html .ql-stroke {
+    stroke: #444;
+}
+.ql-html svg {
+    width: 18px;
+    height: 18px;
+}
+/* Estilos para el modo HTML del editor */
+#quill-editor.html-mode .ql-editor {
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    background-color: #f8f9fa; /* Fondo claro */
+}
+#quill-editor.html-mode .ql-toolbar {
+    pointer-events: none;
+    opacity: 0.6;
+}
+#quill-editor.html-mode .ql-html {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/* Repetición de estilos de editor al final, consolidada arriba */
+.ql-html {
+    width: 28px !important;
+}
+.ql-html .ql-stroke {
+    stroke: #444;
+}
+.ql-html svg {
+    width: 18px;
+    height: 18px;
+}
+#quill-editor.html-mode .ql-editor {
+    font-family: 'Courier New', monospace;
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+}
+#quill-editor.html-mode .ql-toolbar {
+    pointer-events: none;
+    opacity: 0.6;
+}
+#quill-editor.html-mode .ql-html {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+/** -------------------------------------------------------------------------- **/
+/** TEMA OSCURO                                **/
+/** -------------------------------------------------------------------------- **/
+
+/* Body y contenedor principal */
+body.dark-theme {
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .container-fluid {
+    background-color: #1a1a1a !important;
+}
+
+/* Cards */
+body.dark-theme .card {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .card-header {
+    background-color: #252525 !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .card-body {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+}
+
+/* Forms */
+body.dark-theme .form-control,
+body.dark-theme .form-select {
+    background-color: #3d3d3d !important;
+    border-color: #555 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .form-control:focus,
+body.dark-theme .form-select:focus {
+    background-color: #3d3d3d !important;
+    border-color: #6ea8fe !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme textarea.form-control {
+    background-color: #3d3d3d !important;
+    color: #e0e0e0 !important;
+}
+
+/* Labels y Legend */
+body.dark-theme label,
+body.dark-theme .col-form-label {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme legend {
+    color: #e0e0e0 !important;
+}
+
+/* Breadcrumbs */
+body.dark-theme .breadcrumb-item a {
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .breadcrumb-item.active {
+    color: #adb5bd !important;
+}
+
+/* Dropdown menus */
+body.dark-theme .dropdown-menu {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+body.dark-theme .dropdown-item {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .dropdown-item:hover {
+    background-color: #3d3d3d !important;
+    color: #ffffff !important;
+}
+
+/* Footer */
+body.dark-theme footer {
+    color: #adb5bd !important;
+}
+
+body.dark-theme footer a {
+    color: #6ea8fe !important;
+}
+
+/* HR */
+body.dark-theme hr {
+    border-color: #404040 !important;
+}
+
+/** -------------------------- TEMA OSCURO - SIDEBAR -------------------------- **/
+
+body.dark-theme #sidebar {
+    background-color: transparent !important;
+}
+
+body.dark-theme .sidebar-nav {
+    background-color: #2d2d2d !important;
+    border: 1px solid #404040;
+}
+
+body.dark-theme #sidebar .rounded {
+    background-color: transparent !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link:hover {
+    background-color: #3d3d3d !important;
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link.active {
+    background-color: #0d6efd !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .sidebar-nav .badge {
+    background-color: #dc3545 !important;
+}
+
+/* Quitar/ajustar bordes en tema oscuro */
+body.dark-theme #sidebar {
+    border: none !important;
+}
+
+body.dark-theme #sidebar .rounded {
+    border: none !important;
+}
+
+body.dark-theme .sidebar-nav,
+body.dark-theme #sidebar .bg-white {
+    border: 1px solid #404040 !important;
+}
+
+body.dark-theme #sidebar * {
+    border-color: #404040 !important;
+}
+
+body.dark-theme .sidebar-nav .nav-item {
+    border: none !important;
+}
+
+body.dark-theme .sidebar-nav .nav-link {
+    border: none !important;
+}
+
+body.dark-theme .col-md-3 {
+    border-right: 1px solid #404040 !important;
+}
+
+/** -------------------------- TEMA OSCURO - NAVBAR --------------------------- **/
+
+body.dark-theme .navbar {
+    background-color: #2d2d2d !important;
+    border-bottom: 1px solid #404040 !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+body.dark-theme .navbar.border,
+body.dark-theme .navbar.border-bottom {
+    border-color: #404040 !important;
+}
+
+body.dark-theme .navbar .navbar-brand,
+body.dark-theme .navbar .nav-link,
+body.dark-theme .navbar .navbar-text {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .navbar .nav-link:hover,
+body.dark-theme .navbar .nav-link:focus {
+    color: #ffffff !important;
+}
+
+body.dark-theme .navbar .dropdown-toggle {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .navbar-toggler {
+    border-color: #555 !important;
+}
+
+body.dark-theme .navbar-toggler-icon {
+    filter: invert(1);
+}
+
+body.dark-theme .navbar .nav-link.active {
+    color: #6ea8fe !important;
+}
+
+/** -------------------------- TEMA OSCURO - EDITOR (Quill.js) ----------------- **/
+
+body.dark-theme .ql-toolbar.ql-snow {
+    background-color: #343a40 !important;
+    border-color: #495057 !important;
+}
+
+body.dark-theme .ql-toolbar .ql-stroke {
+    stroke: #adb5bd !important;
+}
+
+body.dark-theme .ql-toolbar .ql-fill {
+    fill: #adb5bd !important;
+}
+
+body.dark-theme .ql-toolbar .ql-picker-label {
+    color: #adb5bd !important;
+}
+
+body.dark-theme .ql-container.ql-snow {
+    background-color: #212529 !important;
+    border-color: #495057 !important;
+}
+
+body.dark-theme .ql-editor {
+    color: #f8f9fa !important;
+    background-color: #212529 !important;
+}
+
+/* FORZAR color blanco en TODO el contenido del editor */
+body.dark-theme .ql-editor *,
+body.dark-theme .ql-editor p,
+body.dark-theme .ql-editor h1,
+body.dark-theme .ql-editor h2,
+body.dark-theme .ql-editor h3,
+body.dark-theme .ql-editor h4,
+body.dark-theme .ql-editor h5,
+body.dark-theme .ql-editor h6,
+body.dark-theme .ql-editor span,
+body.dark-theme .ql-editor strong,
+body.dark-theme .ql-editor em,
+body.dark-theme .ql-editor u,
+body.dark-theme .ql-editor li,
+body.dark-theme .ql-editor ol,
+body.dark-theme .ql-editor ul {
+    color: #f8f9fa !important;
+}
+
+body.dark-theme .ql-editor.ql-blank::before {
+    color: #6c757d !important;
+}
+
+/* Modo HTML en tema oscuro */
+body.dark-theme #quill-editor.html-mode .ql-editor {
+    background-color: #1a1d20 !important;
+    color: #f8f9fa !important;
+}
+
+/** -------------------------- TEMA OSCURO - TABLAS --------------------------- **/
+
+/* Tabla básica */
+body.dark-theme .table {
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+}
+
+/* Thead */
+body.dark-theme .table thead th {
+    background-color: #252525 !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Table-light en tema oscuro */
+body.dark-theme .table-light {
+    background-color: #252525 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .table-light th,
+body.dark-theme .table-light td {
+    background-color: #252525 !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+}
+
+/* Tbody */
+body.dark-theme .table tbody td {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Filas striped */
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #2d2d2d !important;
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(even) {
+    background-color: #252525 !important;
+}
+
+/* Hover en filas */
+body.dark-theme .table-hover tbody tr:hover {
+    background-color: #3d3d3d !important;
+    color: #ffffff !important;
+}
+
+/* Bordes de tabla */
+body.dark-theme .table-bordered {
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+body.dark-theme .table-bordered th,
+body.dark-theme .table-bordered td {
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Todos los bordes de celdas */
+body.dark-theme .table th,
+body.dark-theme .table td {
+    border-color: #404040 !important;
+    border-width: 1px !important;
+}
+
+/* Links dentro de tablas */
+body.dark-theme .table a {
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .table a:hover {
+    color: #8bb9fe !important;
+}
+
+/* Botones dentro de tablas - mantener sus colores */
+body.dark-theme .table .btn-info {
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #000 !important;
+}
+
+body.dark-theme .table .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+/* La siguiente sección es una corrección o repetición de estilos de tabla */
+
+/* Tabla striped (repite la regla anterior, quizás con un valor de borde diferente en la última parte) */
+body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #2d2d2d !important;
+}
+
+body.dark-theme .table-striped tbody tr:nth-of-type(even) {
+    background-color: #252525 !important;
+}
+
+/* Hover en filas (repite la regla anterior) */
+body.dark-theme .table-hover tbody tr:hover {
+    background-color: #3d3d3d !important;
+    color: #ffffff !important;
+}
+
+/* Bordes de tabla (repite la regla anterior, pero con un color de borde #2d2d2d) */
+body.dark-theme .table-bordered {
+    border-color: #2d2d2d !important;
+    border-width: 1px !important;
+}
+
+body.dark-theme .table-bordered th,
+body.dark-theme .table-bordered td {
+    border-color: #2d2d2d !important;
+    border-width: 1px !important;
+}
+
+/* Todos los bordes de celdas (repite la regla anterior, pero con un color de borde #2d2d2d) */
+body.dark-theme .table th,
+body.dark-theme .table td {
+    border-color: #2d2d2d !important;
+    border-width: 1px !important;
+}
+
+/* Links dentro de tablas (repite la regla anterior) */
+body.dark-theme .table a {
+    color: #6ea8fe !important;
+}
+
+body.dark-theme .table a:hover {
+    color: #8bb9fe !important;
+}
+
+/* Botones dentro de tablas (repite la regla anterior) */
+body.dark-theme .table .btn-info {
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #000 !important;
+}
+
+body.dark-theme .table .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
 }
