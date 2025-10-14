@@ -1,90 +1,102 @@
-<nav class="navbar navbar-expand-lg fixed-top" :class="navbarClasses">
-    <div class="container-fluid">
+<nav class="navbar-vue" :class="{ 'navbar-dark': isDark }">
+    <div class="navbar-container">
+        <!-- Logo -->
         <a class="navbar-brand" href="./">
-            <img class="logo" src="assets/images/admin/logo.svg">
+            <img class="logo" src="assets/images/admin/logo.svg" alt="Logo">
         </a>
+
+        <!-- Mobile toggle button -->
         <button
-                aria-controls="navbarMain"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
                 class="navbar-toggler"
-                data-bs-target="#navbarMain"
-                data-bs-toggle="collapse"
-                type="button"
+                @click="mobileMenuOpen = !mobileMenuOpen"
+                aria-label="Toggle navigation"
         >
-            <span class="navbar-toggler-icon"></span>
+            <i class="fas fa-bars"></i>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
-                <!-- Dropdown Preview -->
-                <li class="nav-item dropdown">
+        <!-- Main nav content -->
+        <div class="navbar-content" :class="{ 'mobile-open': mobileMenuOpen }">
+            <!-- Left side -->
+            <div class="navbar-left">
+            </div>
 
-                    <a
-                    aria-expanded="false"
-                    class="nav-link dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    href="#"
-                    id="previewDropdown"
-                    role="button"
-                    >
-                    Preview
-                    </a>
-                    <ul aria-labelledby="previewDropdown" class="dropdown-menu">
-                        <li><a class="dropdown-item" href="./" target="_blank">Front-End</a></li>
-                    </ul>
-                </li>
-
-                <!-- Selector de idioma junto a Preview -->
-                <li class="nav-item ms-3 d-flex align-items-center">
-                    <label for="lang" class="me-2 mb-0">Idioma de sesión:</label>
-                    <form class="d-flex m-0">
-                        <select
-                                class="form-select form-select-sm"
-                                id="lang"
-                                name="lang"
-                                onchange="this.form.submit()"
-                        >
-                            <option value="en" {lang_selected_en}>English</option>
-                            <option value="es" {lang_selected_es}>Español</option>
-                        </select>
-                    </form>
-                </li>
-
-            </ul>
-
-            <!-- Toggle de tema y Dropdown usuario a la derecha -->
-            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
-
-                <li class="nav-item dropdown">
-
-                    <a
-                    aria-expanded="false"
-                    class="nav-link dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    href="#"
-                    id="userDropdown"
-                    role="button"
-                    >
-                    <i class="fas fa-user"></i> {username} ({email})
-                    </a>
-                    <ul aria-labelledby="userDropdown" class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="./login/logout">{admin.logout}</a></li>
-                    </ul>
-                </li>
-
-                <!-- Toggle Dark/Light Mode -->
-                <li class="nav-item me-3">
+            <!-- Right side -->
+            <div class="navbar-right">
+                <!-- Preview dropdown with eye icon -->
+                <div class="nav-dropdown" @click.stop>
                     <button
-                            @click="toggleTheme"
-                            class="btn btn-sm btn-outline-secondary"
-                            :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+                            class="icon-button"
+                            @click="previewOpen = !previewOpen"
+                            title="Preview"
                     >
-                        <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                        <i class="fas fa-eye"></i>
                     </button>
-                </li>
+                    <div class="dropdown-menu dropdown-menu-compact" v-show="previewOpen">
+                        <a class="dropdown-item" href="./" target="_blank" @click="previewOpen = false">
+                            <i class="fas fa-external-link-alt me-2"></i>Front-End
+                        </a>
+                    </div>
+                </div>
 
-            </ul>
+                <!-- Language selector as icon -->
+                <div class="nav-dropdown lang-dropdown" @click.stop>
+                    <button
+                            class="icon-button"
+                            @click="langOpen = !langOpen"
+                            title="Cambiar idioma"
+                    >
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-compact" v-show="langOpen">
+                        <form class="lang-form-dropdown">
+                            <select
+                                    class="form-select-dropdown"
+                                    id="lang"
+                                    name="lang"
+                                    @change="$event.target.form.submit()"
+                            >
+                                <option value="en" {lang_selected_en}>English</option>
+                                <option value="es" {lang_selected_es}>Español</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Theme toggle -->
+                <button
+                        @click="toggleTheme"
+                        class="icon-button"
+                        :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+                >
+                    <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                </button>
+
+                <div class="navbar-separator"></div>
+
+                <!-- User dropdown -->
+                <div class="nav-dropdown user-dropdown" @click.stop>
+                    <button
+                            class="user-button"
+                            @click="userMenuOpen = !userMenuOpen"
+                    >
+                        <!-- User info (hidden on mobile) -->
+                        <div class="user-info">
+                            <span class="username">{username}</span>
+                            <span class="email">{email}</span>
+                        </div>
+
+                        <!-- Avatar -->
+                        <div class="user-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" v-show="userMenuOpen">
+                        <a class="dropdown-item" href="./login/logout" @click="userMenuOpen = false">
+                            <i class="fas fa-sign-out-alt me-2"></i>{admin.logout}
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </nav>

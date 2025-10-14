@@ -22,7 +22,11 @@ class AdminTheme {
         window.AdminTheme = {
             data() {
                 return {
-                    isDark: false
+                    isDark: false,
+                    mobileMenuOpen: false,
+                    previewOpen: false,
+                    userMenuOpen: false,
+                    langOpen: false  // <-- Agregar esta línea
                 }
             },
             methods: {
@@ -39,10 +43,19 @@ class AdminTheme {
                     this.applyThemeToBody();
                 },
                 applyThemeToBody() {
+                    document.documentElement.setAttribute('data-bs-theme', this.isDark ? 'dark' : 'light');
                     if (this.isDark) {
                         document.body.classList.add('dark-theme');
                     } else {
                         document.body.classList.remove('dark-theme');
+                    }
+                },
+                // Métodos para los dropdowns
+                closeDropdowns(event) {
+                    // Si el clic no es dentro de un dropdown, cerrar todos
+                    if (!event.target.closest('.nav-dropdown')) {
+                        this.previewOpen = false;
+                        this.userMenuOpen = false;
                     }
                 }
             },
@@ -50,14 +63,17 @@ class AdminTheme {
                 navbarClasses() {
                     return {
                         'navbar-dark': this.isDark,
-                        'bg-dark': this.isDark,
-                        'navbar-light': !this.isDark,
-                        'bg-light': !this.isDark
+                        'navbar-light': !this.isDark
                     };
                 }
             },
             mounted() {
                 this.loadTheme();
+                // Cerrar dropdowns al hacer clic fuera
+                document.addEventListener('click', this.closeDropdowns);
+            },
+            beforeUnmount() {
+                document.removeEventListener('click', this.closeDropdowns);
             },
             watch: {
                 isDark() {
@@ -101,6 +117,7 @@ class AdminTheme {
             mounted: function() {
                 window.AdminTheme.mounted.call(this);
             },
+            beforeUnmount: window.AdminTheme.beforeUnmount,
             watch: window.AdminTheme.watch
         };
 

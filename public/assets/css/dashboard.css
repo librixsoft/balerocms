@@ -838,3 +838,443 @@ body.dark-theme .table .btn-danger {
     border-color: #dc3545 !important;
     color: #fff !important;
 }
+
+     /* Variables CSS */
+ :root {
+     --navbar-height: 60px;
+     --navbar-bg: #ffffff;
+     --navbar-text: #1f2937;
+     --navbar-border: rgba(0,0,0,0.08);
+     --dropdown-bg: #ffffff;
+     --dropdown-hover: #f3f4f6;
+     --user-avatar-bg: #3b82f6;
+ }
+
+[data-bs-theme="dark"] {
+    --navbar-bg: #1f2937;
+    --navbar-text: #f9fafb;
+    --navbar-border: rgba(255,255,255,0.1);
+    --dropdown-bg: #374151;
+    --dropdown-hover: #4b5563;
+}
+
+/* Navbar base */
+.navbar-vue {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--navbar-height);
+    background: var(--navbar-bg);
+    border-bottom: 1px solid var(--navbar-border);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    color: var(--navbar-text);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.navbar-container {
+    max-width: 100%;
+    height: 100%;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Logo */
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.logo {
+    height: 35px;
+    transition: opacity 0.2s;
+}
+
+.navbar-brand:hover .logo {
+    opacity: 0.8;
+}
+
+/* Mobile toggle */
+.navbar-toggler {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--navbar-text);
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+/* Navbar content */
+.navbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    margin-left: 2rem;
+}
+
+.navbar-left,
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+/* Nav items */
+.nav-item {
+    display: flex;
+    align-items: center;
+}
+
+.nav-link {
+    background: none;
+    border: none;
+    color: var(--navbar-text);
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: opacity 0.2s;
+}
+
+.nav-link:hover {
+    opacity: 0.7;
+}
+
+.dropdown-icon {
+    font-size: 0.7rem;
+    transition: transform 0.2s;
+}
+
+/* Dropdowns */
+.nav-dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--navbar-border);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    min-width: 180px;
+    padding: 0.5rem;
+    z-index: 1001;
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: dropdownFadeIn 0.2s forwards;
+}
+
+@keyframes dropdownFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-menu-right {
+    left: auto;
+    right: 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    color: var(--navbar-text);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.dropdown-item:hover {
+    background: var(--dropdown-hover);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--navbar-border);
+    margin: 0.5rem 0;
+}
+
+/* Language selector */
+.lang-selector {
+    gap: 0.5rem;
+}
+
+.lang-label {
+    font-size: 0.85rem;
+    color: var(--navbar-text);
+    opacity: 0.7;
+    margin: 0;
+}
+
+.lang-form {
+    display: flex;
+    margin: 0;
+}
+
+.form-select-minimal {
+    background: transparent;
+    border: none;
+    color: var(--navbar-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.25rem 1.5rem 0.25rem 0.5rem;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.25rem center;
+}
+
+.form-select-minimal:focus {
+    outline: none;
+}
+
+/* Theme toggle */
+.theme-toggle {
+    background: none;
+    border: none;
+    color: var(--navbar-text);
+    font-size: 1.25rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle:hover {
+    opacity: 1;
+    transform: rotate(15deg);
+}
+
+/* User dropdown */
+.user-button {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.3;
+}
+
+.user-info .username {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--navbar-text);
+}
+
+.user-info .email {
+    font-size: 0.75rem;
+    color: var(--navbar-text);
+    opacity: 0.6;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--user-avatar-bg);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.user-button:hover .user-avatar {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.dropdown-user-info {
+    display: none;
+    padding: 0.5rem 0.875rem;
+}
+
+.dropdown-user-info .username {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--navbar-text);
+}
+
+.dropdown-user-info .email {
+    font-size: 0.75rem;
+    color: var(--navbar-text);
+    opacity: 0.6;
+    margin-top: 0.125rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 991px) {
+    .navbar-toggler {
+        display: block;
+    }
+
+    .navbar-content {
+        position: fixed;
+        top: var(--navbar-height);
+        left: 0;
+        right: 0;
+        background: var(--navbar-bg);
+        border-top: 1px solid var(--navbar-border);
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        margin: 0;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .navbar-content.mobile-open {
+        max-height: 500px;
+    }
+
+    .navbar-left,
+    .navbar-right {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .user-info {
+        display: none;
+    }
+
+    .dropdown-user-info {
+        display: block;
+    }
+
+    .user-button {
+        justify-content: flex-end;
+    }
+
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        border: none;
+        margin-top: 0.5rem;
+    }
+}
+
+/* Utility classes */
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+/* Ajuste para el contenido principal debajo del navbar fijo */
+body {
+    padding-top: var(--navbar-height);
+}
+
+/* Fix para dropdowns de Vue */
+.nav-dropdown {
+    position: relative;
+    z-index: 1000;
+}
+
+.dropdown-menu {
+    display: block !important;
+    z-index: 1001;
+}
+
+.dropdown-menu[style*="display: none"] {
+    display: none !important;
+}
+/* Botones de iconos más pequeños y uniformes */
+.icon-button {
+    background: none;
+    border: none;
+    color: var(--navbar-text);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.icon-button:hover {
+    opacity: 1;
+    background: var(--dropdown-hover);
+}
+
+/* Dropdown compacto para idiomas */
+.dropdown-menu-compact {
+    min-width: 140px;
+    padding: 0.25rem;
+}
+
+.lang-form-dropdown {
+    margin: 0;
+    padding: 0;
+}
+
+/* Separator in navbar */
+.navbar-separator {
+    width: 2px;
+    height: 28px;
+    background: #d0d5dd;
+    margin: 0 0.75rem;
+}
+
+[data-bs-theme="dark"] .navbar-separator {
+    background: #555555;
+}
+
+.form-select-dropdown {
+    width: 100%;
+    padding: 0.5rem;
+    border: none;
+    background: transparent;
+    color: var(--navbar-text);
+    font-size: 0.9rem;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.form-select-dropdown:hover {
+    background: var(--dropdown-hover);
+}
+
+.form-select-dropdown:focus {
+    outline: none;
+    background: var(--dropdown-hover);
+}
+
+/* Ajustar gap */
+.navbar-right {
+    gap: 0.5rem;
+}
