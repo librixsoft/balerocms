@@ -21,16 +21,16 @@
 <body>
 
 <div id="app">
-<%-- @include "admin/includes/navbar.html" -->
+    <%-- @include "admin/includes/navbar.html" -->
 
-<div class="container-fluid">
-    <div class="row">
+    <div class="container-fluid">
+        <div class="row">
 
-        <%-- @include "admin/includes/sidebar.html" -->
+            <%-- @include "admin/includes/sidebar.html" -->
 
-        <main class="col-md-9 px-md-4" id="content">
-            <div class="row mb-3">
+            <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
 
+                <!-- Mantener el contenido original del formulario -->
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">{admin.edit_block}</h5>
@@ -64,15 +64,13 @@
 
                     </div>
                 </div>
+                <!-- /card -->
 
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
-    <hr>
-    <footer>
-        <p>Powered by <a href="#">Balero CMS</a>.</p>
-    </footer>
-</div>
+
+    <%-- @include "admin/includes/footer.html" -->
 </div>
 
 <script type="module" src="assets/js/admin-theme.js"></script>

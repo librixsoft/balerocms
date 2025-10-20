@@ -2,7 +2,6 @@
 <html class="no-js">
 <head>
     <title>Admin New Page - {mod_name}</title>
-    <!--  basepath -->
     <base href="{basepath}">
     <link href="favicon.ico" rel="shortcut icon">
 
@@ -22,22 +21,21 @@
 <body>
 
 <div id="app">
-<%-- @include "admin/includes/navbar.html" -->
+    <%-- @include "admin/includes/navbar.html" -->
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Incluimos el sidebar aquí -->
-        <%-- @include "admin/includes/sidebar.html" -->
+    <div class="container-fluid">
+        <div class="row">
 
-        <main class="col-md-9 px-md-4" id="content">
-            <div class="mb-3">
-                <!-- block -->
+            <%-- @include "admin/includes/sidebar.html" -->
+
+            <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
+
+                <!-- Mantener el contenido original del card -->
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">{new_page}</h5>
                     </div>
                     <div class="card-body">
-
                         <form action="./admin/pages/new" method="POST">
                             <fieldset>
                                 <div class="mb-3 row">
@@ -96,20 +94,18 @@
 
                     </div>
                 </div>
-                <!-- /block -->
-            </div>
-        </main>
+                <!-- /card -->
+
+            </main>
+        </div>
     </div>
-    <hr>
-    <footer>
-        <p>Powered by <a href="#">Balero CMS</a>.</p>
-    </footer>
-</div>
+
+    <%-- @include "admin/includes/footer.html" -->
+
 </div>
 
 <script>
     $(document).ready(function () {
-
         // Auto-generar slug para static_url al escribir título
         $('#virtual_title').on('input', function () {
             var title = $(this).val();
