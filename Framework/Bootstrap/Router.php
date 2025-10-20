@@ -6,35 +6,42 @@ use Framework\Core\BaseController;
 use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
 use Framework\Exceptions\RouterException;
-use Framework\Http\RequestHelper;
 use Framework\Core\ConfigSettings;
+use Framework\Http\RequestHelper;
+use Framework\Utils\Redirect;
 
 /**
  * Router principal de la aplicación
  *
  * Responsabilidades:
  * - Inicializar sesión y configuración base
+ * - Verificar estado de instalación y redireccionar si es necesario
  * - Encontrar el controller que maneja la ruta solicitada
  * - Instanciar el controller vía Container
  * - Delegar a BaseController para routing interno y ejecución
  */
 class Router
 {
+    private const ALLOWED_MODULES_BEFORE_INSTALL = ['installer', 'notification'];
+
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
     private Container $container;
     private ErrorConsole $errorConsole;
+    private Redirect $redirect;
 
     public function __construct(
         RequestHelper $requestHelper,
         ConfigSettings $configSettings,
         Container $container,
-        ErrorConsole $errorConsole
+        ErrorConsole $errorConsole,
+        Redirect $redirect
     ) {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
         $this->container = $container;
         $this->errorConsole = $errorConsole;
+        $this->redirect = $redirect;
     }
 
     /**
@@ -42,9 +49,10 @@ class Router
      *
      * Flujo:
      * 1. Inicia sesión y configura basepath
-     * 2. Encuentra el controller que maneja la ruta
-     * 3. Instancia el controller (Container)
-     * 4. Ejecuta el routing interno (BaseController)
+     * 2. Verifica estado de instalación y redirecciona si es necesario
+     * 3. Encuentra el controller que maneja la ruta
+     * 4. Instancia el controller (Container)
+     * 5. Ejecuta el routing interno (BaseController)
      *
      * @throws RouterException Si no se encuentra controller o falla la instanciación
      */
@@ -52,6 +60,11 @@ class Router
     {
         $this->initializeSession();
         $this->initializeBasepath();
+
+        // Verificar instalación y redireccionar si es necesario
+        if ($this->handleInstallationCheck()) {
+            return; // Se ejecutó una redirección
+        }
 
         $requestedPath = $this->requestHelper->getPath();
         $matchedController = $this->findMatchingController($requestedPath);
@@ -119,7 +132,7 @@ class Router
     {
         $controllers = require $cacheFile;
 
-        // 🔧 Ordenar rutas por longitud descendente (más específicas primero)
+        // Ordenar rutas por longitud descendente (más específicas primero)
         usort($controllers, fn($a, $b) => strlen($b['path']) <=> strlen($a['path']));
 
         // Normalizar paths (sin slash final excepto la raíz)
@@ -228,5 +241,38 @@ class Router
         }
 
         return $controllers;
+    }
+
+    /**
+     * Verifica el estado de instalación y redirecciona si es necesario
+     *
+     * Reglas:
+     * - Si NO está instalada y se intenta acceder a módulos no permitidos -> redirige a /installer
+     * - Si YA está instalada y se intenta acceder a /installer -> redirige a /
+     *
+     * @return bool True si se ejecutó una redirección, false si se puede continuar
+     */
+    private function handleInstallationCheck(): bool
+    {
+        $installed = $this->configSettings->installed ?? 'no';
+        $requestedPath = $this->requestHelper->getPath();
+
+        // Extraer el módulo/ruta base (primer segmento)
+        $pathSegments = array_filter(explode('/', trim($requestedPath, '/')));
+        $currentModule = !empty($pathSegments) ? strtolower($pathSegments[0]) : '';
+
+        // App NO instalada: redirigir a installer si se intenta acceder a rutas no permitidas
+        if ($installed === 'no' && !in_array($currentModule, self::ALLOWED_MODULES_BEFORE_INSTALL)) {
+            $this->redirect->to('/installer');
+            exit;
+        }
+
+        // App instalada: redirigir a home si se intenta acceder al installer
+        if ($installed === 'yes' && $currentModule === 'installer') {
+            $this->redirect->to('/');
+            exit;
+        }
+
+        return false; // No se ejecutó redirección, continuar con el flujo normal
     }
 }
