@@ -56,14 +56,14 @@
                                 <tr>
                                     <td>{page.virtual_title}</td>
                                     <td>
-                                        <a class="btn btn-sm btn-info" href="./admin/pages/edit/{page.id}">
+                                        <a class="btn btn-sm btn-primary me-2" href="./admin/pages/edit/{page.id}">
                                             <i class="fas fa-pencil-alt"></i> {admin.edit}
                                         </a>
 
                                         <form action="./admin/pages/delete/{page.id}" method="post"
                                               onsubmit="return confirm('{admin.confirm_delete}')"
                                               style="display:inline;">
-                                            <button class="btn btn-sm btn-danger" type="submit">
+                                            <button class="btn btn-sm btn-secondary" type="submit">
                                                 <i class="fas fa-trash"></i> {admin.delete}
                                             </button>
                                         </form>
@@ -76,7 +76,7 @@
 
                         <!-- Botón New Page abajo a la derecha -->
                         <div class="text-end mt-3">
-                            <a class="btn btn-sm btn-info" href="./admin/new-page">
+                            <a class="btn btn-sm btn-primary" href="./admin/new-page">
                                 <i class="fas fa-plus"></i> {admin.new_page}
                             </a>
                         </div>

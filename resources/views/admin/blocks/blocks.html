@@ -53,13 +53,13 @@
                                 <td>{block.sort_order}</td>
                                 <td>{block.name}</td>
                                 <td>
-                                    <a class="btn btn-sm btn-info" href="./admin/blocks/edit/{block.id}">
+                                    <a class="btn btn-sm btn-primary me-2" href="./admin/blocks/edit/{block.id}">
                                         <i class="fas fa-pencil-alt"></i> {admin.edit}
                                     </a>
                                     <form action="./admin/blocks/delete/{block.id}" method="post"
                                           onsubmit="return confirm('Delete this block?')"
                                           style="display:inline;">
-                                        <button class="btn btn-sm btn-danger" type="submit">
+                                        <button class="btn btn-sm btn-secondary" type="submit">
                                             <i class="fas fa-trash"></i> {admin.delete}
                                         </button>
                                     </form>
@@ -70,7 +70,7 @@
                         </table>
 
                         <div class="text-end mt-3">
-                            <a class="btn btn-sm btn-info" href="./admin/blocks/new">
+                            <a class="btn btn-sm btn-primary" href="./admin/blocks/new">
                                 <i class="fas fa-plus"></i> {admin.new_block}
                             </a>
                         </div>

@@ -8,6 +8,7 @@ html, body {
     width: 100%;
 }
 
+
 .container {
     /* Asegura que el contenedor principal no cause scroll horizontal */
     max-width: 100%;
@@ -1249,30 +1250,6 @@ body.dark-theme .table td {
     border-width: 1px !important;
 }
 
-/* Links dentro de tablas */
-body.dark-theme .table a {
-    color: #6ea8fe !important;
-}
-
-body.dark-theme .table a:hover {
-    color: #8bb9fe !important;
-}
-
-/* Botones dentro de tablas - mantener sus colores */
-body.dark-theme .table .btn-info {
-    background-color: #0dcaf0 !important;
-    border-color: #0dcaf0 !important;
-    color: #000 !important;
-}
-
-body.dark-theme .table .btn-danger {
-    background-color: #dc3545 !important;
-    border-color: #dc3545 !important;
-    color: #fff !important;
-}
-
-/* La siguiente sección es una corrección o repetición de estilos de tabla */
-
 /* Tabla striped (repite la regla anterior, quizás con un valor de borde diferente en la última parte) */
 body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
     background-color: #2d2d2d !important;
@@ -1307,24 +1284,3 @@ body.dark-theme .table td {
     border-width: 1px !important;
 }
 
-/* Links dentro de tablas (repite la regla anterior) */
-body.dark-theme .table a {
-    color: #6ea8fe !important;
-}
-
-body.dark-theme .table a:hover {
-    color: #8bb9fe !important;
-}
-
-/* Botones dentro de tablas (repite la regla anterior) */
-body.dark-theme .table .btn-info {
-    background-color: #0dcaf0 !important;
-    border-color: #0dcaf0 !important;
-    color: #000 !important;
-}
-
-body.dark-theme .table .btn-danger {
-    background-color: #dc3545 !important;
-    border-color: #dc3545 !important;
-    color: #fff !important;
-}
