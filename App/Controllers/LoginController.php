@@ -12,7 +12,7 @@ use App\Views\LoginViewModel;
 use Framework\Security\LoginManager;
 use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
-use Framework\Utils\Translator;
+use Framework\I18n\Translator;
 
 #[Controller('/login')]
 class LoginController
@@ -61,7 +61,7 @@ class LoginController
         if ($this->loginManager->handleLogin()) {
             $this->redirect->to('/admin/settings');
         } else {
-            $error = $this->translator->trans($this->loginManager->getMessage());
+            $error = $this->translator->t($this->loginManager->getMessage());
             $this->flash->set('login_error', $error);
             $this->redirect->to('/login/');
         }

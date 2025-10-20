@@ -1,8 +1,6 @@
 <?php
 
-namespace Framework\Utils;
-
-use Framework\I18n\LangManager;
+namespace Framework\I18n;
 
 class Translator
 {
@@ -32,7 +30,7 @@ class Translator
      * @param string $default Valor por defecto si no existe
      * @return string
      */
-    public function trans(string $key, string $default = ''): string
+    public function getText(string $key, string $default = ''): string
     {
         $this->ensureLoaded();
         return $this->langManager->get($key, $default ?: $key);
@@ -43,7 +41,7 @@ class Translator
      */
     public function t(string $key, string $default = ''): string
     {
-        return $this->trans($key, $default);
+        return $this->getText($key, $default);
     }
 
     /**
@@ -54,7 +52,7 @@ class Translator
     public function transParams(string $key, array $params = [], string $default = ''): string
     {
         $this->ensureLoaded();
-        $text = $this->trans($key, $default);
+        $text = $this->getText($key, $default);
 
         foreach ($params as $k => $v) {
             $text = str_replace("{{$k}}", $v, $text);
