@@ -19,8 +19,8 @@ class AdminTheme {
                     userMenuOpen: false,
                     langOpen: false,
                     blockName: '',
-                    virtualTitle: window.PAGE_DATA?.virtualTitle || 'ERROR_LOADING_VUE_DATA',
-                    staticUrl: window.PAGE_DATA?.staticUrl || 'ERROR_LOADING_VUE_DATA',
+                    virtualTitle: window.PAGE_DATA?.virtualTitle || '',
+                    staticUrl: window.PAGE_DATA?.staticUrl || '',
                     sortOrder: window.BLOCK_CONFIG?.nextSortOrder || 0,
                 }
             },
