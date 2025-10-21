@@ -26,6 +26,7 @@ class AdminViewModel
         $viewModel->addAll([
 
             'mod_name' => '{admin.settings}',
+            'mod_id' => 'settings',
 
             'core_version' => _CORE_VERSION,
             'defaultTheme' => $this->config->theme,
@@ -83,6 +84,7 @@ class AdminViewModel
         $viewModel->addAll([
 
             'mod_name' =>'{admin.pages}',
+            'mod_id' =>'page_new',
 
             'lbl_title' => 'Title',
             'current_date' => date('Y-m-d H:i:s'),
@@ -105,6 +107,7 @@ class AdminViewModel
 
         $viewModel->addAll([
             'mod_name' =>'{admin.pages}',
+            'mod_id' =>'all_pages',
             'activeMenu' => 'all_pages',
         ]);
 
@@ -121,6 +124,7 @@ class AdminViewModel
 
         $viewModel->addAll([
             'activeMenu' => 'all_pages',
+            'mod_id' => 'page_edit',
         ]);
 
         if (!empty($extraParams)) {
@@ -136,6 +140,7 @@ class AdminViewModel
 
         $viewModel->addAll([
             'mod_name' =>'{admin.blocks}',
+            'mod_id' => 'all_blocks',
             'lbl_blocks' => 'Blocks',
             'lbl_new_block' => 'New Block',
             'activeMenu' => 'all_blocks',
@@ -155,6 +160,7 @@ class AdminViewModel
         $viewModel->addAll([
             'lbl_new_block' => 'New Block',
             'activeMenu' => 'all_blocks',
+            'mod_id' => 'block_new',
         ]);
 
         if (!empty($extraParams)) {
@@ -171,6 +177,7 @@ class AdminViewModel
         $viewModel->addAll([
             'lbl_edit_block' => 'Edit Block',
             'activeMenu' => 'all_blocks',
+            'mod_id' => 'block_edit',
         ]);
 
         if (!empty($extraParams)) {

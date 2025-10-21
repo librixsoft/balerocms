@@ -108,7 +108,7 @@ class AdminController
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
-        return $this->view->render("admin/pages/new_page.html", $params, false);
+        return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Get('/pages')]
@@ -120,7 +120,7 @@ class AdminController
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
-        return $this->view->render("admin/pages/pages.html", $params, false);
+        return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Post('/pages/new')]
@@ -147,7 +147,7 @@ class AdminController
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
-        return $this->view->render("admin/pages/edit_page.html", $params, false);
+        return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Post('/pages/edit/{id}')]
@@ -190,7 +190,7 @@ class AdminController
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
-        return $this->view->render("admin/blocks/blocks.html", $params, false);
+        return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Get('/blocks/new')]
@@ -206,7 +206,7 @@ class AdminController
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
-        return $this->view->render("admin/blocks/new_block.html", $params, false);
+        return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Post('/blocks/new')]
@@ -231,7 +231,7 @@ class AdminController
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
 
-        return $this->view->render("admin/blocks/edit_block.html", $params, false);
+        return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Post('/blocks/edit/{id}')]

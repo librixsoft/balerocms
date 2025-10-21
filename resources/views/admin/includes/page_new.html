@@ -1,0 +1,73 @@
+<form action="./admin/pages/new" method="POST">
+    <fieldset>
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label" for="virtual_title">{admin.title}</label>
+            <div class="col-sm-10">
+                <input class="form-control" id="virtual_title" name="virtual_title" required
+                       type="text">
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label" for="static_url">{admin.lbl_static_url}</label>
+            <div class="col-sm-10">
+                <input class="form-control" id="static_url" name="static_url" placeholder="Slug will be auto-generated"
+                       readonly
+                       style="background-color: #e9ecef; cursor: not-allowed;"
+                       type="text">
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label" for="virtual_content">{admin.lbl_content}</label>
+            <div class="col-sm-10">
+                <div id="quill-editor" style="height:350px;"></div>
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label" for="visible">{admin.visible}</label>
+            <div class="col-sm-10">
+                <select class="form-select w-auto" id="visible" name="visible">
+                    <option selected value="1">{admin.enabled}</option>
+                    <option value="0">{admin.disabled}</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3 row">
+            <label class="col-sm-2 col-form-label" for="date">{admin.lbl_date}</label>
+            <div class="col-sm-10">
+                <input class="form-control" id="date" name="date" readonly
+                       style="background-color: #e9ecef; cursor: not-allowed;" type="text"
+                       value="{current_date}">
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-start">
+            <button class="btn btn-primary me-2" name="submit" type="submit"><i
+                    class="fas fa-check"></i> {btn_add}
+            </button>
+            <a class="btn btn-secondary" href="{basepath}admin/pages">Cancel</a>
+        </div>
+
+    </fieldset>
+</form>
+
+<script>
+    /**
+    $(document).ready(function () {
+        // Auto-generar slug para static_url al escribir título
+        $('#virtual_title').on('input', function () {
+            var title = $(this).val();
+            var slug = title.toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .trim()
+                .replace(/[\s_-]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            $('#static_url').val(slug);
+        });
+    });
+     **/
+</script>
+

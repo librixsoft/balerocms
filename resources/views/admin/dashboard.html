@@ -12,18 +12,161 @@
     <link href="assets/css/vendor/all.min.css" rel="stylesheet">
     <link href="assets/css/notification.css" rel="stylesheet">
     <link href="assets/css/dashboard.css" media="screen" rel="stylesheet">
+    <link href="assets/css/vendor/quill.snow.css" rel="stylesheet">
 
     <script src="assets/js/vendor/vue.global.prod.js"></script>
+    <script src="assets/js/vendor/quill.min.js"></script>
 </head>
 
 <body>
 <div id="app">
-    <%-- @include "admin/includes/navbar.html" -->
 
+    <nav class="navbar-vue" :class="{ 'navbar-dark': isDark }">
+        <div class="navbar-container">
+            <!-- Logo -->
+            <a class="navbar-brand" href="./">
+                <img class="logo" src="assets/images/admin/logo.svg" alt="Logo">
+            </a>
+
+            <!-- Mobile toggle button -->
+            <button
+                    class="navbar-toggler"
+                    @click="mobileMenuOpen = !mobileMenuOpen"
+                    aria-label="Toggle navigation"
+            >
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <!-- Main nav content -->
+            <div class="navbar-content" :class="{ 'mobile-open': mobileMenuOpen }">
+                <!-- Left side -->
+                <div class="navbar-left">
+                </div>
+
+                <!-- Right side -->
+                <div class="navbar-right">
+                    <!-- Preview dropdown with eye icon -->
+                    <div class="nav-dropdown" @click.stop>
+                        <button
+                                class="icon-button"
+                                @click="previewOpen = !previewOpen"
+                                title="Preview"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-compact" v-show="previewOpen">
+                            <a class="dropdown-item" href="./" target="_blank" @click="previewOpen = false">
+                                <i class="fas fa-external-link-alt me-2"></i>Front-End
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Language selector as icon -->
+                    <div class="nav-dropdown lang-dropdown" @click.stop>
+                        <button
+                                class="icon-button"
+                                @click="langOpen = !langOpen"
+                                title="Cambiar idioma"
+                        >
+                            <i class="fas fa-globe"></i>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-compact" v-show="langOpen">
+                            <form class="lang-form-dropdown">
+                                <select
+                                        class="form-select-dropdown"
+                                        id="lang"
+                                        name="lang"
+                                        @change="$event.target.form.submit()"
+                                >
+                                    <option value="en" {lang_selected_en}>English</option>
+                                    <option value="es" {lang_selected_es}>Español</option>
+                                </select>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Theme toggle -->
+                    <button
+                            @click="toggleTheme"
+                            class="icon-button"
+                            :title="isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+                    >
+                        <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+                    </button>
+
+                    <div class="navbar-separator"></div>
+
+                    <!-- User dropdown -->
+                    <div class="nav-dropdown user-dropdown" @click.stop>
+                        <button
+                                class="user-button"
+                                @click="userMenuOpen = !userMenuOpen"
+                        >
+                            <!-- User info (hidden on mobile) -->
+                            <div class="user-info">
+                                <span class="username">{username}</span>
+                                <span class="email">{email}</span>
+                            </div>
+
+                            <!-- Avatar -->
+                            <div class="user-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                        </button>
+                        <div class="dropdown-menu dropdown-menu-right" v-show="userMenuOpen">
+                            <a class="dropdown-item" href="./login/logout" @click="userMenuOpen = false">
+                                <i class="fas fa-sign-out-alt me-2"></i>{admin.logout}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
     <div class="container-fluid">
         <div class="row">
 
-            <%-- @include "admin/includes/sidebar.html" -->
+            <div id="sidebar">
+                <ul class="nav flex-column">
+                    <%-- @if activeMenu == "settings" -->
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./admin/settings">{admin.settings}</a>
+                    </li>
+                    <%-- @else -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="./admin/settings">{admin.settings}</a>
+                    </li>
+                    <%-- @endif -->
+
+                    <%-- @if activeMenu == "all_pages" -->
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./admin/pages">
+                            {admin.pages} <span class="badge bg-danger float-end">{pages_count}</span>
+                        </a>
+                    </li>
+                    <%-- @else -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="./admin/pages">
+                            {admin.pages} <span class="badge bg-danger float-end">{pages_count}</span>
+                        </a>
+                    </li>
+                    <%-- @endif -->
+
+                    <%-- @if activeMenu == "all_blocks" -->
+                    <li class="nav-item">
+                        <a class="nav-link active" href="./admin/blocks">
+                            {admin.blocks} <span class="badge bg-danger float-end">{blocks_count}</span>
+                        </a>
+                    </li>
+                    <%-- @else -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="./admin/blocks">
+                            {admin.blocks} <span class="badge bg-danger float-end">{blocks_count}</span>
+                        </a>
+                    </li>
+                    <%-- @endif -->
+                </ul>
+            </div>
 
             <main class="col-md-9 ms-sm-auto col-lg-9 px-md-4" id="content">
                 <div id="admin-notifications"></div>
@@ -37,92 +180,42 @@
                     </div>
 
                     <div class="card-body">
-                        <form action="./admin/settings" method="POST">
-                            <fieldset>
-                                <legend>{admin.settings}</legend>
 
-                                <div class="row mb-3">
-                                    <label for="core" class="col-sm-3 col-form-label text-end">Core</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" readonly class="form-control bg-secondary text-white"
-                                               id="core" name="core" value="{core_version}">
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "settings" -->
+                            <%-- @include "admin/includes/settings.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <label for="language" class="col-sm-3 col-form-label text-end">{admin.language}</label>
-                                    <div class="col-sm-9">
-                                        <select class="form-select" id="language" name="language">
-                                            <%-- @foreach languages as code => name -->
-                                            <%-- @if defaultLanguage == code -->
-                                            <option selected value="{code}">{name}</option>
-                                            <%-- @else -->
-                                            <option value="{code}">{name}</option>
-                                            <%-- @endif -->
-                                            <%-- @endforeach -->
-                                        </select>
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "all_pages" -->
+                            <%-- @include "admin/includes/pages.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <label for="theme" class="col-sm-3 col-form-label text-end">{admin.theme}</label>
-                                    <div class="col-sm-9">
-                                        <select class="form-select" id="theme" name="theme">
-                                            <%-- @foreach themes as t -->
-                                            <%-- @if defaultTheme == t -->
-                                            <option selected value="{t}">{t}</option>
-                                            <%-- @else -->
-                                            <option value="{t}">{t}</option>
-                                            <%-- @endif -->
-                                            <%-- @endforeach -->
-                                        </select>
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "page_new" -->
+                            <%-- @include "admin/includes/page_new.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <label for="typeahead" class="col-sm-3 col-form-label text-end">{admin.title}</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" id="typeahead" name="title"
-                                               data-provide="typeahead" value="{txt_title}">
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "page_edit" -->
+                            <%-- @include "admin/includes/page_edit.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <label for="keywords" class="col-sm-3 col-form-label text-end">{admin.keywords}</label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" id="keywords" name="keywords"
-                                               value="{txt_keywords}">
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "all_blocks" -->
+                            <%-- @include "admin/includes/blocks.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <label for="description" class="col-sm-3 col-form-label text-end">{admin.description}</label>
-                                    <div class="col-sm-9">
-                                        <textarea class="form-control" id="description" name="description"
-                                                  style="height:200px;">{txt_description}</textarea>
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "block_new" -->
+                            <%-- @include "admin/includes/block_new.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <label for="footer" class="col-sm-3 col-form-label text-end">{admin.footer}</label>
-                                    <div class="col-sm-9">
-                                        <textarea class="form-control" id="footer" name="footer"
-                                                  style="height:200px;">{txt_footer}</textarea>
-                                    </div>
-                                </div>
+                        <%-- @if mod_id == "block_edit" -->
+                            <%-- @include "admin/includes/block_edit.html" -->
+                        <%-- @endif -->
 
-                                <div class="row mb-3">
-                                    <div class="offset-sm-3 col-sm-9 d-flex justify-content-end">
-                                        <button class="btn btn-primary me-2" name="submit" type="submit">{admin.save_changes}</button>
-                                        <button class="btn btn-secondary" name="cancel" type="reset">{admin.cancel}</button>
-                                    </div>
-                                </div>
-                            </fieldset>
-                        </form>
                     </div>
+
                 </div>
 
-                <%-- @include "admin/includes/footer.html" -->
+                <footer>
+                    <p>Powered by <a href="#">Balero CMS</a>.</p>
+                </footer>
 
             </main>
         </div>

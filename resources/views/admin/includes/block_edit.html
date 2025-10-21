@@ -1,0 +1,24 @@
+<form action="./admin/blocks/edit/{block.id}" method="post">
+    <div class="mb-3">
+        <label class="form-label" for="block_name">{admin.name}</label>
+        <input class="form-control" id="block_name" name="name" required type="text"
+               value="{block.name}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="sort_order">{admin.order}</label>
+        <input class="form-control" id="sort_order" name="sort_order" required
+               type="number" value="{block.sort_order}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="block_content">{admin.content}</label>
+        <div id="quill-editor" style="height:350px;"></div>
+    </div>
+
+    <div class="text-end">
+        <button class="btn btn-sm btn-primary" type="submit">
+            <i class="fas fa-save"></i> {admin.save}
+        </button>
+    </div>
+</form>

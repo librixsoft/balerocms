@@ -1,0 +1,38 @@
+<div class="table-responsive">
+    <table class="table table-striped table-bordered align-middle">
+        <thead class="table-light">
+        <tr>
+            <th>{admin.title}</th>
+            <th>{admin.action}</th>
+        </tr>
+        </thead>
+        <tbody>
+        <%-- @foreach pages as page -->
+        <tr>
+            <td>{page.virtual_title}</td>
+            <td>
+                <a class="btn btn-sm btn-primary me-2" href="./admin/pages/edit/{page.id}">
+                    <i class="fas fa-pencil-alt"></i> {admin.edit}
+                </a>
+
+                <form action="./admin/pages/delete/{page.id}" method="post"
+                      onsubmit="return confirm('{admin.confirm_delete}')"
+                      style="display:inline;">
+                    <button class="btn btn-sm btn-secondary" type="submit">
+                        <i class="fas fa-trash"></i> {admin.delete}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        <%-- @endforeach -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Botón New Page abajo a la derecha -->
+<div class="text-end mt-3">
+    <a class="btn btn-sm btn-primary" href="./admin/new-page">
+        <i class="fas fa-plus"></i> {admin.new_page}
+    </a>
+</div>
+
