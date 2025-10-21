@@ -32,10 +32,17 @@
         <div class="mb-3 row">
             <label class="col-sm-2 col-form-label" for="visible">{admin.visible}</label>
             <div class="col-sm-10">
-                <select class="form-select w-auto" id="visible" name="visible">
-                    <option value="1" selected="{page.visible_selected}">{admin.enabled}</option>
-                    <option value="0" selected="{page.hidden_selected}">{admin.disabled}</option>
-                </select>
+                <div class="form-check form-switch">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="visible"
+                           v-model="visibleToggle">
+                    <label class="form-check-label" for="visible">
+                        {{ visibleToggle ? '{admin.enabled}' : '{admin.disabled}' }}
+                    </label>
+                </div>
+                <input type="hidden" name="visible" :value="visible">
             </div>
         </div>
 
@@ -62,5 +69,6 @@
     window.PAGE_DATA = {
         virtualTitle: '{page.virtual_title}',
         staticUrl: '{page.static_url}',
+        visible: '{page.visible}'
     };
 </script>

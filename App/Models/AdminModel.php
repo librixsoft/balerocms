@@ -42,13 +42,15 @@ class AdminModel
         $sql = "UPDATE page SET 
         virtual_title = ?, 
         static_url = ?, 
-        virtual_content = ? 
+        virtual_content = ?,
+        visible = ?
         WHERE id = ?";
 
         $params = [
             $data['virtual_title'],
             $data['static_url'],
             $data['virtual_content'],
+            $data['visible'],
             $id
         ];
 
@@ -83,7 +85,7 @@ class AdminModel
     public function getVirtualPages(): array
     {
         try {
-            $sql = "SELECT * FROM page WHERE visible = 1 ORDER BY id ASC";
+            $sql = "SELECT * FROM page ORDER BY id ASC";
             $this->model->getDb()->query($sql);
             $this->model->getDb()->get();
 

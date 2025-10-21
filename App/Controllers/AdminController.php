@@ -159,6 +159,7 @@ class AdminController
             'virtual_title' => $this->request->post("virtual_title"),
             'static_url' => $this->request->post("static_url"),
             'virtual_content' => $this->request->raw("virtual_content"),
+            'visible' => $this->request->post("visible"),
         ];
 
         $this->model->updatePage($id, $data);

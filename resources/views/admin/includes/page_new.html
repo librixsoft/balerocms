@@ -31,10 +31,14 @@
         <div class="mb-3 row">
             <label class="col-sm-2 col-form-label" for="visible">{admin.visible}</label>
             <div class="col-sm-10">
-                <select class="form-select w-auto" id="visible" name="visible">
-                    <option selected value="1">{admin.enabled}</option>
-                    <option value="0">{admin.disabled}</option>
-                </select>
+                <div class="form-check form-switch">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="visible"
+                           v-model="visibleToggle">
+                </div>
+                <input type="hidden" name="visible" :value="visible">
             </div>
         </div>
 

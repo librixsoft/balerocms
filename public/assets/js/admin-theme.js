@@ -21,6 +21,7 @@ class AdminTheme {
                     blockName: '',
                     virtualTitle: window.PAGE_DATA?.virtualTitle || '',
                     staticUrl: window.PAGE_DATA?.staticUrl || '',
+                    visible: window.PAGE_DATA?.visible || '1',
                     sortOrder: window.BLOCK_CONFIG?.nextSortOrder || 0,
                 }
             },
@@ -68,6 +69,14 @@ class AdminTheme {
                         'navbar-dark': this.isDark,
                         'navbar-light': !this.isDark
                     };
+                },
+                visibleToggle: {
+                    get() {
+                        return this.visible === '1';
+                    },
+                    set(value) {
+                        this.visible = value ? '1' : '0';
+                    }
                 }
             },
             mounted() {
