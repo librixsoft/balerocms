@@ -103,12 +103,6 @@ class AdminTheme {
             const { createApp } = Vue;
             const instance = createApp(window.AdminTheme).mount('#app');
             window.vueInstance = instance;
-
-            // Opcional: Adjuntar el manejador de submit al formulario si existe
-            const form = document.querySelector('form[action*="blocks/"]');
-            if (form && document.getElementById('summernote')) {
-                form.addEventListener('submit', instance.submitForm.bind(instance));
-            }
         }
     }
 
