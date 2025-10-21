@@ -12,7 +12,7 @@
             <label class="col-sm-2 col-form-label" for="static_url">{admin.lbl_static_url}</label>
             <div class="col-sm-10">
                 <input class="form-control" id="static_url" name="static_url" placeholder="Slug will be auto-generated"
-                       readonly
+
                        style="background-color: #e9ecef; cursor: not-allowed;"
                        type="text">
             </div>
@@ -21,7 +21,7 @@
         <div class="mb-3 row">
             <label class="col-sm-2 col-form-label" for="virtual_content">{admin.lbl_content}</label>
             <div class="col-sm-10">
-                <div id="quill-editor" style="height:350px;"></div>
+                <textarea id="summernote" name="virtual_content" style="height:350px;"></textarea>
             </div>
         </div>
 
@@ -44,7 +44,7 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-start">
+        <div class="d-flex justify-content-end">
             <button class="btn btn-primary me-2" name="submit" type="submit"><i
                     class="fas fa-check"></i> {btn_add}
             </button>
