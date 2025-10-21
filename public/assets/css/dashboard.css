@@ -707,15 +707,24 @@ body {
     z-index: 1000;
 }
 
-.dropdown-menu {
+/*
+ * 1. Aumentamos la especificidad prefijando con la clase del navbar
+ * para que solo afecte a los dropdowns dentro de la navegación.
+ */
+.navbar-vue .dropdown-menu {
+    /* Mantenemos display: block solo para que Vue pueda controlarlo
+       por medio de v-show, pero es mejor usar el JS de Bootstrap
+       si no es estrictamente necesario para Vue. */
     display: block !important;
     z-index: 1001;
 }
 
-.dropdown-menu[style*="display: none"] {
+/* * 2. Mantenemos la regla para ocultar cuando Vue/Bootstrap
+ * le pone el display: none in-line, pero solo dentro del navbar.
+ */
+.navbar-vue .dropdown-menu[style*="display: none"] {
     display: none !important;
 }
-
 /* Botones de iconos más pequeños y uniformes */
 .icon-button {
     background: none;
@@ -924,61 +933,6 @@ footer {
 }
 
 /** fin de pag-bar **/
-
-
-/** -------------------------------------------------------------------------- **/
-/** EDITOR DE TEXTO (Quill.js)                    **/
-/** -------------------------------------------------------------------------- **/
-
-.ql-html {
-    width: 28px !important;
-}
-.ql-html .ql-stroke {
-    stroke: #444;
-}
-.ql-html svg {
-    width: 18px;
-    height: 18px;
-}
-/* Estilos para el modo HTML del editor */
-#quill-editor.html-mode .ql-editor {
-    font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
-    background-color: #f8f9fa; /* Fondo claro */
-}
-#quill-editor.html-mode .ql-toolbar {
-    pointer-events: none;
-    opacity: 0.6;
-}
-#quill-editor.html-mode .ql-html {
-    pointer-events: auto;
-    opacity: 1;
-}
-
-/* Repetición de estilos de editor al final, consolidada arriba */
-.ql-html {
-    width: 28px !important;
-}
-.ql-html .ql-stroke {
-    stroke: #444;
-}
-.ql-html svg {
-    width: 18px;
-    height: 18px;
-}
-#quill-editor.html-mode .ql-editor {
-    font-family: 'Courier New', monospace;
-    white-space: pre-wrap;
-    background-color: #f8f9fa;
-}
-#quill-editor.html-mode .ql-toolbar {
-    pointer-events: none;
-    opacity: 0.6;
-}
-#quill-editor.html-mode .ql-html {
-    pointer-events: auto;
-    opacity: 1;
-}
 
 /** -------------------------------------------------------------------------- **/
 /** TEMA OSCURO                                **/
