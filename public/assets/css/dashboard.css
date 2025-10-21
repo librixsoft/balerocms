@@ -1326,3 +1326,14 @@ body.dark-theme .table td {
     border-width: 1px !important;
 }
 
+.note-editor .modal-backdrop {
+    /* Oculta el modal-backdrop SOLO si está dentro del editor de Summernote */
+    display: none !important;
+}
+
+.modal-backdrop {
+    /* ESTO ES EXTREMO, úsalo solo si la regla anterior falla */
+    opacity: 0 !important;
+    pointer-events: none !important; /* Permite clicks a través de él */
+}
+
