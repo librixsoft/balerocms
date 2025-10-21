@@ -87,10 +87,10 @@ class AdminTheme {
 
                     // 👇 Contenido inicial opcional - comentado por defecto
                     // Si quieres contenido de prueba, descomenta las siguientes líneas:
-                    /*
+
                     const holaMundoHtml = `<h1>Hola <em>mundo</em></h1><p>Este es un contenido de <strong>prueba avanzada</strong> con HTML.</p>`;
                     this.quill.root.innerHTML = holaMundoHtml;
-                    */
+
 
                     console.log('Quill inicializado correctamente');
                 },
