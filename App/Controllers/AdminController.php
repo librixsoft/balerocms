@@ -5,6 +5,7 @@ namespace App\Controllers;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Http\Get;
+use Framework\Http\JsonResponse;
 use Framework\Http\Post;
 use Framework\Http\Auth;
 use Framework\Http\RequestHelper;
@@ -172,13 +173,28 @@ class AdminController
     }
 
     #[Post('/uploader')]
+    #[JsonResponse]
     public function postUploader()
     {
         if (!isset($_FILES['file'])) {
-            throw new \RuntimeException("Input file not found");
+            return [
+                'status' => 'error',
+                'message' => 'Input file not found'
+            ];
         }
 
-        return $this->uploader->image($_FILES['file']);
+        try {
+            $url = $this->uploader->image($_FILES['file']); // retorna URL de la imagen
+            return [
+                'status' => 'ok',
+                'url' => $url
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ];
+        }
     }
 
     #[Get('/blocks')]

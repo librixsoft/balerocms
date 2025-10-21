@@ -53,38 +53,6 @@ class AdminTheme {
                     }
                 },
 
-                // *********************************************************
-                // MÉTODO DE INICIALIZACIÓN DE SUMMERNOTE EN VUE
-                // *********************************************************
-                // Se mantiene, pero SOLO para que la función extendida la pueda llamar si es necesario.
-                initSummernoteEditor(selector = '#summernote') {
-                    if (typeof $ === 'undefined' || typeof $.fn.summernote === 'undefined') {
-                        console.warn('Summernote no se puede inicializar: jQuery o Summernote no cargados.');
-                        return;
-                    }
-
-                    // Destruir sin usar el try/catch, Summernote lo maneja.
-                    $(selector).summernote('destroy');
-
-                    console.log('Inicializando Summernote en:', selector);
-
-                    // La inicialización se hace solo en el bloque final $(document).ready()
-                    // Si se llama aquí, es porque una extensión lo forzó.
-                    $(selector).summernote({
-                        height: 200,
-                        focus: true,
-                        toolbar: [
-                            ['style', ['bold', 'italic', 'underline', 'clear']],
-                            ['font', ['strikethrough', 'superscript', 'subscript']],
-                            ['para', ['ul', 'ol', 'paragraph']],
-                            ['insert', ['link', 'picture', 'video']],
-                            ['view', ['fullscreen', 'codeview', 'help']]
-                        ]
-                    });
-
-                    console.log('Summernote inicializado correctamente por Vue (Método manual).');
-                },
-
                 // Método para obtener el contenido HTML de Summernote
                 getSummernoteContent(selector = '#summernote') {
                     if (typeof $ === 'undefined' || typeof $.fn.summernote === 'undefined') {
@@ -217,15 +185,39 @@ if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
         if (document.getElementById('summernote')) {
             console.log('Inicializando Summernote con jQuery Ready (Punto Único)');
             $('#summernote').summernote({
-                height: 200,                 // altura del editor
-                focus: true,                 // poner el foco al iniciar
+                height: 200,
+                focus: true,
                 toolbar: [
                     ['style', ['bold', 'italic', 'underline']],
                     ['font', ['strikethrough']],
                     ['para', ['ul', 'ol', 'paragraph']],
                     ['insert', ['link', 'picture', 'video']],
                     ['view', ['codeview']]
-                ]
+                ],
+                callbacks: {
+                    onImageUpload: function(files) {
+                        if (files.length === 0) return;
+                        const file = files[0];
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        fetch('/admin/uploader', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.url) {
+                                    $('#summernote').summernote('insertImage', data.url);
+                                } else {
+                                    console.error('Error al subir la imagen:', data);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error de conexión:', err);
+                            });
+                    }
+                }
             });
         }
     });
