@@ -1337,3 +1337,10 @@ body.dark-theme .table td {
     pointer-events: none !important; /* Permite clicks a través de él */
 }
 
+/* Mueve hacia abajo todos los modales (Bootstrap y Summernote) */
+.modal.show,
+.note-modal.show {
+    display: flex !important;
+    align-items: flex-start !important; /* Alinea arriba */
+    padding-top: 100px !important; /* baja todo el modal */
+}
