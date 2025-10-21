@@ -135,7 +135,7 @@ class AdminTheme {
             mounted() {
                 this.loadTheme();
                 document.addEventListener('click', this.closeDropdowns);
-                
+
             },
             beforeUnmount() {
                 document.removeEventListener('click', this.closeDropdowns);
@@ -220,11 +220,11 @@ if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
                 height: 200,                 // altura del editor
                 focus: true,                 // poner el foco al iniciar
                 toolbar: [
-                    ['style', ['bold', 'italic', 'underline', 'clear']],
-                    ['font', ['strikethrough', 'superscript', 'subscript']],
+                    ['style', ['bold', 'italic', 'underline']],
+                    ['font', ['strikethrough']],
                     ['para', ['ul', 'ol', 'paragraph']],
                     ['insert', ['link', 'picture', 'video']],
-                    ['view', ['fullscreen', 'codeview', 'help']]
+                    ['view', ['codeview']]
                 ]
             });
         }
