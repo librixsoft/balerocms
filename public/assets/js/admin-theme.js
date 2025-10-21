@@ -60,7 +60,6 @@ class AdminTheme {
                 initQuillEditor() {
                     console.log('Inicializando Quill v2.0');
 
-                    // Crear el icono SVG personalizado para el botón HTML
                     const icons = Quill.import('ui/icons');
                     icons['html'] = '<svg viewBox="0 0 18 18"><polyline class="ql-stroke" points="5 7 3 9 5 11"></polyline><polyline class="ql-stroke" points="13 7 15 9 13 11"></polyline><line class="ql-stroke" x1="10" y1="5" x2="8" y2="13"></line></svg>';
 
@@ -85,15 +84,14 @@ class AdminTheme {
                         }
                     });
 
-                    // 👇 Contenido inicial opcional - comentado por defecto
-                    // Si quieres contenido de prueba, descomenta las siguientes líneas:
-
-                    const holaMundoHtml = `<h1>Hola <em>mundo</em></h1><p>Este es un contenido de <strong>prueba avanzada</strong> con HTML.</p>`;
-                    this.quill.root.innerHTML = holaMundoHtml;
-
+                    // --- Contenido inicial desde window ---
+                    if (window.INITIAL_QUILL_CONTENT) {
+                        this.quill.root.innerHTML = window.INITIAL_QUILL_CONTENT;
+                    }
 
                     console.log('Quill inicializado correctamente');
-                },
+                }
+,
 
                 // Método auxiliar para cargar contenido HTML de forma segura
                 loadHtmlContent(html) {
