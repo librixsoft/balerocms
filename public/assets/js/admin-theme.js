@@ -88,23 +88,50 @@ class AdminTheme {
                             }
                         }
                     });
+
+                    // 👇 Hola mundo inicial (sin sanitizar ni dinámico)
+                    this.quill.root.innerHTML = `
+                        <h1>Hola mundo</h1>
+                        <p>Este es un contenido de <strong>prueba</strong> en el editor Quill.</p>
+                        <ul>
+                            <li>Elemento 1</li>
+                            <li>Elemento 2</li>
+                        </ul>
+                        <p style="color: blue;">Texto con color azul.</p>
+                    `;
                 },
                 toggleHtmlMode() {
                     const editorContainer = document.getElementById('quill-editor');
                     const editor = this.quill.root;
 
                     if (!this.isHtmlMode) {
-                        // Cambiar a modo HTML
+                        // --- Activar modo HTML ---
                         this.htmlContent = editor.innerHTML;
-                        editor.innerText = this.htmlContent;
-                        editorContainer.classList.add('html-mode');
-                        editor.contentEditable = true;
+
+                        // Crear un <textarea> temporal para mostrar el HTML
+                        const textarea = document.createElement('textarea');
+                        textarea.id = 'html-editor';
+                        textarea.value = this.htmlContent;
+                        textarea.style.width = '100%';
+                        textarea.style.height = editorContainer.offsetHeight + 'px';
+                        textarea.style.fontFamily = 'monospace';
+                        textarea.style.fontSize = '14px';
+
+                        // Ocultar el editor visual y añadir el textarea
+                        editorContainer.style.display = 'none';
+                        editorContainer.parentNode.insertBefore(textarea, editorContainer.nextSibling);
+
                         this.isHtmlMode = true;
                     } else {
-                        // Volver a modo visual
-                        const htmlText = editor.innerText;
-                        editor.innerHTML = htmlText;
-                        editorContainer.classList.remove('html-mode');
+                        // --- Volver a modo visual ---
+                        const textarea = document.getElementById('html-editor');
+                        if (textarea) {
+                            const htmlText = textarea.value;
+                            this.quill.root.innerHTML = htmlText;
+                            textarea.remove();
+                        }
+
+                        editorContainer.style.display = '';
                         this.isHtmlMode = false;
                     }
                 },
