@@ -18,8 +18,9 @@ class AdminTheme {
                     previewOpen: false,
                     userMenuOpen: false,
                     langOpen: false,
-                    // ... otros datos ...
                     blockName: '',
+                    virtualTitle: window.PAGE_DATA?.virtualTitle || 'ERROR_LOADING_VUE_DATA',
+                    staticUrl: window.PAGE_DATA?.staticUrl || 'ERROR_LOADING_VUE_DATA',
                     sortOrder: window.BLOCK_CONFIG?.nextSortOrder || 0,
                 }
             },
@@ -52,44 +53,13 @@ class AdminTheme {
                         this.langOpen = false; // Agregué el langOpen
                     }
                 },
-
-                // Método para obtener el contenido HTML de Summernote
-                getSummernoteContent(selector = '#summernote') {
-                    if (typeof $ === 'undefined' || typeof $.fn.summernote === 'undefined') {
-                        return '';
-                    }
-                    return $(selector).summernote('code');
+                generateSlug(title) {
+                    return title.toLowerCase()
+                        .replace(/[^\w\s-]/g, '')
+                        .trim()
+                        .replace(/[\s_-]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
                 },
-
-                async submitForm(event) {
-                    // Obtener el contenido de Summernote antes de enviar
-                    const content = this.getSummernoteContent('#summernote');
-
-                    const payload = new FormData();
-                    payload.append('name', this.blockName);
-                    payload.append('sort_order', this.sortOrder);
-                    payload.append('content', content); // Contenido obtenido de Summernote
-
-                    try {
-                        const response = await fetch('{basepath}admin/blocks/new', {
-                            method: 'POST',
-                            body: payload
-                        });
-
-                        if (response.ok) {
-                            this.notificationSystem.showNotification('Bloque creado exitosamente', 'success');
-                            setTimeout(() => {
-                                window.location.href = '{basepath}admin/blocks';
-                            }, 1000);
-                        } else {
-                            this.notificationSystem.showNotification('Error al crear el bloque', 'error');
-                            console.error('Error al crear el bloque');
-                        }
-                    } catch (err) {
-                        this.notificationSystem.showNotification('Error de conexión', 'error');
-                        console.error('Fetch error:', err);
-                    }
-                }
             },
             computed: {
                 // ... (tus computed properties) ...
@@ -116,6 +86,9 @@ class AdminTheme {
             watch: {
                 isDark() {
                     this.applyThemeToBody();
+                },
+                virtualTitle(newTitle) {
+                    this.staticUrl = this.generateSlug(newTitle);
                 }
             }
         };

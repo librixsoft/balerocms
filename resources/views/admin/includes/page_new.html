@@ -3,7 +3,9 @@
         <div class="mb-3 row">
             <label class="col-sm-2 col-form-label" for="virtual_title">{admin.title}</label>
             <div class="col-sm-10">
-                <input class="form-control" id="virtual_title" name="virtual_title" required
+                <input class="form-control" id="virtual_title" name="virtual_title"
+                       required
+                       v-model="virtualTitle"
                        type="text">
             </div>
         </div>
@@ -12,7 +14,8 @@
             <label class="col-sm-2 col-form-label" for="static_url">{admin.lbl_static_url}</label>
             <div class="col-sm-10">
                 <input class="form-control" id="static_url" name="static_url" placeholder="Slug will be auto-generated"
-
+                       readonly
+                       v-model="staticUrl"
                        style="background-color: #e9ecef; cursor: not-allowed;"
                        type="text">
             </div>
@@ -53,21 +56,4 @@
 
     </fieldset>
 </form>
-
-<script>
-    /**
-    $(document).ready(function () {
-        // Auto-generar slug para static_url al escribir título
-        $('#virtual_title').on('input', function () {
-            var title = $(this).val();
-            var slug = title.toLowerCase()
-                .replace(/[^\w\s-]/g, '')
-                .trim()
-                .replace(/[\s_-]+/g, '-')
-                .replace(/^-+|-+$/g, '');
-            $('#static_url').val(slug);
-        });
-    });
-     **/
-</script>
 
