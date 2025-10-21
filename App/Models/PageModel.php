@@ -44,13 +44,13 @@ class PageModel
         try {
             $sql = "SELECT * FROM page WHERE static_url = ? AND visible = 1 LIMIT 1";
             $params = [$slug];
-            $this->db->query($sql, $params);
-            $this->db->get();
+            $this->model->getDb()->query($sql, $params);
+            $this->model->getDb()->get();
 
             // Debug: log the retrieved rows
-            error_log("Rows retrieved in getVirtualPageBySlug for slug '{$slug}': " . print_r($this->db->getRows(), true));
+            error_log("Rows retrieved in getVirtualPageBySlug for slug '{$slug}': " . print_r($this->model->getDb()->getRows(), true));
 
-            return $this->db->getRow() ?? [];
+            return $this->model->getDb()->getRow() ?? [];
         } catch (Throwable $e) {
             throw new ModelException("Error fetching virtual page by slug: " . $e->getMessage(), previous: $e);
         }
