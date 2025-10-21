@@ -89,17 +89,57 @@ class AdminTheme {
                         }
                     });
 
-                    // 👇 Hola mundo inicial (sin sanitizar ni dinámico)
-                    this.quill.root.innerHTML = `
-                        <h1>Hola mundo</h1>
-                        <p>Este es un contenido de <strong>prueba</strong> en el editor Quill.</p>
-                        <ul>
-                            <li>Elemento 1</li>
-                            <li>Elemento 2</li>
-                        </ul>
-                        <p style="color: blue;">Texto con color azul.</p>
-                    `;
-                },
+                    // 👇 Hola mundo avanzado como HTML
+                    const holaMundoHtml = `
+        <div style="padding: 10px; border: 2px dashed #888; background: #f9f9f9;">
+            <h1 style="color: darkblue;">Hola <em>mundo</em> 🌎</h1>
+            <p>Este es un contenido de <strong>prueba avanzada</strong> con HTML incrustado directamente.</p>
+            <ul>
+                <li>Elemento <b>1</b></li>
+                <li>Elemento <i>2</i> con <span style="color: red;">color rojo</span></li>
+                <li>Elemento 3 con sublista:
+                    <ul>
+                        <li>Subelemento A</li>
+                        <li>Subelemento B</li>
+                    </ul>
+                </li>
+            </ul>
+            <blockquote style="border-left: 4px solid #ccc; padding-left: 10px; color: gray;">
+                “La simplicidad es la máxima sofisticación.” — Leonardo da Vinci
+            </blockquote>
+            <table border="1" cellpadding="5" style="border-collapse: collapse; width: 100%;">
+                <thead style="background: #efefef;">
+                    <tr>
+                        <th>#</th>
+                        <th>Nombre</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>HTML</td>
+                        <td><code>&lt;div&gt;</code></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>CSS</td>
+                        <td><code>color: blue;</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>
+                Puedes visitar <a href="https://example.com" target="_blank">este enlace</a> o usar código como 
+                <code>console.log('Hola');</code> directamente aquí.
+            </p>
+        </div>
+    `;
+
+                    // Insertar HTML usando clipboard.convert() → Delta
+                    const delta = this.quill.clipboard.convert(holaMundoHtml, 'silent');
+                    this.quill.setContents(delta);
+                }
+                ,
                 toggleHtmlMode() {
                     const editorContainer = document.getElementById('quill-editor');
                     const editor = this.quill.root;
