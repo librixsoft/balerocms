@@ -1,12 +1,7 @@
 // admin-theme.js - Funcionalidad común del tema + Editor integrado
-// Versión unificada sin módulos separados
+// Versión actualizada para Quill v2.0
 
 import AdminNotificationSystem from './admin-notification.js';
-// import Modal from './modal.js';
-// import Table from './table.js';
-// import Validator from './validator.js';
-// import FileUpload from './file-upload.js';
-// import Analytics from './analytics.js';
 
 console.log('admin-theme.js cargado');
 
@@ -61,9 +56,9 @@ class AdminTheme {
                         this.userMenuOpen = false;
                     }
                 },
-                // Métodos del editor Quill
+                // Métodos del editor Quill v2.0
                 initQuillEditor() {
-                    console.log('Inicializando Quill');
+                    console.log('Inicializando Quill v2.0');
 
                     // Crear el icono SVG personalizado para el botón HTML
                     const icons = Quill.import('ui/icons');
@@ -79,6 +74,7 @@ class AdminTheme {
 
                     this.quill = new Quill('#quill-editor', {
                         theme: 'snow',
+                        placeholder: 'Escribe tu contenido aquí...',
                         modules: {
                             toolbar: {
                                 container: toolbarOptions,
@@ -89,23 +85,41 @@ class AdminTheme {
                         }
                     });
 
-                    // 👇 Hola mundo avanzado como HTML
-                    const holaMundoHtml = `
-            <h1>Hola <em>mundo</em> </h1>
-            <p>Este es un contenido de <strong>prueba avanzada</strong> con HTML incrustado directamente.</p>
-    `;
+                    // 👇 Contenido inicial opcional - comentado por defecto
+                    // Si quieres contenido de prueba, descomenta las siguientes líneas:
+                    /*
+                    const holaMundoHtml = `<h1>Hola <em>mundo</em></h1><p>Este es un contenido de <strong>prueba avanzada</strong> con HTML.</p>`;
+                    this.quill.root.innerHTML = holaMundoHtml;
+                    */
 
-                    // Insertar HTML usando clipboard.convert() → Delta
-                    const delta = this.quill.clipboard.convert(holaMundoHtml, 'silent');
-                    this.quill.setContents(delta);
-                }
-                ,
+                    console.log('Quill inicializado correctamente');
+                },
+
+                // Método auxiliar para cargar contenido HTML de forma segura
+                loadHtmlContent(html) {
+                    if (!this.quill) {
+                        console.error('Quill no está inicializado');
+                        return;
+                    }
+
+                    // Método seguro: establecer innerHTML directamente
+                    this.quill.root.innerHTML = html;
+
+                    // Opcional: dar foco al editor después de cargar
+                    this.quill.focus();
+
+                    console.log('Contenido HTML cargado');
+                },
+
                 toggleHtmlMode() {
                     const editorContainer = document.getElementById('quill-editor');
                     const editor = this.quill.root;
 
                     if (!this.isHtmlMode) {
                         // --- Activar modo HTML ---
+                        // Deshabilitar Quill temporalmente
+                        this.quill.disable();
+
                         this.htmlContent = editor.innerHTML;
 
                         // Crear un <textarea> temporal para mostrar el HTML
@@ -116,25 +130,51 @@ class AdminTheme {
                         textarea.style.height = editorContainer.offsetHeight + 'px';
                         textarea.style.fontFamily = 'monospace';
                         textarea.style.fontSize = '14px';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid #ccc';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.resize = 'vertical';
 
                         // Ocultar el editor visual y añadir el textarea
                         editorContainer.style.display = 'none';
                         editorContainer.parentNode.insertBefore(textarea, editorContainer.nextSibling);
 
                         this.isHtmlMode = true;
+                        console.log('Modo HTML activado');
                     } else {
                         // --- Volver a modo visual ---
                         const textarea = document.getElementById('html-editor');
                         if (textarea) {
                             const htmlText = textarea.value;
-                            this.quill.root.innerHTML = htmlText;
+
+                            // Remover el textarea primero
                             textarea.remove();
+
+                            // Mostrar el editor
+                            editorContainer.style.display = '';
+
+                            // Usar setTimeout para asegurar que el DOM esté actualizado
+                            setTimeout(() => {
+                                // Establecer el contenido directamente en el root
+                                this.quill.root.innerHTML = htmlText;
+
+                                // Re-habilitar Quill
+                                this.quill.enable();
+
+                                // Dar foco al editor
+                                this.quill.focus();
+                            }, 0);
+                        } else {
+                            // Si no hay textarea, simplemente mostrar el editor y habilitarlo
+                            editorContainer.style.display = '';
+                            this.quill.enable();
                         }
 
-                        editorContainer.style.display = '';
                         this.isHtmlMode = false;
+                        console.log('Modo visual activado');
                     }
                 },
+
                 async submitForm() {
                     // Asegurarse de estar en modo visual antes de enviar
                     if (this.isHtmlMode) {
@@ -155,11 +195,16 @@ class AdminTheme {
                         });
 
                         if (response.ok) {
-                            window.location.href = '/admin/blocks';
+                            this.notificationSystem.showNotification('Bloque creado exitosamente', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/admin/blocks';
+                            }, 1000);
                         } else {
+                            this.notificationSystem.showNotification('Error al crear el bloque', 'error');
                             console.error('Error al crear el bloque');
                         }
                     } catch (err) {
+                        this.notificationSystem.showNotification('Error de conexión', 'error');
                         console.error('Fetch error:', err);
                     }
                 }
