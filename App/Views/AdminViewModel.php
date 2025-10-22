@@ -5,16 +5,23 @@ namespace App\Views;
 use Framework\Core\ConfigSettings;
 use Framework\Core\ThemesReader;
 use Framework\Core\ViewModel;
+use Framework\I18n\Translator;
 
 class AdminViewModel
 {
     private ConfigSettings $config;
     private ThemesReader $themesReader;
+    private Translator $translator;
 
-    public function __construct(ConfigSettings $config, ThemesReader $themesReader)
+    public function __construct(
+        ConfigSettings $config,
+        ThemesReader $themesReader,
+        Translator $translator
+    )
     {
         $this->config = $config;
         $this->themesReader = $themesReader;
+        $this->translator = $translator;
     }
 
     public function getSettingsParams(array $extraParams = []): array
@@ -25,7 +32,7 @@ class AdminViewModel
 
         $viewModel->addAll([
 
-            'mod_name' => '{admin.settings}',
+            'mod_name' => $this->translator->t("admin.settings"),
             'mod_id' => 'settings',
 
             'core_version' => _CORE_VERSION,
@@ -83,7 +90,7 @@ class AdminViewModel
 
         $viewModel->addAll([
 
-            'mod_name' =>'{admin.pages}',
+            'mod_name' => $this->translator->t("admin.pages"),
             'mod_id' =>'page_new',
 
             'lbl_title' => 'Title',
@@ -106,7 +113,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
-            'mod_name' =>'{admin.pages}',
+            'mod_name' => $this->translator->t("admin.pages"),
             'mod_id' =>'all_pages',
             'activeMenu' => 'all_pages',
         ]);
@@ -123,6 +130,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
+            'mod_name' => $this->translator->t("admin.pages"),
             'activeMenu' => 'all_pages',
             'mod_id' => 'page_edit',
         ]);
@@ -139,7 +147,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
-            'mod_name' =>'{admin.blocks}',
+            'mod_name' => $this->translator->t("admin.blocks"),
             'mod_id' => 'all_blocks',
             'lbl_blocks' => 'Blocks',
             'lbl_new_block' => 'New Block',
@@ -158,6 +166,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
+            'mod_name' => $this->translator->t("admin.blocks"),
             'lbl_new_block' => 'New Block',
             'activeMenu' => 'all_blocks',
             'mod_id' => 'block_new',
@@ -175,6 +184,7 @@ class AdminViewModel
         $viewModel = $this->createViewModel();
 
         $viewModel->addAll([
+            'mod_name' => $this->translator->t("admin.blocks"),
             'lbl_edit_block' => 'Edit Block',
             'activeMenu' => 'all_blocks',
             'mod_id' => 'block_edit',
