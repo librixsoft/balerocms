@@ -38,6 +38,7 @@
 
             <!-- Main dinámico estilo blog -->
             <div class="row">
+
                 <%-- @foreach blocks as block -->
                 <div class="col-md-6 mb-4">
                     <div class="card p-3"
@@ -47,9 +48,22 @@
                     </div>
                 </div>
                 <%-- @endforeach -->
+
+                <%-- @if page -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h1>{page.virtual_title}</h1>
+                        <div class="vp-content">
+                            {page.virtual_content}
+                        </div>
+                    </div>
+                </div>
+                <%-- @endif -->
+
                 <li class="nav-item">
                     <a class="nav-link" href="/login">Login</a>
                 </li>
+
             </div>
         </main>
 

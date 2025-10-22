@@ -35,13 +35,13 @@ class PageController
         $page = $this->model->getVirtualPageBySlug($staticUrl);
 
         if (empty($page)) {
-            return $this->view->render("page_detail.html", $this->viewModel->setPageParams([
+            return $this->view->render("main.html", $this->viewModel->setPageParams([
                 'error_message' => "La página solicitada no existe.",
                 'virtual_pages' => $this->model->getVirtualPages(),
             ]));
         }
 
-        return $this->view->render("page_detail.html", $this->viewModel->setPageParams([
+        return $this->view->render("main.html", $this->viewModel->setPageParams([
             'page' => $page,
             'virtual_pages' => $this->model->getVirtualPages(),
         ]));

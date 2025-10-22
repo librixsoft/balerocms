@@ -263,4 +263,35 @@ class ProcessorIfBlocksTest extends TestCase
         $this->assertStringContainsString('Inactive Theme', $result);
         $this->assertStringNotContainsString('Active Theme', $result);
     }
+
+    public function testIfArrayExists()
+    {
+        $template = $this->loadTemplate('if_array_exists.html');
+
+        // Caso 1: El array/objeto "array_page" existe (tiene al menos una propiedad)
+        $flatParams = [
+            'array_page.virtual_title' => 'Welcome Page',
+            'array_page.virtual_content' => 'This is the content'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Page array or object exists!', $result);
+        $this->assertStringContainsString('Virtual Title:', $result);
+        $this->assertStringContainsString('{page.virtual_title}', $result); // El placeholder aún no se reemplaza
+        $this->assertStringNotContainsString('No page found.', $result);
+
+        // Caso 2: El array/objeto "array_page" NO existe
+        $flatParams = [];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('No page found.', $result);
+        $this->assertStringNotContainsString('Page array or object exists!', $result);
+
+        // Caso 3: Existen otras variables pero NO "array_page"
+        $flatParams = [
+            'other.title' => 'Other Title',
+            'user.name' => 'John'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('No page found.', $result);
+        $this->assertStringNotContainsString('Page array or object exists!', $result);
+    }
 }

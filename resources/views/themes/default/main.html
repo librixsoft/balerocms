@@ -59,12 +59,22 @@
     </div>
 </header>
 
-
 <!-- Main dinámico de páginas -->
 <main class="container my-5">
-    <%-- @foreach blocks as block -->
-    <p>{block.content}</p>
-    <%-- @endforeach -->
+
+    <%-- @if blocks -->
+        <%-- @foreach blocks as block -->
+            <p>{block.content}</p>
+        <%-- @endforeach -->
+    <%-- @endif -->
+
+    <%-- @if page -->
+        <h1>{page.virtual_title}</h1>
+        <div class="vp-content">
+            {page.virtual_content}
+        </div>
+    <%-- @endif -->
+
 </main>
 
 <!-- Footer -->

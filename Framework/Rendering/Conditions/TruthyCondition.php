@@ -6,12 +6,10 @@ class TruthyCondition implements ConditionInterface
 {
     private ?string $key = null;
 
-    // Constructor vacío compatible con DI
     public function __construct()
     {
     }
 
-    // Método de instancia para verificar si la expresión aplica
     public function supports(string $expression): bool
     {
         return !empty($expression) && !preg_match('/[!=]/', $expression) && $expression[0] !== '!';
@@ -26,6 +24,17 @@ class TruthyCondition implements ConditionInterface
 
     public function evaluate(array $flatParams): bool
     {
-        return !empty($flatParams[$this->key] ?? null);
+        if (isset($flatParams[$this->key])) {
+            return !empty($flatParams[$this->key]);
+        }
+
+        $prefix = $this->key . '.';
+        foreach (array_keys($flatParams) as $param) {
+            if (strpos($param, $prefix) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
