@@ -7,7 +7,7 @@ use Framework\Http\RequestHelper;
 class LangSelector
 {
 
-    private string $langPath = LOCAL_DIR . '/resources/lang';
+    private string $langPath = BASE_PATH . '/resources/lang';
 
     private LangManager $langManager;
     private RequestHelper $requestHelper;

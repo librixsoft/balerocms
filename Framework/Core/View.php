@@ -15,7 +15,7 @@ use Framework\Attributes\Inject;
 
 class View
 {
-    private string $viewsPath = LOCAL_DIR . '/resources/views';
+    private string $viewsPath = BASE_PATH . '/resources/views';
     private string $baseDir;
 
     #[Inject]
@@ -55,7 +55,7 @@ class View
             // --- Idioma ---
             $sessionLang = $_SESSION['lang'] ?? 'en';
             $this->langManager->setCurrentLang($sessionLang);
-            $this->langManager->load($sessionLang, LOCAL_DIR . '/resources/lang');
+            $this->langManager->load($sessionLang, BASE_PATH . '/resources/lang');
 
             $templateFullPath = $this->resolveTemplatePath($templatePath, $useTheme);
             $content = file_get_contents($templateFullPath);

@@ -38,7 +38,7 @@ class Boot
 
     public function autoloadClass(string $class): void
     {
-        $baseDirs = [LOCAL_DIR . '/'];
+        $baseDirs = [BASE_PATH . '/'];
         $relativeClass = ltrim($class, '\\');
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
 

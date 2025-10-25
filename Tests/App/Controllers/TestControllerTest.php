@@ -22,8 +22,8 @@ class TestControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        if (!defined('LOCAL_DIR')) {
-            define('LOCAL_DIR', __DIR__ . '/../../Modules/');
+        if (!defined('BASE_PATH')) {
+            define('BASE_PATH', __DIR__ . '/../../Modules/');
         }
 
         parent::setUp();

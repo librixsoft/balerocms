@@ -19,9 +19,9 @@ declare(strict_types=1);
 
 use ReflectionClass;
 
-const LOCAL_DIR = __DIR__ . '/../';
-$controllersDir = LOCAL_DIR . 'App/Controllers';
-$cacheDir = LOCAL_DIR . 'cache';
+const BASE_PATH = __DIR__ . '/../';
+$controllersDir = BASE_PATH . 'App/Controllers';
+$cacheDir = BASE_PATH . 'cache';
 $cacheFile = $cacheDir . '/controllers.cache.php';
 
 // Ensure cache directory exists

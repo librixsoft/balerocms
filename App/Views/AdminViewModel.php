@@ -30,6 +30,8 @@ class AdminViewModel
 
         $currentLang = $this->config->language ?? 'en';
 
+        include_once $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+
         $viewModel->addAll([
 
             'mod_name' => $this->translator->t("admin.settings"),

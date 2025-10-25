@@ -13,7 +13,7 @@ use Framework\Exceptions\UploaderException;
 
 class Uploader
 {
-    private string $uploadsPath = LOCAL_DIR . "/public/assets/images/uploads/";
+    private string $uploadsPath = BASE_PATH . "/public/assets/images/uploads/";
 
     private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];

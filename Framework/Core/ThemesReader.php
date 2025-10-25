@@ -14,7 +14,7 @@ class ThemesReader
 
     public function __construct()
     {
-        $this->themesPath = rtrim(LOCAL_DIR . '/resources/views/themes', DIRECTORY_SEPARATOR);
+        $this->themesPath = rtrim(BASE_PATH . '/resources/views/themes', DIRECTORY_SEPARATOR);
     }
 
     public function getThemes(): array

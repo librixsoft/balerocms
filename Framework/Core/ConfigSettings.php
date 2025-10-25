@@ -6,7 +6,7 @@ use Framework\Exceptions\ConfigException;
 
 class ConfigSettings
 {
-    private string $configPath = LOCAL_DIR . '/resources/config/balero.config.json';
+    private string $configPath = BASE_PATH . '/resources/config/balero.config.json';
     private ?JSONHandler $handler = null; // Lazy
     private array $fields = [
         // Database

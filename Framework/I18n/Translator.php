@@ -19,7 +19,7 @@ class Translator
     {
         if (!$this->loaded) {
             $lang = $_SESSION['lang'] ?? 'en';
-            $this->langManager->load($lang, LOCAL_DIR . '/resources/lang');
+            $this->langManager->load($lang, BASE_PATH . '/resources/lang');
             $this->loaded = true;
         }
     }
@@ -78,7 +78,7 @@ class Translator
         $this->langManager->setCurrentLang($lang);
         $_SESSION['lang'] = $lang;
         // Recargar las traducciones con el nuevo idioma
-        $this->langManager->load($lang, LOCAL_DIR . '/resources/lang');
+        $this->langManager->load($lang, BASE_PATH . '/resources/lang');
         $this->loaded = true;
     }
 }
