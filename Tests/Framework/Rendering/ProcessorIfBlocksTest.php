@@ -294,4 +294,47 @@ class ProcessorIfBlocksTest extends TestCase
         $this->assertStringContainsString('No page found.', $result);
         $this->assertStringNotContainsString('Page array or object exists!', $result);
     }
+
+    public function testIfElseIf()
+    {
+        $template = $this->loadTemplate('if_elseif.html');
+
+        // Caso 1: blocks existe - debe mostrar solo "Blocks exist"
+        $flatParams = [
+            'blocks.0.content' => 'Block content 1',
+            'blocks.1.content' => 'Block content 2'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Blocks exist', $result);
+        $this->assertStringNotContainsString('No content available', $result);
+        $this->assertStringNotContainsString('{page.virtual_title}', $result);
+
+        // Caso 2: blocks NO existe pero page SÍ existe - debe mostrar solo page
+        $flatParams = [
+            'page.virtual_title' => 'Welcome Page',
+            'page.virtual_content' => 'This is the page content'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('{page.virtual_title}', $result);
+        $this->assertStringContainsString('{page.virtual_content}', $result);
+        $this->assertStringNotContainsString('No content available', $result);
+        $this->assertStringNotContainsString('Blocks exist', $result);
+
+        // Caso 3: NI blocks NI page existen - debe mostrar solo "No content available"
+        $flatParams = [];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('No content available', $result);
+        $this->assertStringNotContainsString('{page.virtual_title}', $result);
+        $this->assertStringNotContainsString('Blocks exist', $result);
+
+        // Caso 4: Ambos existen - debe mostrar solo blocks (primera condición verdadera)
+        $flatParams = [
+            'blocks.0.content' => 'Block content',
+            'page.virtual_title' => 'Page Title'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Blocks exist', $result);
+        $this->assertStringNotContainsString('{page.virtual_title}', $result);
+        $this->assertStringNotContainsString('No content available', $result);
+    }
 }

@@ -18,31 +18,49 @@ class ProcessorIfBlocks
         while (preg_match('/<%--\s*@if\b.*?<%--\s*@endif\s*-->/is', $content)) {
             $content = preg_replace_callback(
                 '/<%--\s*@if\s+([^\n]+?)\s*-->(?:(?:(?!<%--\s*@if).)*?)'
-                . '(?:<%--\s*@else\s*-->(?:(?:(?!<%--\s*@if).)*?))?<%--\s*@endif\s*-->/is',
+                . '(?:<%--\s*@(?:elseif|else)\s*.*?)*?<%--\s*@endif\s*-->/is',
                 function ($matches) use ($flatParams) {
                     $fullMatch = $matches[0];
 
-                    if (preg_match(
-                        '/<%--\s*@if\s+(.*?)\s*-->(.*?)'
-                        . '(?:<%--\s*@else\s*-->(.*?))?<%--\s*@endif\s*-->/is',
-                        $fullMatch,
-                        $parts
-                    )) {
-                        $expression = $parts[1] ?? '';
-                        $ifBlock = $parts[2] ?? '';
-                        $elseBlock = $parts[3] ?? '';
-
-                        $ifBlockProcessed = $this->process($ifBlock, $flatParams);
-                        $elseBlockProcessed = $this->process($elseBlock ?? '', $flatParams);
-
-                        // Usar parseExpression de la instancia de ConditionFactory
-                        $condition = $this->conditionFactory->parseExpression($expression);
-                        return $condition->evaluate($flatParams)
-                            ? $ifBlockProcessed
-                            : $elseBlockProcessed;
+                    // Extraer la condición y contenido del @if
+                    if (!preg_match('/<%--\s*@if\s+(.*?)\s*-->(.*?)(?=<%--\s*@(?:elseif|else|endif))/is', $fullMatch, $ifParts)) {
+                        return $fullMatch;
                     }
 
-                    return $fullMatch;
+                    $ifExpression = trim($ifParts[1]);
+                    $ifBlock = $ifParts[2];
+
+                    // 1. Evaluar la condición principal del @if
+                    $condition = $this->conditionFactory->parseExpression($ifExpression);
+                    if ($condition->evaluate($flatParams)) {
+                        return $this->process($ifBlock, $flatParams);
+                    }
+
+                    // 2. Extraer y evaluar todos los @elseif en orden
+                    preg_match_all(
+                        '/<%--\s*@elseif\s+(.*?)\s*-->(.*?)(?=<%--\s*@(?:elseif|else|endif))/is',
+                        $fullMatch,
+                        $elseifs,
+                        PREG_SET_ORDER
+                    );
+
+                    foreach ($elseifs as $elseif) {
+                        $elseifExpression = trim($elseif[1]);
+                        $elseifBlock = $elseif[2];
+
+                        $elseifCondition = $this->conditionFactory->parseExpression($elseifExpression);
+                        if ($elseifCondition->evaluate($flatParams)) {
+                            return $this->process($elseifBlock, $flatParams);
+                        }
+                    }
+
+                    // 3. Si ninguna condición fue verdadera, buscar y retornar el @else
+                    if (preg_match('/<%--\s*@else\s*-->(.*?)<%--\s*@endif\s*-->/is', $fullMatch, $elseParts)) {
+                        return $this->process($elseParts[1], $flatParams);
+                    }
+
+                    // 4. Si no hay @else, retornar vacío
+                    return '';
                 },
                 $content
             );
