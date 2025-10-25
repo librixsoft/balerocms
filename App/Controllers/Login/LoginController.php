@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Login;
 
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;

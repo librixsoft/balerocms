@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Page;
 
 use App\Models\PageModel;
 use App\Views\PageViewModel;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Home;
 
 use App\Models\BlockModel;
 use App\Models\PageModel;

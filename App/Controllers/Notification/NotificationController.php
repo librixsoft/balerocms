@@ -1,51 +1,49 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Notification;
 
+use App\Models\NotificationModel;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
-use Framework\Http\Auth;
 use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\JsonResponse;
 use Framework\Http\RequestHelper;
 use Framework\Utils\Flash;
 
-#[Controller('/admin/notification')]
-#[Auth(required: true)]
-class AdminNotificationController
+#[Controller('/notification')]
+class NotificationController
 {
+
     #[Inject]
     private RequestHelper $requestHelper;
 
     #[Inject]
-    #[FlashStorage('_admin_flash')]
-    private Flash $flash;
+    private NotificationModel $model;
 
-    /**
-     * Clave del namespace para separar notificaciones del admin del frontend
-     */
-    private const ADMIN_FLASH_KEY = '_admin_flash';
+    #[Inject]
+    #[FlashStorage('_flash')]
+    private Flash $flash;
 
     #[Get('/')]
     #[JsonResponse]
     public function getNotification()
     {
-        // Obtiene solo los valores del admin, no del frontend
-        $adminFlash = $_SESSION[self::ADMIN_FLASH_KEY] ?? [];
+        // Obtiene todos los valores almacenados en la sesión flash
+        $allFlash = $_SESSION['_flash'] ?? [];
 
         // Si no hay nada, devolver vacío
-        if (empty($adminFlash)) {
+        if (empty($allFlash)) {
             return [
                 'status' => 'empty',
-                'data' => []
+                'errors' => []
             ];
         }
 
         return [
             'status' => 'ok',
-            'data' => $adminFlash
+            'data' => $allFlash
         ];
     }
 

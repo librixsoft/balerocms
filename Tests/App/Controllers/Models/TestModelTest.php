@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\App\Controllers;
+namespace Tests\App\Controllers\Models;
 
 use App\Models\TestModel;
 use Framework\Attributes\InjectMocks;

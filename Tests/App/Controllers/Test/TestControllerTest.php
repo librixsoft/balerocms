@@ -1,8 +1,8 @@
 <?php
 
-namespace Tests\App\Controllers;
+namespace Tests\App\Controllers\Test;
 
-use App\Controllers\TestControllerWithConstructor;
+use App\Controllers\Test\TestController;
 use App\Models\TestModel;
 use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
@@ -13,12 +13,12 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 
 #[SetupTestContainer]
-#[CoversClass(TestControllerWithConstructor::class)]
-#[TestDox('Test del controlador TestControllerWithConstructor')]
-class TestControllerWithConstructorTest extends TestCase
+#[CoversClass(TestController::class)]
+#[TestDox('Test del controlador TestController')]
+class TestControllerTest extends TestCase
 {
     #[InjectMocks]
-    private ?TestControllerWithConstructor $controller = null;
+    private ?TestController $controller = null;
 
     protected function setUp(): void
     {
@@ -30,7 +30,7 @@ class TestControllerWithConstructorTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('Verifica que getNotification llame al render correctamente (inyección por constructor)')]
+    #[TestDox('Verifica que getNotification llame al render correctamente')]
     public function testGetNotificationCallsRender(): void
     {
         $viewMock = $this->getMock(View::class);
@@ -41,23 +41,19 @@ class TestControllerWithConstructorTest extends TestCase
             ->with('test.html', [], false)
             ->willReturn('rendered content');
 
-        // Reemplazamos la dependencia View en el controlador
-        $this->setPrivateProperty($this->controller, 'view', $viewMock);
-
         $result = $this->controller->getNotification();
 
         $this->assertSame('rendered content', $result);
     }
 
-
-    /**
-     * Helper para modificar propiedades privadas en pruebas.
-     */
-    private function setPrivateProperty(object $object, string $property, mixed $value): void
+    #[Test]
+    #[TestDox('Verifica que testModelConnectMethod invoque connect del modelo')]
+    public function testModelConnectIsCalled(): void
     {
-        $ref = new \ReflectionClass($object);
-        $prop = $ref->getProperty($property);
-        $prop->setAccessible(true);
-        $prop->setValue($object, $value);
+        $modelMock = $this->getMock(TestModel::class);
+        $modelMock->expects($this->once())->method('connect')->willReturn('success');
+
+        $result = $this->controller->testModelConnectMethod();
+        $this->assertSame('success', $result);
     }
 }

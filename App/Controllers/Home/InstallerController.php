@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers;
+namespace App\Controllers\Home;
 
 use App\DTO\InstallerDTO;
 use App\Models\InstallerModel;
