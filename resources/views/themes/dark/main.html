@@ -39,6 +39,7 @@
             <!-- Main dinámico estilo blog -->
             <div class="row">
 
+                <%-- @if blocks -->
                 <%-- @foreach blocks as block -->
                 <div class="col-md-6 mb-4">
                     <div class="card p-3"
@@ -48,14 +49,19 @@
                     </div>
                 </div>
                 <%-- @endforeach -->
-
-                <%-- @if page -->
+                <%-- @elseif page -->
                 <div class="row mt-4">
                     <div class="col-12">
                         <h1>{page.virtual_title}</h1>
                         <div class="vp-content">
                             {page.virtual_content}
                         </div>
+                    </div>
+                </div>
+                <%-- @else -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <p>No content available</p>
                     </div>
                 </div>
                 <%-- @endif -->
