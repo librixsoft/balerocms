@@ -31,8 +31,16 @@
                 </div>
                 <div class="card-body">
 
-                    <!-- Render Contenedor de notificaciones -->
-                    <div id="notifications" class="alerts-container"></div>
+                    <%-- @if login_error -->
+                    <div class="vue-alert vue-alert-danger" role="alert">
+                        <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="vue-alert-content">{login_error}</div>
+                        <button class="vue-alert-close" aria-label="Close" onclick="this.parentElement.remove();">
+                            ×
+                        </button>
+                    </div>
+                    <%-- @endif-->
+
                     <form action="./login" method="POST">
                         <div class="mb-3">
                             <input class="form-control" id="username" name="usr" placeholder="{login.username}"

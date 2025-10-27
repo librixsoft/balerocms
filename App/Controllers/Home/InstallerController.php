@@ -29,7 +29,7 @@ class InstallerController
     private InstallerViewModel $installerViewModel;
 
     #[Inject]
-    #[FlashStorage('_flash')]
+    #[FlashStorage]
     private Flash $flash;
 
     #[Inject]
@@ -44,6 +44,7 @@ class InstallerController
     #[Get('/')]
     public function home()
     {
+
         $params = [];
 
         if ($this->flash->has('errors')) {

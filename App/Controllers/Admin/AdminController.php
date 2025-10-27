@@ -38,7 +38,7 @@ class AdminController
         View $view,
         RequestHelper $request,
         Validator $validator,
-        #[FlashStorage('_admin_flash')]
+        #[FlashStorage]
         Flash $flash,
     )
     {
@@ -67,11 +67,19 @@ class AdminController
     #[Get('/settings')]
     public function getSettings()
     {
+
         $params = $this->viewModel->getSettingsParams([
             'virtual_pages' => $this->model->getVirtualPages(),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
         ]);
+
+        if ($this->flash->has('errors')) {
+            // Merge de flash errors sin perder los params existentes
+            $params = array_merge($params, [
+                'errors' => $this->flash->get('errors')
+            ]);
+        }
 
         return $this->view->render("admin/dashboard.html", $params, false);
     }

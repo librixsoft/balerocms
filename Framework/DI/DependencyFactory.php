@@ -66,7 +66,7 @@ class DependencyFactory
                 $flashStorageAttrs = $param->getAttributes(FlashStorage::class);
 
                 if (!empty($flashStorageAttrs) && $type->getName() === Flash::class) {
-                    $flashKey = $flashStorageAttrs[0]->newInstance()->key;
+                    $flashKey = $flashStorageAttrs[0]->newInstance();
                     $params[] = new Flash($flashKey);
                 } else {
                     $params[] = $this->resolverContainer->get($type->getName());
@@ -126,7 +126,7 @@ class DependencyFactory
                 $prop->setAccessible(true);
 
                 if (!empty($flashStorageAttrs) && $type->getName() === Flash::class) {
-                    $flashKey = $flashStorageAttrs[0]->newInstance()->key;
+                    $flashKey = $flashStorageAttrs[0]->newInstance();
                     $prop->setValue($instance, new Flash($flashKey));
                 } else {
                     $prop->setValue($instance, $this->resolverContainer->get($type->getName()));

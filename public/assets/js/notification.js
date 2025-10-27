@@ -79,15 +79,9 @@ class NotificationSystem {
 
                             setTimeout(() => {
                                 this.alerts.splice(index, 1);
-                                if (alert.key) {
-                                    this.deleteMessage(alert.key);
-                                }
                             }, 300);
                         } else {
                             this.alerts.splice(index, 1);
-                            if (alert.key) {
-                                this.deleteMessage(alert.key);
-                            }
                         }
                     }
                 },
@@ -97,27 +91,6 @@ class NotificationSystem {
                  */
                 clearAll() {
                     this.alerts = [];
-                },
-
-                /**
-                 * Elimina un mensaje del servidor
-                 */
-                async deleteMessage(key) {
-                    const formData = new FormData();
-                    formData.append('key', key);
-
-                    try {
-                        const response = await fetch('notification/', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        const data = await response.json();
-                        console.log(data.status, data.message);
-                        return data;
-                    } catch (err) {
-                        console.error('Error deleting flash message:', err);
-                        throw err;
-                    }
                 },
 
                 /**
