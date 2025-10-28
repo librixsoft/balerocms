@@ -3,11 +3,13 @@
 namespace App\Controllers\Home;
 
 use App\DTO\InstallerDTO;
+use App\Mapper\InstallerMapper;
 use App\Models\InstallerModel;
 use App\Views\InstallerViewModel;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
+use Framework\Core\ConfigSettings;
 use Framework\Core\View;
 use Framework\Http\Get;
 use Framework\Http\Post;
@@ -41,6 +43,12 @@ class InstallerController
     #[Inject]
     private Redirect $redirect;
 
+    #[Inject]
+    private InstallerMapper $installerMapper;
+
+    #[Inject]
+    private ConfigSettings $configSettings;
+
     #[Get('/')]
     public function home()
     {
@@ -72,7 +80,7 @@ class InstallerController
         if ($this->validator->fails()) {
             $this->flash->set('errors', $this->validator->errors());
         } else {
-            //InstallerMapper::map($installerDTO, $this->configSettings);
+            $this->installerMapper->map($installerDTO, $this->configSettings);
         }
 
         $this->redirect->to("/installer/");

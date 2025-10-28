@@ -30,20 +30,21 @@ class SetupWizard {
     }
 
     loadConfig(config = {}) {
+        const translations = window.WIZARD_TRANSLATIONS || {};
         this.steps = [
             {
                 id: 'db-config',
-                label: '{installer.dbconfig}',
+                label: translations.dbconfig || 'Database Configuration',
                 icon: 'fas fa-database'
             },
             {
                 id: 'site-info',
-                label: '{installer.siteinfo}',
+                label: translations.siteinfo || 'Site Information',
                 icon: 'fas fa-info-circle'
             },
             {
                 id: 'admin-config',
-                label: '{installer.adminconfig}',
+                label: translations.adminconfig || 'Admin Configuration',
                 icon: 'fas fa-user-shield'
             }
         ];
