@@ -71,11 +71,7 @@ class InstallerController
         $installerDTO = new InstallerDTO();
         $installerDTO->fromRequest($this->requestHelper);
 
-        $this->validator->input((array)$installerDTO)
-            ->required('username', 'Username cannot be empty.')
-            ->required('passwd', 'Password cannot be empty.')
-            ->match('passwd', 'passwd2', 'Passwords do not match.')
-            ->email('email', 'Invalid email address.');
+        $this->validator->validate($installerDTO);
 
         if ($this->validator->fails()) {
             $this->flash->set('errors', $this->validator->errors());

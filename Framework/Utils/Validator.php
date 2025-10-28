@@ -2,45 +2,103 @@
 
 namespace Framework\Utils;
 
+use Framework\Attributes\Validation\Email;
+use Framework\Attributes\Validation\FieldMatch;
+use Framework\Attributes\Validation\Max;
+use Framework\Attributes\Validation\Min;
+use Framework\Attributes\Validation\NotEmpty;
+use Framework\Attributes\Validation\Pattern;
+use ReflectionClass;
+use ReflectionProperty;
+
 class Validator
 {
-    protected array $data = [];
     protected array $errors = [];
 
-    public function __construct()
+    public function validate(object $dto): bool
     {
-    }
+        $this->errors = [];
+        $reflection = new ReflectionClass($dto);
 
-    // Asignar datos a validar
-    public function input(array $input): self
-    {
-        $this->data = $input;
-        $this->errors = []; // reinicia errores previos
-        return $this;
-    }
-
-    public function required(string $field, ?string $message = null): self
-    {
-        if (empty($this->data[$field])) {
-            $this->errors[$field] = $message ?? "El campo $field es obligatorio.";
+        foreach ($reflection->getProperties() as $property) {
+            $this->validateProperty($property, $dto);
         }
-        return $this;
+
+        return empty($this->errors);
     }
 
-    public function email(string $field, ?string $message = null): self
+    private function validateProperty(ReflectionProperty $property, object $dto): void
     {
-        if (!empty($this->data[$field]) && !filter_var($this->data[$field], FILTER_VALIDATE_EMAIL)) {
-            $this->errors[$field] = $message ?? "El campo $field debe ser un email válido.";
+        $property->setAccessible(true);
+        $value = $property->getValue($dto);
+        $propertyName = $property->getName();
+
+        $attributes = $property->getAttributes();
+
+        foreach ($attributes as $attribute) {
+            $constraint = $attribute->newInstance();
+
+            if ($constraint instanceof NotEmpty) {
+                $this->validateNotEmpty($propertyName, $value, $constraint);
+            } elseif ($constraint instanceof Email) {
+                $this->validateEmail($propertyName, $value, $constraint);
+            } elseif ($constraint instanceof FieldMatch) {
+                $this->validateMatchFields($propertyName, $value, $constraint, $dto);
+            } elseif ($constraint instanceof Min) {
+                $this->validateMin($propertyName, $value, $constraint);
+            } elseif ($constraint instanceof Max) {
+                $this->validateMax($propertyName, $value, $constraint);
+            } elseif ($constraint instanceof Pattern) {
+                $this->validatePattern($propertyName, $value, $constraint);
+            }
         }
-        return $this;
     }
 
-    public function match(string $field1, string $field2, ?string $message = null): self
+    private function validateNotEmpty(string $field, mixed $value, NotEmpty $constraint): void
     {
-        if (($this->data[$field1] ?? null) !== ($this->data[$field2] ?? null)) {
-            $this->errors[$field1] = $message ?? "Los campos $field1 y $field2 no coinciden.";
+        if (empty($value) && $value !== '0') {
+            $this->errors[$field] = $constraint->message;
         }
-        return $this;
+    }
+
+    private function validateEmail(string $field, mixed $value, Email $constraint): void
+    {
+        if (!empty($value) && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            $this->errors[$field] = $constraint->message;
+        }
+    }
+
+    private function validateMatchFields(string $field, mixed $value, FieldMatch $constraint, object $dto): void
+    {
+        $reflection = new ReflectionClass($dto);
+        $otherProperty = $reflection->getProperty($constraint->field);
+        $otherProperty->setAccessible(true);
+        $otherValue = $otherProperty->getValue($dto);
+
+        if ($value !== $otherValue) {
+            $this->errors[$field] = $constraint->message;
+        }
+    }
+
+    private function validateMin(string $field, mixed $value, Min $constraint): void
+    {
+        if (!empty($value) && strlen((string)$value) < $constraint->value) {
+            $this->errors[$field] = $constraint->message;
+        }
+    }
+
+    private function validateMax(string $field, mixed $value, Max $constraint): void
+    {
+        if (!empty($value) && strlen((string)$value) > $constraint->value) {
+            $this->errors[$field] = $constraint->message;
+        }
+    }
+
+    private function validatePattern(string $field, mixed $value, Pattern $constraint): void
+    {
+        if (!empty($value) && !preg_match($constraint->regex, (string)$value)) {
+            $this->errors[$field] = $constraint->message;
+        }
     }
 
     public function fails(): bool

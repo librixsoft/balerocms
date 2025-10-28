@@ -1,54 +1,31 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
-// Modules/Installer/DTO/InstallerDTO.php
-
 namespace App\DTO;
 
+use Framework\Attributes\Validation\Email;
+use Framework\Attributes\Validation\FieldMatch;
+use Framework\Attributes\Validation\NotEmpty;
 use Framework\Http\RequestHelper;
 
 class InstallerDTO
 {
-    public string $dbhost = '';
-    public string $dbuser = '';
-    public string $dbpass = '';
-    public string $dbname = '';
-    public string $title = '';
-    public string $url = '';
-    public string $description = '';
-    public string $keywords = '';
-    public string $basepath = '';
-    public string $username = '';
-    public string $passwd = '';
-    public string $passwd2 = '';
-    public string $firstname = '';
-    public string $lastname = '';
-    public string $email = '';
+    #[NotEmpty(message: 'Username cannot be empty.')]
+    public ?string $username = null;
 
-    public function fromRequest(RequestHelper $request): self
+    #[NotEmpty(message: 'Password cannot be empty.')]
+    public ?string $passwd = null;
+
+    #[FieldMatch(field: 'passwd', message: 'Passwords do not match.')]
+    public ?string $passwd2 = null;
+
+    #[Email(message: 'Invalid email address.')]
+    public ?string $email = null;
+
+    public function fromRequest(RequestHelper $requestHelper): void
     {
-        $this->dbhost = $request->post('dbhost') ?? '';
-        $this->dbuser = $request->post('dbuser') ?? '';
-        $this->dbpass = $request->post('dbpass') ?? '';
-        $this->dbname = $request->post('dbname') ?? '';
-        $this->title = $request->post('title') ?? '';
-        $this->url = $request->post('url') ?? '';
-        $this->description = $request->post('description') ?? '';
-        $this->keywords = $request->post('keywords') ?? '';
-        $this->basepath = $request->post('basepath') ?? '';
-        $this->username = $request->post('username') ?? '';
-        $this->passwd = $request->post('passwd') ?? '';
-        $this->passwd2 = $request->post('passwd2') ?? '';
-        $this->firstname = $request->post('firstname') ?? '';
-        $this->lastname = $request->post('lastname') ?? '';
-        $this->email = $request->post('email') ?? '';
-
-        return $this;
+        $this->username = $requestHelper->post('username');
+        $this->passwd = $requestHelper->post('passwd');
+        $this->passwd2 = $requestHelper->post('passwd2');
+        $this->email = $requestHelper->post('email');
     }
-
 }
