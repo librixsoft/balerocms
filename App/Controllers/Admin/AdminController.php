@@ -3,8 +3,11 @@
 namespace App\Controllers\Admin;
 
 use App\DTO\SettingsDTO;
+use App\Services\AdminService;
+use App\Services\UploaderService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
+use Framework\Attributes\Inject;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
 use Framework\Http\Post;
@@ -13,45 +16,29 @@ use Framework\Http\RequestHelper;
 use Framework\Core\View;
 use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
-use Framework\IO\Uploader;
-use App\Models\AdminModel;
-use App\Views\AdminViewModel;
-use Framework\Utils\Validator;
 
 #[Controller('/admin')]
 #[Auth(required: true)]
 class AdminController
 {
-    private AdminModel $model;
-    private Uploader $uploader;
-    private AdminViewModel $viewModel;
-    private Redirect $redirect;
+    #[Inject]
+    private AdminService $adminService;
+
+    #[Inject]
+    private UploaderService $uploaderService;
+
+    #[Inject]
     private View $view;
+
+    #[Inject]
     private RequestHelper $request;
-    private Validator $validator;
+
+    #[Inject]
+    #[FlashStorage]
     private Flash $flash;
 
-    public function __construct(
-        AdminModel $model,
-        Uploader $uploader,
-        AdminViewModel $viewModel,
-        Redirect $redirect,
-        View $view,
-        RequestHelper $request,
-        Validator $validator,
-        #[FlashStorage]
-        Flash $flash,
-    )
-    {
-        $this->model = $model;
-        $this->uploader = $uploader;
-        $this->viewModel = $viewModel;
-        $this->redirect = $redirect;
-        $this->view = $view;
-        $this->request = $request;
-        $this->validator = $validator;
-        $this->flash = $flash;
-    }
+    #[Inject]
+    private Redirect $redirect;
 
     #[Get('/')]
     public function home()
@@ -68,19 +55,13 @@ class AdminController
     #[Get('/settings')]
     public function getSettings()
     {
-
-        $params = $this->viewModel->getSettingsParams([
-            'virtual_pages' => $this->model->getVirtualPages(),
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
+        $additionalParams = [];
 
         if ($this->flash->has('errors')) {
-            // Merge de flash errors sin perder los params existentes
-            $params = array_merge($params, [
-                'errors' => $this->flash->get('errors')
-            ]);
+            $additionalParams['errors'] = $this->flash->get('errors');
         }
+
+        $params = $this->adminService->getSettingsViewParams($additionalParams);
 
         return $this->view->render("admin/dashboard.html", $params, false);
     }
@@ -88,9 +69,14 @@ class AdminController
     #[Post('/settings')]
     public function postSettings()
     {
-
         $settingsDTO = new SettingsDTO();
         $settingsDTO->fromRequest($this->request);
+
+        if (!$this->adminService->validateSettings($settingsDTO)) {
+            $this->flash->set('errors', $this->adminService->getValidationErrors());
+            $this->redirect->to('/admin/settings');
+            return;
+        }
 
         $data = [
             'title' => $this->request->post("title"),
@@ -101,38 +87,21 @@ class AdminController
             'footer' => $this->request->post("footer"),
         ];
 
-        $this->validator->validate($settingsDTO);
-
-        if ($this->validator->fails()) {
-            $this->flash->set('errors', $this->validator->errors());
-            $this->redirect->to('/admin/settings');
-            return;
-        }
-
-        $this->model->updateSettings($data);
+        $this->adminService->updateSettings($data);
         $this->redirect->to('/admin/settings');
     }
 
     #[Get('/new-page')]
     public function getPages()
     {
-        $params = $this->viewModel->getPagesParams([
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
-
+        $params = $this->adminService->getNewPageViewParams();
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Get('/pages')]
     public function getAllPages()
     {
-        $params = $this->viewModel->getAllPagesParams([
-            'pages' => $this->model->getVirtualPages(),
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
-
+        $params = $this->adminService->getAllPagesViewParams();
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
@@ -147,19 +116,14 @@ class AdminController
             'date' => $this->request->post('date'),
         ];
 
-        $this->model->createPage($data);
+        $this->adminService->createPage($data);
         $this->redirect->to('/admin/pages');
     }
 
     #[Get('/pages/edit/{id}')]
     public function editPage(int $id)
     {
-        $params = $this->viewModel->getEditPageParams([
-            'page' => $this->model->getPageById($id),
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
-
+        $params = $this->adminService->getEditPageViewParams($id);
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
@@ -174,14 +138,14 @@ class AdminController
             'visible' => $this->request->post("visible"),
         ];
 
-        $this->model->updatePage($id, $data);
+        $this->adminService->updatePage($id, $data);
         $this->redirect->to('/admin/pages');
     }
 
     #[Post('/pages/delete/{id}')]
     public function postDeletePage(int $id)
     {
-        $this->model->deletePage($id);
+        $this->adminService->deletePage($id);
         $this->redirect->to('/admin/pages');
     }
 
@@ -189,52 +153,21 @@ class AdminController
     #[JsonResponse]
     public function postUploader()
     {
-        if (!isset($_FILES['file'])) {
-            return [
-                'status' => 'error',
-                'message' => 'Input file not found'
-            ];
-        }
-
-        try {
-            $url = $this->uploader->image($_FILES['file']); // retorna URL de la imagen
-            return [
-                'status' => 'ok',
-                'url' => $url
-            ];
-        } catch (\Throwable $e) {
-            return [
-                'status' => 'error',
-                'message' => $e->getMessage()
-            ];
-        }
+        $file = $_FILES['file'] ?? null;
+        return $this->uploaderService->uploadImage($file);
     }
 
     #[Get('/blocks')]
     public function listBlocks()
     {
-        $params = $this->viewModel->getAllBlocksParams([
-            'blocks' => $this->model->getBlocks(),
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
-
+        $params = $this->adminService->getAllBlocksViewParams();
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
     #[Get('/blocks/new')]
     public function newBlock()
     {
-        $blocks = $this->model->getBlocks();
-        $maxSort = max(array_column($blocks, 'sort_order') ?: [0]);
-        $nextSort = $maxSort + 1;
-
-        $params = $this->viewModel->getNewBlockParams([
-            'next_sort_order' => $nextSort,
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
-
+        $params = $this->adminService->getNewBlockViewParams();
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
@@ -247,19 +180,14 @@ class AdminController
             'content' => $this->request->raw('content'),
         ];
 
-        $this->model->createBlock($data);
+        $this->adminService->createBlock($data);
         $this->redirect->to('/admin/blocks');
     }
 
     #[Get('/blocks/edit/{id}')]
     public function getEditBlock(int $id)
     {
-        $params = $this->viewModel->getEditBlockParams([
-            'block' => $this->model->getBlockById($id),
-            'pages_count' => $this->model->getPagesCount(),
-            'blocks_count' => $this->model->getBlocksCount(),
-        ]);
-
+        $params = $this->adminService->getEditBlockViewParams($id);
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
@@ -272,14 +200,14 @@ class AdminController
             'content' => $this->request->raw('content'),
         ];
 
-        $this->model->updateBlock($id, $data);
+        $this->adminService->updateBlock($id, $data);
         $this->redirect->to('/admin/blocks');
     }
 
     #[Post('/blocks/delete/{id}')]
     public function deleteBlock(int $id)
     {
-        $this->model->deleteBlock($id);
+        $this->adminService->deleteBlock($id);
         $this->redirect->to('/admin/blocks');
     }
 }
