@@ -2,6 +2,7 @@
 
 namespace App\Controllers\Admin;
 
+use App\DTO\SettingsDTO;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Http\Get;
@@ -87,6 +88,10 @@ class AdminController
     #[Post('/settings')]
     public function postSettings()
     {
+
+        $settingsDTO = new SettingsDTO();
+        $settingsDTO->fromRequest($this->request);
+
         $data = [
             'title' => $this->request->post("title"),
             'description' => $this->request->post("description"),
@@ -96,8 +101,7 @@ class AdminController
             'footer' => $this->request->post("footer"),
         ];
 
-        $this->validator->input($data)
-            ->required('title', 'El título es requerido.');
+        $this->validator->validate($settingsDTO);
 
         if ($this->validator->fails()) {
             $this->flash->set('errors', $this->validator->errors());

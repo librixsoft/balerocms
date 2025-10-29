@@ -1,13 +1,9 @@
 // admin-theme.js - Funcionalidad común del tema + Editor integrado (Summernote)
 
-import AdminNotificationSystem from './admin-notification.js';
-
 console.log('admin-theme.js cargado');
 
 class AdminTheme {
     constructor() {
-        // Instanciar el sistema de notificaciones primero
-        this.notificationSystem = new AdminNotificationSystem();
 
         // Definir el objeto Vue reutilizable base
         window.AdminTheme = {
