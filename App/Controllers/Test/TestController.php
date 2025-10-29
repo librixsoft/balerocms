@@ -6,7 +6,6 @@ use App\Models\TestModel;
 use Framework\Attributes\Inject;
 use Framework\Attributes\Controller;
 use Framework\Core\View;
-use Framework\DI\TestContainer;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
 

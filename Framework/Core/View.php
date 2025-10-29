@@ -17,6 +17,7 @@ class View
 {
     private string $viewsPath = BASE_PATH . '/resources/views';
     private string $baseDir;
+    private const ALLOWED_EXTENSIONS = ['html'];
 
     #[Inject]
     private ConfigSettings $configSettings;
@@ -47,6 +48,18 @@ class View
         $this->templateEngine->setBaseDir($this->baseDir);
     }
 
+    private function validateTemplateFile(string $filePath): void
+    {
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+
+        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
+            throw new ViewException(
+                "Invalid template file type. Only " . implode(', ', self::ALLOWED_EXTENSIONS) .
+                " files are supported. Got: .$extension"
+            );
+        }
+    }
+
     public function render(string $templatePath, array $params = [], bool $useTheme = true): string
     {
         try {
@@ -58,6 +71,10 @@ class View
             $this->langManager->load($sessionLang, BASE_PATH . '/resources/lang');
 
             $templateFullPath = $this->resolveTemplatePath($templatePath, $useTheme);
+
+            // Validar que sea un archivo permitido (.html)
+            $this->validateTemplateFile($templateFullPath);
+
             $content = file_get_contents($templateFullPath);
             if ($content === false) {
                 throw new ViewException("Failed to read template file: $templateFullPath");
@@ -73,8 +90,31 @@ class View
         }
     }
 
+    private function renderPhpTemplate(string $templatePath, array $params): string
+    {
+        // Extraer variables para el template
+        extract($params, EXTR_SKIP);
+
+        ob_start();
+        try {
+            include $templatePath;
+            return ob_get_clean();
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            throw $e;
+        }
+    }
+
     private function resolveTemplatePath(string $templatePath, bool $useTheme): string
     {
+        // Verificar si ya tiene una extensión
+        $currentExtension = pathinfo($templatePath, PATHINFO_EXTENSION);
+
+        // Si no tiene extensión, agregar la extensión por defecto
+        if (empty($currentExtension)) {
+            $templatePath .= '.' . self::ALLOWED_EXTENSIONS[0];
+        }
+
         if ($useTheme) {
             $themeDir = $this->baseDir . "themes/" . $this->configSettings->theme . "/";
             $templateFullPath = $themeDir . ltrim($templatePath, '/');
