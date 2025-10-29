@@ -3,20 +3,16 @@
 namespace App\Controllers\Home;
 
 use App\DTO\InstallerDTO;
-use App\Mapper\InstallerMapper;
-use App\Models\InstallerModel;
-use App\Views\InstallerViewModel;
+use App\Services\InstallerService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
-use Framework\Core\ConfigSettings;
 use Framework\Core\View;
 use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\RequestHelper;
 use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
-use Framework\Utils\Validator;
 
 #[Controller('/installer')]
 class InstallerController
@@ -25,10 +21,7 @@ class InstallerController
     private View $view;
 
     #[Inject]
-    private InstallerModel $model;
-
-    #[Inject]
-    private InstallerViewModel $installerViewModel;
+    private InstallerService $installerService;
 
     #[Inject]
     #[FlashStorage]
@@ -38,29 +31,18 @@ class InstallerController
     private RequestHelper $requestHelper;
 
     #[Inject]
-    private Validator $validator;
-
-    #[Inject]
     private Redirect $redirect;
-
-    #[Inject]
-    private InstallerMapper $installerMapper;
-
-    #[Inject]
-    private ConfigSettings $configSettings;
 
     #[Get('/')]
     public function home()
     {
-
         $params = [];
 
         if ($this->flash->has('errors')) {
             $params['errors'] = $this->flash->get('errors');
         }
 
-        $params['db_ok'] = $this->model->canConnectToDatabase();
-        $params = $this->installerViewModel->setInstallerParams($params);
+        $params = $this->installerService->prepareInstallerParams($params);
 
         return $this->view->render("installer/setup_wizard.html", $params, false);
     }
@@ -71,12 +53,10 @@ class InstallerController
         $installerDTO = new InstallerDTO();
         $installerDTO->fromRequest($this->requestHelper);
 
-        $this->validator->validate($installerDTO);
-
-        if ($this->validator->fails()) {
-            $this->flash->set('errors', $this->validator->errors());
+        if ($this->installerService->validateInstaller($installerDTO)) {
+            $this->installerService->processInstallation($installerDTO);
         } else {
-            $this->installerMapper->map($installerDTO, $this->configSettings);
+            $this->flash->set('errors', $this->installerService->getValidationErrors());
         }
 
         $this->redirect->to("/installer/");
@@ -89,8 +69,8 @@ class InstallerController
             $this->redirect->to("/installer/");
         }
 
-        $this->model->setInstalled();
-        $params = $this->installerViewModel->setInstallerParams();
+        $this->installerService->markAsInstalled();
+        $params = $this->installerService->prepareProgressBarParams();
         $this->flash->delete('install_in_progress');
 
         return $this->view->render("installer/progressBar.html", $params, false);
@@ -100,7 +80,7 @@ class InstallerController
     public function postProgressBar()
     {
         $this->flash->set('install_in_progress', true);
-        $this->model->install();
+        $this->installerService->executeInstallation();
         $this->redirect->to("/installer/progressBar");
     }
 }
