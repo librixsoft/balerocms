@@ -128,43 +128,21 @@
 
             <div id="sidebar">
                 <ul class="nav flex-column">
-                    <%-- @if activeMenu == "settings" -->
                     <li class="nav-item">
-                        <a class="nav-link active" href="./admin/settings">{admin.settings}</a>
+                        <a class="nav-link {activeMenu == 'settings' ? 'active' : ''}" href="./admin/settings">{admin.settings}</a>
                     </li>
-                    <%-- @else -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="./admin/settings">{admin.settings}</a>
-                    </li>
-                    <%-- @endif -->
 
-                    <%-- @if activeMenu == "all_pages" -->
                     <li class="nav-item">
-                        <a class="nav-link active" href="./admin/pages">
+                        <a class="nav-link {activeMenu == 'all_pages' ? 'active' : ''}" href="./admin/pages">
                             {admin.pages} <span class="badge bg-danger float-end">{pages_count}</span>
                         </a>
                     </li>
-                    <%-- @else -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="./admin/pages">
-                            {admin.pages} <span class="badge bg-danger float-end">{pages_count}</span>
-                        </a>
-                    </li>
-                    <%-- @endif -->
 
-                    <%-- @if activeMenu == "all_blocks" -->
                     <li class="nav-item">
-                        <a class="nav-link active" href="./admin/blocks">
+                        <a class="nav-link {activeMenu == 'all_blocks' ? 'active' : ''}" href="./admin/blocks">
                             {admin.blocks} <span class="badge bg-danger float-end">{blocks_count}</span>
                         </a>
                     </li>
-                    <%-- @else -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="./admin/blocks">
-                            {admin.blocks} <span class="badge bg-danger float-end">{blocks_count}</span>
-                        </a>
-                    </li>
-                    <%-- @endif -->
                 </ul>
             </div>
 

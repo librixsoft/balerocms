@@ -8,6 +8,7 @@ use Framework\Rendering\ProcessorIfBlocks;
 use Framework\Rendering\ProcessorIncludes;
 use Framework\Rendering\ProcessorKeyPath;
 use Framework\Rendering\ProcessorVariables;
+use Framework\Rendering\ProcessorTernary;
 use Framework\Rendering\TemplateEngine;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +25,7 @@ class TemplateEngineTest extends TestCase
 
         $output = $engine->processTemplate($template, $params);
 
-        $expected = 'Hola, Aníbal![Includes:/base/path/][ForEach][Variables][IfBlocks][KeyPath]';
+        $expected = 'Hola, Aníbal![Includes:/base/path/][ForEach][Ternary][Variables][IfBlocks][KeyPath]';
 
         $this->assertSame($expected, $output);
     }
@@ -37,11 +38,13 @@ class TemplateEngineTest extends TestCase
         $processorIfBlocks = $this->createMock(ProcessorIfBlocks::class);
         $processorVariables = $this->createMock(ProcessorVariables::class);
         $processorKeyPath = $this->createMock(ProcessorKeyPath::class);
+        $processorTernary = $this->createMock(ProcessorTernary::class);
 
         // Comportamientos simulados
         $processorIncludes->method('process')->willReturnCallback(fn($content, $baseDir) => $content . '[Includes:' . ($baseDir ?? '') . ']');
         $processorFlattenParams->method('process')->willReturnCallback(fn($params) => $params);
         $processorForEach->method('process')->willReturnCallback(fn($content, $params) => $content . '[ForEach]');
+        $processorTernary->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[Ternary]');
         $processorVariables->method('process')->willReturnCallback(fn($content, $flatParams) => str_replace('{{ nombre }}', $flatParams['nombre'] ?? '', $content) . '[Variables]');
         $processorIfBlocks->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[IfBlocks]');
         $processorKeyPath->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[KeyPath]');
@@ -52,7 +55,8 @@ class TemplateEngineTest extends TestCase
             $processorForEach,
             $processorIfBlocks,
             $processorVariables,
-            $processorKeyPath
+            $processorKeyPath,
+            $processorTernary
         );
     }
 }
