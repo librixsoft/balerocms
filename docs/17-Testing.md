@@ -5,6 +5,7 @@ Create tests in `Tests/Framework` and run:
 ```bash
 
 docker compose exec phpunit composer install
+
 docker compose exec phpunit composer test
 
 ```
@@ -30,3 +31,4 @@ docker run --rm \
 ```
 
 ---
+
