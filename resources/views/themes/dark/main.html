@@ -26,89 +26,183 @@
 <div class="container-fluid">
     <div class="row">
 
-        <!-- Contenido principal -->
-        <main class="col-md-10 py-4">
-            <!-- Hero Header oscuro tipo blog -->
-            <header class="hero-header mb-4">
-                <div class="hero-content text-center">
+        <!-- Main Content -->
+        <main class="col-lg-9 py-5 px-4">
+
+            <!-- Hero Header -->
+            <header class="hero-header mb-5">
+                <div class="hero-content">
                     <h1>{title}</h1>
-                    <p class="slogan">Reflexiones y tutoriales de programación</p>
+                    <p class="slogan">{description}</p>
                 </div>
             </header>
 
-            <!-- Main dinámico estilo blog -->
-            <div class="row">
-
-                <%-- @if blocks -->
-                <%-- @foreach blocks as block -->
-                <div class="col-md-6 mb-4">
-                    <div class="card p-3"
-                         style="background:#1e1e1e; color:#ffffff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.5);">
-                        {block.content}
-                        <a class="text-info" href="#">Leer más...</a>
-                    </div>
-                </div>
-                <%-- @endforeach -->
-                <%-- @elseif page -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h1>{page.virtual_title}</h1>
-                        <div class="vp-content">
-                            {page.virtual_content}
+            <!-- Blog Content -->
+            <%-- @if blocks -->
+            <div class="blog-posts">
+                <div class="row">
+                    <%-- @foreach blocks as block -->
+                    <div class="col-md-6 mb-4">
+                        <div class="blog-post">
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="far fa-calendar me-2"></i>5 Nov 2025
+                                    <span class="ms-3"><i class="far fa-user me-2"></i>Autor</span>
+                                </small>
+                            </div>
+                            <h3>Título del Artículo</h3>
+                            <p>{block.content}</p>
+                            <a href="#" class="read-more">
+                                Leer más <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
                         </div>
                     </div>
+                    <%-- @endforeach -->
                 </div>
-                <%-- @else -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <p>No content available</p>
-                    </div>
-                </div>
-                <%-- @endif -->
-
-                <li class="nav-item">
-                    <a class="nav-link" href="/login">Login</a>
-                </li>
-
             </div>
+
+            <%-- @elseif page -->
+            <div class="card p-4 mb-4">
+                <h1 class="mb-4">{page.virtual_title}</h1>
+                <div class="vp-content">
+                    {page.virtual_content}
+                </div>
+            </div>
+
+            <%-- @else -->
+            <div class="card p-5 text-center">
+                <i class="fas fa-inbox mb-3" style="font-size: 4rem; color: #666;"></i>
+                <h3>No hay contenido disponible</h3>
+                <p class="text-muted">Vuelve pronto para ver nuevas publicaciones.</p>
+            </div>
+            <%-- @endif -->
+
         </main>
 
-        <!-- Sidebar derecho más angosto -->
-        <aside class="col-md-2 bg-dark text-white p-3" style="min-height:100vh;">
-            <h4 class="mb-3">Menú</h4>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{basepath}">Home</a>
-                </li>
-                <%-- @foreach virtual_pages as page -->
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="./page/{page.url}">{page.virtual_title}</a>
-                </li>
-                <%-- @endforeach -->
-            </ul>
+        <!-- Sidebar Right -->
+        <aside class="col-lg-3 sidebar-right py-5 px-4">
+            <div class="position-sticky" style="top: 20px;">
 
-            <!-- Opcional: sección de destacados o categorías -->
-            <div class="mt-4">
-                <h5>Categorías</h5>
-                <ul class="nav flex-column">
-                    <li class="nav-item"><a class="nav-link text-white" href="#">Programación</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#">Tutoriales</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#">Noticias</a></li>
-                </ul>
+                <!-- Navigation Widget -->
+                <div class="card p-3 mb-4">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="fas fa-bars me-2"></i>Secciones
+                    </h5>
+                    <ul class="list-unstyled sidebar-menu">
+                        <li class="mb-2">
+                            <a href="{basepath}" class="text-decoration-none d-flex align-items-center">
+                                <i class="fas fa-home me-2"></i>Inicio
+                            </a>
+                        </li>
+                        <%-- @foreach virtual_pages as page -->
+                        <li class="mb-2">
+                            <a href="./page/{page.url}" class="text-decoration-none d-flex align-items-center">
+                                <i class="fas fa-file-alt me-2"></i>{page.virtual_title}
+                            </a>
+                        </li>
+                        <%-- @endforeach -->
+                    </ul>
+                </div>
+
+                <!-- About Widget -->
+                <div class="card p-3 mb-4">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="fas fa-info-circle me-2"></i>Sobre el Blog
+                    </h5>
+                    <p class="small">Espacio dedicado a compartir conocimientos sobre programación, desarrollo web y tecnología.</p>
+                </div>
+
+                <!-- Categories Widget -->
+                <div class="card p-3 mb-4">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="fas fa-folder me-2"></i>Categorías
+                    </h5>
+                    <ul class="list-unstyled sidebar-menu">
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="fas fa-tag me-2"></i>Tutoriales
+                                <span class="ms-auto badge bg-secondary">12</span>
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="fas fa-tag me-2"></i>Desarrollo Web
+                                <span class="ms-auto badge bg-secondary">8</span>
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="fas fa-tag me-2"></i>Programación
+                                <span class="ms-auto badge bg-secondary">15</span>
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="#" class="text-decoration-none d-flex align-items-center">
+                                <i class="fas fa-tag me-2"></i>Tips & Tricks
+                                <span class="ms-auto badge bg-secondary">6</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Login Widget -->
+                <div class="card p-3 mb-4">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="fas fa-user me-2"></i>Acceso
+                    </h5>
+                    <a href="./login" class="btn btn-primary w-100">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                    </a>
+                </div>
+
+                <!-- Tags Widget -->
+                <div class="card p-3 mb-4">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="fas fa-hashtag me-2"></i>Tags Populares
+                    </h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-dark">JavaScript</span>
+                        <span class="badge bg-dark">Python</span>
+                        <span class="badge bg-dark">CSS</span>
+                        <span class="badge bg-dark">React</span>
+                        <span class="badge bg-dark">Node.js</span>
+                        <span class="badge bg-dark">HTML</span>
+                        <span class="badge bg-dark">PHP</span>
+                        <span class="badge bg-dark">SQL</span>
+                    </div>
+                </div>
+
+                <!-- Newsletter Widget -->
+                <div class="card p-3">
+                    <h5 class="mb-3 fw-bold">
+                        <i class="fas fa-envelope me-2"></i>Newsletter
+                    </h5>
+                    <p class="small mb-3">Recibe las últimas actualizaciones directamente en tu correo.</p>
+                    <form>
+                        <div class="mb-2">
+                            <input type="email" class="form-control form-control-sm" placeholder="Tu email">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Suscribirse</button>
+                    </form>
+                </div>
+
             </div>
         </aside>
 
     </div>
 </div>
 
-<!-- Footer oscuro -->
-<footer class="text-center py-4" style="background:#121212; color:#ffffff;">
-    <p>{footer}</p>
-    <div class="social-icons">
-        <a href="#"><i class="fab fa-facebook-f text-white me-2"></i></a>
-        <a href="#"><i class="fab fa-twitter text-white me-2"></i></a>
-        <a href="#"><i class="fab fa-instagram text-white me-2"></i></a>
-        <a href="#"><i class="fab fa-linkedin-in text-white"></i></a>
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <p class="mb-3">{footer}</p>
+        <div class="social-icons mb-3">
+            <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        </div>
+        <p class="small text-muted mb-0">© 2025 Todos los derechos reservados</p>
     </div>
 </footer>
 

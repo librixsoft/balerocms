@@ -29,14 +29,14 @@ body {
     border-radius: 12px !important;
 }
 
-
 /* Navbar con transparencia */
 .navbar {
     background: rgba(20, 20, 20, 0.85);
     backdrop-filter: blur(6px);
 }
 
-.navbar .nav-link, .navbar .navbar-brand {
+.navbar .nav-link,
+.navbar .navbar-brand {
     color: #fff !important;
 }
 
@@ -71,6 +71,7 @@ body {
     font-size: 3.5rem;
     font-weight: 700;
     margin-bottom: 10px;
+    color: #ffffff;
 }
 
 .hero-header p.slogan {
@@ -109,10 +110,12 @@ body {
 .blog-post h3 {
     font-weight: 600;
     margin-bottom: 15px;
+    color: #ffffff;
 }
 
 .blog-post p {
     flex-grow: 1;
+    color: #e0e0e0;
 }
 
 .blog-post .read-more {
@@ -120,10 +123,22 @@ body {
     color: #0d6efd;
     font-weight: 500;
     text-decoration: none;
+    display: inline-block;
+    transition: color 0.3s;
 }
 
 .blog-post .read-more:hover {
     color: #66b2ff;
+}
+
+/* Sidebar links */
+.card a {
+    transition: color 0.3s, padding-left 0.3s;
+}
+
+.card a:hover {
+    color: #0d6efd !important;
+    padding-left: 5px;
 }
 
 /* Footer */
@@ -140,9 +155,52 @@ footer .social-icons a {
     margin: 0 10px;
     font-size: 1.3rem;
     transition: transform 0.3s, color 0.3s;
+    text-decoration: none;
 }
 
 footer .social-icons a:hover {
     color: #0d6efd;
     transform: scale(1.2);
+}
+
+/* Text utilities para tema oscuro */
+.text-muted {
+    color: #999 !important;
+}
+
+/* Scrollbar oscuro (opcional) */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-header {
+        padding: 80px 20px;
+    }
+
+    .hero-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .hero-header p.slogan {
+        font-size: 1rem;
+    }
+
+    .blog-post {
+        margin-bottom: 20px;
+    }
 }
