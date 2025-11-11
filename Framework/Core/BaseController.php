@@ -22,7 +22,6 @@ use ReflectionMethod;
 
 class BaseController
 {
-    private const PARAM_TARGET = 'target';
 
     private View $view;
     private RequestHelper $requestHelper;
