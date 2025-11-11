@@ -6,8 +6,9 @@ use Framework\Exceptions\ConfigException;
 
 class ConfigSettings
 {
-    private string $configPath = BASE_PATH . '/resources/config/balero.config.json';
-    private ?JSONHandler $handler = null; // Lazy
+    private string $configPath;
+    private ?JSONHandler $handler = null;
+    private ?string $inlineContent = null; // para pruebas
     private array $fields = [
         // Database
         'dbhost' => '/config/database/dbhost',
@@ -36,25 +37,35 @@ class ConfigSettings
     ];
     private array $data = [];
 
-    // Constructor limpio para DI automático
-    public function __construct() {
-        $this->getHandler();
+    /**
+     * @param string|null $configPath   Ruta del JSON real (solo prod)
+     * @param string|null $inlineJson   Contenido JSON directo (solo test)
+     */
+    public function __construct(?string $configPath = null, ?string $inlineJson = null)
+    {
+        $this->configPath = $configPath ?? BASE_PATH . '/resources/config/balero.config.json';
+        $this->inlineContent = $inlineJson;
+        $this->getHandler(); // inicializa
     }
 
-    // Lazy handler
     private function getHandler(): JSONHandler
     {
         if ($this->handler === null) {
-            if (!file_exists($this->configPath)) {
-                throw new ConfigException("File not found: {$this->configPath}");
+            if ($this->inlineContent !== null) {
+                // modo test (no toca disco)
+                $this->handler = new JSONHandler($this->configPath, $this->inlineContent);
+            } else {
+                // modo producción
+                if (!file_exists($this->configPath)) {
+                    throw new ConfigException("File not found: {$this->configPath}");
+                }
+                $this->handler = new JSONHandler($this->configPath);
             }
-            $this->handler = new JSONHandler($this->configPath);
             $this->loadSettings();
         }
         return $this->handler;
     }
 
-    // Carga settings
     public function loadSettings(): void
     {
         foreach ($this->fields as $prop => $path) {
@@ -62,13 +73,11 @@ class ConfigSettings
         }
     }
 
-    // Getter dinámico
     public function __get(string $name)
     {
         return $this->data[$name] ?? null;
     }
 
-    // Setter dinámico
     public function __set(string $name, string $value)
     {
         if (!isset($this->fields[$name])) {
@@ -78,7 +87,6 @@ class ConfigSettings
         $this->getHandler()->set($this->fields[$name], $value);
     }
 
-    // Basepath completo
     public function getFullBasepath(): string
     {
         $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
@@ -98,7 +106,6 @@ class ConfigSettings
         return $scheme . '://' . $host . $port . $dir;
     }
 
-    // Get/Set configPath opcional
     public function getConfigPath(): string
     {
         return $this->configPath;
@@ -107,6 +114,11 @@ class ConfigSettings
     public function setConfigPath(string $configPath): void
     {
         $this->configPath = $configPath;
-        $this->handler = null; // reset handler si cambia la ruta
+        $this->handler = null;
+    }
+
+    public function getData(): array
+    {
+        return $this->data;
     }
 }
