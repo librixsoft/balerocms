@@ -6,27 +6,46 @@ use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
 use Framework\Exceptions\BootException;
 use Framework\DI\Context;
+use Framework\Bootstrap\Router;
 use Throwable;
 
 class Boot
 {
     private ErrorConsole $errorConsole;
     private Container $container;
+    private bool $testingMode = false;
 
-    public function __construct(bool $loadRouter = true)
+    public function __construct(Container $container)
+    {
+        // Solo usamos el container que se pasa
+        $this->container = $container;
+    }
+
+    /**
+     * Inicializa Boot
+     *
+     * @param bool $loadRouter Indica si se debe inicializar Router
+     * @throws BootException
+     */
+    public function init(bool $loadRouter = true): void
     {
         try {
+            if (!$this->testingMode) {
+                // Autoload PSR-4 solo en modo real
+                spl_autoload_register([$this, "autoloadClass"]);
 
-            spl_autoload_register([$this, "autoloadClass"]);
+                // Context con DI
+                new Context($this->container);
+            }
 
-            $this->container = new Container();
-
-            $context = new Context($this->container);
-
+            // ErrorConsole siempre lo tomamos del container
             $this->errorConsole = $this->container->get(ErrorConsole::class);
-            $this->errorConsole->register();
 
-            if ($loadRouter) {
+            if (!$this->testingMode) {
+                $this->errorConsole->register();
+            }
+
+            if ($loadRouter && !$this->testingMode) {
                 $router = $this->container->get(Router::class);
                 $router->initBalero();
             }
@@ -36,15 +55,35 @@ class Boot
         }
     }
 
+    /**
+     * Activa/desactiva modo testing
+     */
+    public function enableTestingMode(bool $enable = true): void
+    {
+        $this->testingMode = $enable;
+    }
+
+    public function isTestingMode(): bool
+    {
+        return $this->testingMode;
+    }
+
+    /**
+     * Autoload de clases PSR-4
+     */
     public function autoloadClass(string $class): void
     {
+        if ($this->testingMode) {
+            // Crear clase vacía en memoria para tests
+            if (!class_exists($class)) {
+                eval("namespace " . substr($class, 0, strrpos($class, '\\')) . "; class " . substr($class, strrpos($class, '\\') + 1) . " {}");
+            }
+            return;
+        }
+
         $baseDirs = [BASE_PATH . '/'];
         $relativeClass = ltrim($class, '\\');
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
-
-        if (str_starts_with($relativePath, 'App/App/')) {
-            $relativePath = substr($relativePath, strlen('App/'));
-        }
 
         foreach ($baseDirs as $baseDir) {
             $file = $baseDir . $relativePath;
@@ -56,5 +95,4 @@ class Boot
 
         throw new BootException("Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>");
     }
-
 }
