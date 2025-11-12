@@ -8,7 +8,6 @@ class ConfigSettings
 {
     private string $configPath;
     private ?JSONHandler $handler = null;
-    private ?string $inlineContent = null; // para pruebas
     private array $fields = [
         // Database
         'dbhost' => '/config/database/dbhost',
@@ -38,29 +37,21 @@ class ConfigSettings
     private array $data = [];
 
     /**
-     * @param string|null $configPath   Ruta del JSON real (solo prod)
-     * @param string|null $inlineJson   Contenido JSON directo (solo test)
+     * @param string|null $configPath Ruta del JSON de configuración
      */
-    public function __construct(?string $configPath = null, ?string $inlineJson = null)
+    public function __construct(?string $configPath = null)
     {
         $this->configPath = $configPath ?? BASE_PATH . '/resources/config/balero.config.json';
-        $this->inlineContent = $inlineJson;
         $this->getHandler(); // inicializa
     }
 
-    private function getHandler(): JSONHandler
+    public function getHandler(): JSONHandler
     {
         if ($this->handler === null) {
-            if ($this->inlineContent !== null) {
-                // modo test (no toca disco)
-                $this->handler = new JSONHandler($this->configPath, $this->inlineContent);
-            } else {
-                // modo producción
-                if (!file_exists($this->configPath)) {
-                    throw new ConfigException("File not found: {$this->configPath}");
-                }
-                $this->handler = new JSONHandler($this->configPath);
+            if (!file_exists($this->configPath)) {
+                throw new ConfigException("File not found: {$this->configPath}");
             }
+            $this->handler = new JSONHandler($this->configPath);
             $this->loadSettings();
         }
         return $this->handler;

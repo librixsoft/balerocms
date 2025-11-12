@@ -12,7 +12,6 @@ class ConfigSettingsTest extends TestCase
 
     protected function setUp(): void
     {
-        // Creamos un archivo temporal
         $this->tmpFile = tempnam(sys_get_temp_dir(), 'config_');
 
         $data = [
@@ -46,7 +45,6 @@ class ConfigSettingsTest extends TestCase
 
     protected function tearDown(): void
     {
-        // Limpiamos el archivo temporal
         if (file_exists($this->tmpFile)) {
             unlink($this->tmpFile);
         }
@@ -84,7 +82,7 @@ class ConfigSettingsTest extends TestCase
         $this->assertStringStartsWith('https://example.com', $url);
     }
 
-    public function testThrowsIfFileNotFoundInProdMode(): void
+    public function testThrowsIfFileNotFound(): void
     {
         $this->expectException(ConfigException::class);
         new ConfigSettings('/path/to/nonexistent.json');
