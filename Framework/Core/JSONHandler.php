@@ -9,19 +9,9 @@ class JSONHandler
     private string $file;
     private array $data = [];
 
-    public function __construct(string $jsonFile, ?string $initialContent = null)
+    public function __construct(string $jsonFile)
     {
         $this->file = $jsonFile;
-
-        // Permite pasar contenido inicial sin requerir archivo real (para tests)
-        if ($initialContent !== null) {
-            $decoded = json_decode($initialContent, true);
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new JSONHandlerException("Error parsing JSON: " . json_last_error_msg());
-            }
-            $this->data = $decoded;
-            return;
-        }
 
         if (!file_exists($jsonFile)) {
             throw new JSONHandlerException("File not found: " . $jsonFile);

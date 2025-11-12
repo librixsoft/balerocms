@@ -62,17 +62,4 @@ class JSONHandlerTest extends TestCase
         $this->expectException(JSONHandlerException::class);
         new JSONHandler($this->tempFile);
     }
-
-    public function testCanInitializeWithInlineJsonContent(): void
-    {
-        $json = '{"app":{"version":"1.0.0"}}';
-        $handler = new JSONHandler($this->tempFile, $json);
-        $this->assertSame('1.0.0', $handler->get('app/version'));
-    }
-
-    public function testThrowsExceptionForInvalidInlineJson(): void
-    {
-        $this->expectException(JSONHandlerException::class);
-        new JSONHandler($this->tempFile, '{ invalid');
-    }
 }
