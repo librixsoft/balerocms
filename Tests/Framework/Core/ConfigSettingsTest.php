@@ -8,11 +8,14 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigSettingsTest extends TestCase
 {
-    private string $inlineJson;
+    private string $tmpFile;
 
     protected function setUp(): void
     {
-        $this->inlineJson = json_encode([
+        // Creamos un archivo temporal
+        $this->tmpFile = tempnam(sys_get_temp_dir(), 'config_');
+
+        $data = [
             'config' => [
                 'database' => [
                     'dbhost' => 'localhost',
@@ -36,12 +39,22 @@ class ConfigSettingsTest extends TestCase
                     'installed' => 'yes'
                 ]
             ]
-        ], JSON_PRETTY_PRINT);
+        ];
+
+        file_put_contents($this->tmpFile, json_encode($data, JSON_PRETTY_PRINT));
     }
 
-    public function testLoadsInlineJsonContent(): void
+    protected function tearDown(): void
     {
-        $config = new ConfigSettings('/tmp/test.json', $this->inlineJson);
+        // Limpiamos el archivo temporal
+        if (file_exists($this->tmpFile)) {
+            unlink($this->tmpFile);
+        }
+    }
+
+    public function testLoadsJsonFileContent(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
         $this->assertSame('localhost', $config->dbhost);
         $this->assertSame('admin', $config->username);
         $this->assertSame('Balero CMS', $config->title);
@@ -49,14 +62,14 @@ class ConfigSettingsTest extends TestCase
 
     public function testSetUpdatesValue(): void
     {
-        $config = new ConfigSettings('/tmp/test.json', $this->inlineJson);
+        $config = new ConfigSettings($this->tmpFile);
         $config->email = 'new@example.com';
         $this->assertSame('new@example.com', $config->email);
     }
 
     public function testThrowsOnInvalidProperty(): void
     {
-        $config = new ConfigSettings('/tmp/test.json', $this->inlineJson);
+        $config = new ConfigSettings($this->tmpFile);
         $this->expectException(ConfigException::class);
         $config->nonexistent = 'value';
     }
@@ -66,7 +79,7 @@ class ConfigSettingsTest extends TestCase
         $_SERVER['HTTPS'] = 'on';
         $_SERVER['HTTP_HOST'] = 'example.com';
         $_SERVER['SCRIPT_NAME'] = '/index.php';
-        $config = new ConfigSettings('/tmp/test.json', $this->inlineJson);
+        $config = new ConfigSettings($this->tmpFile);
         $url = $config->getFullBasepath();
         $this->assertStringStartsWith('https://example.com', $url);
     }
