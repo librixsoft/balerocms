@@ -26,7 +26,11 @@ html, body {
 }
 
 .container {
-    max-width: 100%;
+    max-width: 1200px;
+    padding-left: 5%;
+    padding-right: 5%;
+    margin-left: auto;
+    margin-right: auto;
     overflow-x: hidden;
 }
 
@@ -73,6 +77,13 @@ h6 {
 /* ===== Navbar transparente y estático ===== */
 .navbar {
     background: transparent !important;
+}
+
+/* Agrega esto después de la regla .navbar existente */
+.navbar .container {
+    padding-left: 2%;
+    padding-right: 2%;
+    max-width: 100%;
 }
 
 .navbar .nav-link,
@@ -186,4 +197,11 @@ footer .social-icons a {
 
 footer .social-icons a:hover {
     color: #0d6efd;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
 }
