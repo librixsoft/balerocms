@@ -19,19 +19,23 @@ class View
     private string $baseDir;
     private const ALLOWED_EXTENSIONS = ['html'];
 
-    #[Inject]
     private ConfigSettings $configSettings;
-
-    #[Inject]
     private TemplateEngine $templateEngine;
-
-    #[Inject]
     private LangManager $langManager;
 
-    public function __construct()
+    /**
+     * View constructor.
+     * @param ConfigSettings $configSettings
+     * @param TemplateEngine $templateEngine
+     * @param LangManager $langManager
+     */
+    public function __construct(ConfigSettings $configSettings, TemplateEngine $templateEngine, LangManager $langManager)
     {
-        // Constructor vacío para DI
+        $this->configSettings = $configSettings;
+        $this->templateEngine = $templateEngine;
+        $this->langManager = $langManager;
     }
+
 
     private function normalizePath(string $path): string
     {
