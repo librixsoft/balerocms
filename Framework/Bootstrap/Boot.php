@@ -18,8 +18,8 @@ class Boot
     {
         if (!$this->testingMode) {
             spl_autoload_register([$this, "autoloadClass"]);
+            $this->container = new Container();
         }
-        $this->container = new Container();
     }
 
     /**
