@@ -11,7 +11,6 @@ namespace Framework\Core;
 use Framework\Rendering\TemplateEngine;
 use Framework\I18n\LangManager;
 use Framework\Exceptions\ViewException;
-use Framework\Attributes\Inject;
 
 class View
 {
