@@ -31,11 +31,9 @@ class Boot
     {
         try {
             if (!$this->testingMode) {
+                new Context($this->container);
                 // Autoload PSR-4 solo en modo real
                 spl_autoload_register([$this, "autoloadClass"]);
-
-                // Context con DI
-                new Context($this->container);
             }
 
             // ErrorConsole siempre lo tomamos del container

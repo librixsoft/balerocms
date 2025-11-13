@@ -52,10 +52,14 @@ class Context
     {
         $this->container = $container;
 
-        $config = new ConfigSettings();
-        $container->set(ConfigSettings::class, $config);
+        $container->singleton(ConfigSettings::class, function() {
+            return new ConfigSettings(BASE_PATH . '/resources/config/balero.config.json');
+        });
 
+        $config = $container->get(ConfigSettings::class);
         $view = $container->get(View::class);
+
+        $container->set(View::class, $view);
 
         $errorConsole = new ErrorConsole($view, $config);
         $container->set(ErrorConsole::class, $errorConsole);

@@ -3,6 +3,7 @@
 namespace Tests\Framework\Core;
 
 use Framework\Core\ConfigSettings;
+use Framework\Core\JSONHandler;
 use Framework\Exceptions\ConfigException;
 use Framework\Testing\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -39,7 +40,14 @@ class ConfigSettingsTest extends TestCase
                 'site' => [
                     'language' => 'es',
                     'title' => 'Balero CMS',
-                    'url' => 'https://balero.dev'
+                    'description' => 'CMS description',
+                    'url' => 'https://balero.dev',
+                    'keywords' => 'cms, balero',
+                    'basepath' => '/',
+                    'theme' => 'default',
+                    'footer' => 'Footer text',
+                    'multilang' => 'yes',
+                    'editor' => 'tinymce'
                 ],
                 'system' => [
                     'installed' => 'yes'
@@ -63,9 +71,14 @@ class ConfigSettingsTest extends TestCase
     public function testLoadsJsonFileContent(): void
     {
         $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga del handler y los settings
+        $config->getHandler();
+
         $this->assertSame('localhost', $config->dbhost);
         $this->assertSame('admin', $config->username);
         $this->assertSame('Balero CMS', $config->title);
+        $this->assertSame('secret', $config->pass);
+        $this->assertSame('default', $config->theme);
     }
 
     #[Test]
@@ -73,17 +86,39 @@ class ConfigSettingsTest extends TestCase
     public function testSetUpdatesValue(): void
     {
         $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
         $config->email = 'new@example.com';
         $this->assertSame('new@example.com', $config->email);
+
+        // Verificar que el cambio se persistió en el archivo
+        $handler = new JSONHandler($this->tmpFile);
+        $this->assertSame('new@example.com', $handler->get('/config/admin/email'));
     }
 
     #[Test]
-    #[TestDox('Lanza excepción al intentar acceder a una propiedad inexistente')]
+    #[TestDox('Lanza excepción al intentar establecer una propiedad inexistente')]
     public function testThrowsOnInvalidProperty(): void
     {
         $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
         $this->expectException(ConfigException::class);
+        $this->expectExceptionMessage('Propiedad no existe: nonexistent');
         $config->nonexistent = 'value';
+    }
+
+    #[Test]
+    #[TestDox('Retorna null al acceder a una propiedad no definida con __get')]
+    public function testReturnsNullForUndefinedProperty(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
+        $this->assertNull($config->nonexistent);
     }
 
     #[Test]
@@ -95,15 +130,154 @@ class ConfigSettingsTest extends TestCase
         $_SERVER['SCRIPT_NAME'] = '/index.php';
 
         $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
         $url = $config->getFullBasepath();
         $this->assertStringStartsWith('https://example.com', $url);
+        $this->assertStringEndsWith('/', $url);
+    }
+
+    #[Test]
+    #[TestDox('Genera basepath con puerto no estándar')]
+    public function testGetFullBasepathWithCustomPort(): void
+    {
+        $_SERVER['HTTPS'] = 'off';
+        $_SERVER['HTTP_HOST'] = 'localhost';
+        $_SERVER['SERVER_PORT'] = '8080';
+        $_SERVER['SCRIPT_NAME'] = '/app/index.php';
+
+        $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
+        $url = $config->getFullBasepath();
+        $this->assertStringContainsString(':8080', $url);
+        $this->assertStringStartsWith('http://localhost:8080', $url);
+    }
+
+    #[Test]
+    #[TestDox('Genera basepath con subdirectorio')]
+    public function testGetFullBasepathWithSubdirectory(): void
+    {
+        $_SERVER['HTTPS'] = 'on';
+        $_SERVER['HTTP_HOST'] = 'example.com';
+        $_SERVER['SCRIPT_NAME'] = '/myapp/public/index.php';
+
+        $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
+        $url = $config->getFullBasepath();
+        $this->assertStringContainsString('/myapp/public/', $url);
     }
 
     #[Test]
     #[TestDox('Lanza excepción si el archivo de configuración no existe')]
     public function testThrowsIfFileNotFound(): void
     {
+        $config = new ConfigSettings('/path/to/nonexistent.json');
         $this->expectException(ConfigException::class);
-        new ConfigSettings('/path/to/nonexistent.json');
+        $this->expectExceptionMessage('File not found: /path/to/nonexistent.json');
+        $config->getHandler();
+    }
+
+    #[Test]
+    #[TestDox('El handler se inicializa de forma lazy')]
+    public function testHandlerIsLazyLoaded(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+
+        // El handler no debe existir hasta que se llame a getHandler()
+        $handler = $config->getHandler();
+        $this->assertInstanceOf(JSONHandler::class, $handler);
+
+        // Llamadas subsecuentes deben retornar la misma instancia
+        $this->assertSame($handler, $config->getHandler());
+    }
+
+    #[Test]
+    #[TestDox('Retorna correctamente el path del archivo de configuración')]
+    public function testGetConfigPath(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+        $this->assertSame($this->tmpFile, $config->getConfigPath());
+    }
+
+    #[Test]
+    #[TestDox('Permite cambiar el path del archivo de configuración')]
+    public function testSetConfigPath(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+        $oldPath = $config->getConfigPath();
+
+        $newFile = tempnam(sys_get_temp_dir(), 'config_new_');
+        copy($this->tmpFile, $newFile);
+
+        $config->setConfigPath($newFile);
+        $this->assertSame($newFile, $config->getConfigPath());
+        $this->assertNotSame($oldPath, $config->getConfigPath());
+
+        unlink($newFile);
+    }
+
+    #[Test]
+    #[TestDox('Resetea el handler al cambiar el path de configuración')]
+    public function testSetConfigPathResetsHandler(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+        $handler1 = $config->getHandler();
+
+        $newFile = tempnam(sys_get_temp_dir(), 'config_new_');
+        copy($this->tmpFile, $newFile);
+
+        $config->setConfigPath($newFile);
+        $handler2 = $config->getHandler();
+
+        $this->assertNotSame($handler1, $handler2);
+
+        unlink($newFile);
+    }
+
+    #[Test]
+    #[TestDox('Retorna todos los datos cargados con getData()')]
+    public function testGetDataReturnsAllLoadedData(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
+        $data = $config->getData();
+
+        $this->assertIsArray($data);
+        $this->assertArrayHasKey('dbhost', $data);
+        $this->assertArrayHasKey('username', $data);
+        $this->assertArrayHasKey('title', $data);
+        $this->assertSame('localhost', $data['dbhost']);
+        $this->assertSame('admin', $data['username']);
+    }
+
+    #[Test]
+    #[TestDox('LoadSettings carga todos los campos definidos')]
+    public function testLoadSettingsLoadsAllFields(): void
+    {
+        $config = new ConfigSettings($this->tmpFile);
+        // Forzar la carga primero
+        $config->getHandler();
+
+        $data = $config->getData();
+
+        // Verificar que todos los campos esperados están cargados
+        $expectedFields = [
+            'dbhost', 'dbuser', 'dbpass', 'dbname',
+            'username', 'pass', 'email', 'firstname', 'lastname',
+            'installed',
+            'language', 'title', 'description', 'url', 'keywords',
+            'basepath', 'theme', 'footer', 'multilang', 'editor'
+        ];
+
+        foreach ($expectedFields as $field) {
+            $this->assertArrayHasKey($field, $data, "Campo '$field' no está cargado");
+        }
     }
 }

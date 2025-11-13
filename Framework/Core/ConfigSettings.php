@@ -36,13 +36,9 @@ class ConfigSettings
     ];
     private array $data = [];
 
-    /**
-     * @param string|null $configPath Ruta del JSON de configuración
-     */
-    public function __construct(?string $configPath = null)
+    public function __construct(string $configPath)
     {
-        $this->configPath = $configPath ?? BASE_PATH . '/resources/config/balero.config.json';
-        $this->getHandler(); // inicializa
+        $this->configPath = $configPath;
     }
 
     public function getHandler(): JSONHandler

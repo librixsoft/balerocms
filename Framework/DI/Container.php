@@ -16,6 +16,15 @@ class Container
     /** @var array<string, object> Cache de instancias singleton */
     private array $bindings = [];
 
+    /** @var array<string, callable> Factories para crear instancias */
+    private array $factories = [];
+
+    public function __construct()
+    {
+        $this->bindings = [];
+        $this->factories = [];
+    }
+
     /**
      * Registra una instancia singleton en el contenedor
      *
@@ -24,30 +33,44 @@ class Container
      */
     public function set(string $id, object $instance): void
     {
+
+
         $this->bindings[$id] = $instance;
     }
 
-    /**
-     * Resuelve y retorna una instancia de la clase solicitada
-     *
-     * Si la clase ya fue instanciada, retorna el singleton.
-     * Si no existe, crea una nueva instancia resolviendo sus dependencias.
-     *
-     * @param string $className Nombre completo de la clase (FQCN)
-     * @return object Instancia de la clase
-     * @throws ContainerException Si no se puede resolver la dependencia
-     */
+    public function singleton(string $id, callable $factory): void
+    {
+        $this->factories[$id] = $factory;
+    }
+
     public function get(string $className): object
     {
         try {
+            // Si piden el Container, retornar esta instancia
+            if ($className === Container::class || $className === self::class) {
+                return $this;
+            }
+
             // Retornar singleton si existe
             if (isset($this->bindings[$className])) {
                 return $this->bindings[$className];
             }
 
-            // Crear nueva instancia usando DependencyFactory
+            // Si existe una factory, ejecutarla y cachear
+            if (isset($this->factories[$className])) {
+                $instance = ($this->factories[$className])($this);
+                $this->bindings[$className] = $instance;
+                return $instance;
+            }
+
+            // Crear nueva instancia usando DependencyFactory Y CACHEARLA
             $factory = new DependencyFactory($this);
-            return $factory->create($className);
+            $instance = $factory->create($className);
+
+            // CACHEAR la instancia para futuras peticiones
+            $this->bindings[$className] = $instance;
+
+            return $instance;
 
         } catch (Throwable $e) {
             throw new ContainerException(
