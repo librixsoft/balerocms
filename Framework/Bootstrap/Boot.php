@@ -6,7 +6,6 @@ use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
 use Framework\Exceptions\BootException;
 use Framework\DI\Context;
-use Framework\Bootstrap\Router;
 use Throwable;
 
 class Boot
@@ -15,10 +14,9 @@ class Boot
     private Container $container;
     private bool $testingMode = false;
 
-    public function __construct(Container $container)
+    public function __construct()
     {
-        // Solo usamos el container que se pasa
-        $this->container = $container;
+        $this->container = new Container();
     }
 
     /**
