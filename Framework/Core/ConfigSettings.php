@@ -45,7 +45,7 @@ class ConfigSettings
     {
         if ($this->handler === null) {
             if (!file_exists($this->configPath)) {
-                throw new ConfigException("File not found: {$this->configPath}");
+                throw new ConfigException("Class: " . __CLASS__ . " ::: File not found: {$this->configPath}");
             }
             $this->handler = new JSONHandler($this->configPath);
             $this->loadSettings();
@@ -68,7 +68,7 @@ class ConfigSettings
     public function __set(string $name, string $value)
     {
         if (!isset($this->fields[$name])) {
-            throw new ConfigException("Propiedad no existe: $name");
+            throw new ConfigException("Class: " . __CLASS__ . " ::: Property not exist: $name");
         }
         $this->data[$name] = $value;
         $this->getHandler()->set($this->fields[$name], $value);

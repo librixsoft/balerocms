@@ -102,13 +102,13 @@ class ConfigSettingsTest extends TestCase
     public function testThrowsOnInvalidProperty(): void
     {
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
         $this->expectException(ConfigException::class);
-        $this->expectExceptionMessage('Propiedad no existe: nonexistent');
+        $this->expectExceptionMessage('Property not exist: nonexistent');
         $config->nonexistent = 'value';
     }
+
 
     #[Test]
     #[TestDox('Retorna null al acceder a una propiedad no definida con __get')]
