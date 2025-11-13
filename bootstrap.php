@@ -6,6 +6,7 @@
 
 // Archivos críticos del framework
 require_once BASE_PATH . '/Framework/Core/ErrorConsole.php';
+require_once BASE_PATH . '/Framework/DI/Container.php';
 require_once BASE_PATH . '/Framework/Bootstrap/Boot.php';
 
 // Autoload de Composer opcional
