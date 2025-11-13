@@ -21,10 +21,6 @@ class TestControllerWithConstructorTest extends TestCase
 
     protected function setUp(): void
     {
-        if (!defined('BASE_PATH')) {
-            define('BASE_PATH', __DIR__ . '/../../Controllers/');
-        }
-
         parent::setUp();
     }
 
