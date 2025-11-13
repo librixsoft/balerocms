@@ -11,11 +11,13 @@ use Throwable;
 class Boot
 {
     private ErrorConsole $errorConsole;
-    private Container $container;
+    private ?Container $container = null;  // Permitir null
     private bool $testingMode = false;
 
-    public function __construct()
+    public function __construct(bool $testingMode = false)
     {
+        $this->testingMode = $testingMode;
+
         if (!$this->testingMode) {
             spl_autoload_register([$this, "autoloadClass"]);
             $this->container = new Container();
@@ -31,17 +33,19 @@ class Boot
     public function init(bool $loadRouter = true): void
     {
         try {
+            // En modo testing, crear un container mock solo si se necesita
+            if ($this->testingMode) {
+                return; // En testing mode no hacemos nada
+            }
+
             if (!$this->testingMode) {
                 new Context($this->container);
             }
 
             $this->errorConsole = $this->container->get(ErrorConsole::class);
+            $this->errorConsole->register();
 
-            if (!$this->testingMode) {
-                $this->errorConsole->register();
-            }
-
-            if ($loadRouter && !$this->testingMode) {
+            if ($loadRouter) {
                 $router = $this->container->get(Router::class);
                 $router->initBalero();
             }
@@ -71,8 +75,10 @@ class Boot
     {
         if ($this->testingMode) {
             // Crear clase vacía en memoria para tests
-            if (!class_exists($class)) {
-                eval("namespace " . substr($class, 0, strrpos($class, '\\')) . "; class " . substr($class, strrpos($class, '\\') + 1) . " {}");
+            if (!class_exists($class, false)) {
+                $namespace = substr($class, 0, strrpos($class, '\\'));
+                $className = substr($class, strrpos($class, '\\') + 1);
+                eval("namespace $namespace; class $className {}");
             }
             return;
         }

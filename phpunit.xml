@@ -6,7 +6,7 @@
 
     <php>
         <!-- Simular esta variable global en los test (ref: public/index.php) -->
-        <const name="BASE_PATH" value="./App/Controllers/"/>
+        <const name="BASE_PATH" value="./"/>
     </php>
 
     <!-- Test suites -->
