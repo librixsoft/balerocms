@@ -16,6 +16,9 @@ class Boot
 
     public function __construct()
     {
+        if (!$this->testingMode) {
+            spl_autoload_register([$this, "autoloadClass"]);
+        }
         $this->container = new Container();
     }
 
@@ -30,11 +33,8 @@ class Boot
         try {
             if (!$this->testingMode) {
                 new Context($this->container);
-                // Autoload PSR-4 solo en modo real
-                spl_autoload_register([$this, "autoloadClass"]);
             }
 
-            // ErrorConsole siempre lo tomamos del container
             $this->errorConsole = $this->container->get(ErrorConsole::class);
 
             if (!$this->testingMode) {
