@@ -75,16 +75,6 @@ class BaseController
         return $this->metadataCache[$className] = $meta;
     }
 
-    public function getControllerPathUrl(string $className): string
-    {
-        return $this->extractControllerMetadata($className)->pathUrl;
-    }
-
-    public function getControllerAuth(string $className)
-    {
-        return $this->extractControllerMetadata($className)->auth;
-    }
-
     public function getControllerMetadata(string $className): object
     {
         return $this->extractControllerMetadata($className);
@@ -92,7 +82,7 @@ class BaseController
 
     /**
      * Inicializa el Controller y ejecuta la ruta correspondiente.
-     * Llamado desde Container::class
+     * Llamado desde Router::class
      * @param object|null $controllerInstance Instancia de ModuleController opcional.
      */
     public function initControllerAndRoute(?object $controllerInstance = null): void
@@ -105,8 +95,9 @@ class BaseController
         $instanceToScan = $controllerInstance ?? $this;
         $className      = get_class($instanceToScan);
 
-        $pathUrl   = $this->getControllerPathUrl($className);
-        $classAuth = $this->getControllerAuth($className);
+        $metadata  = $this->getControllerMetadata($className);
+        $pathUrl   = $metadata->pathUrl;
+        $classAuth = $metadata->auth;
 
         $reflection = new ReflectionClass($instanceToScan);
         $methods    = $reflection->getMethods(ReflectionMethod::IS_PUBLIC);
