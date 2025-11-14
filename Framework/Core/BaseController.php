@@ -23,7 +23,6 @@ use ReflectionMethod;
 class BaseController
 {
 
-    private View $view;
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
     private LoginManager $loginManager;
@@ -33,13 +32,11 @@ class BaseController
     private array $metadataCache = [];
 
     public function __construct(
-        View $view,
         RequestHelper $requestHelper,
         ConfigSettings $configSettings,
         LoginManager $loginManager,
         LangSelector $langSelector
     ) {
-        $this->view = $view;
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
         $this->loginManager = $loginManager;
@@ -204,10 +201,6 @@ class BaseController
             exit;
         }
 
-        if (is_array($result) && isset($result['view'])) {
-            echo $this->view->render($result['view'], $result['params'] ?? []);
-            exit;
-        }
     }
 
     public function initLanguage(): void
