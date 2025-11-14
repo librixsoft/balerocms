@@ -108,8 +108,7 @@ class Router
 
     private function findMatchingController(string $requestedPath): ?string
     {
-        $cacheFile = $this->cachePath ??
-            (defined('BASE_PATH') ? BASE_PATH . '/cache/controllers.cache.php' : __DIR__ . '/../../cache/controllers.cache.php');
+        $cacheFile = $this->cachePath ?? BASE_PATH . '/cache/controllers.cache.php';
 
         if (file_exists($cacheFile)) {
             return $this->findFromCache($cacheFile, $requestedPath);
