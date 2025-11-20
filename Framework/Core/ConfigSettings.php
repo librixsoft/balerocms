@@ -76,21 +76,14 @@ class ConfigSettings
 
     public function getFullBasepath(): string
     {
-        $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-        $scheme = $https ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? 'localhost';
-        $port = '';
-        if (strpos($host, ':') === false) {
-            $serverPort = $_SERVER['SERVER_PORT'] ?? null;
-            if ($serverPort && $serverPort !== '80' && $serverPort !== '443') {
-                $port = ':' . $serverPort;
-            }
-        }
         $scriptName = $_SERVER['SCRIPT_NAME'] ?? $_SERVER['PHP_SELF'] ?? '/';
         $dir = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
-        if ($dir === '' || $dir === '.') $dir = '/';
-        else $dir .= '/';
-        return $scheme . '://' . $host . $port . $dir;
+
+        if ($dir === '' || $dir === '.') {
+            return '/';
+        }
+
+        return $dir . '/';
     }
 
     public function getConfigPath(): string
