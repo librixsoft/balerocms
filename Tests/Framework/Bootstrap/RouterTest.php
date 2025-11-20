@@ -5,6 +5,7 @@ namespace Tests\Framework\Bootstrap;
 use Framework\Bootstrap\Router;
 use Framework\Core\BaseController;
 use Framework\Core\ConfigSettings;
+use Framework\Config\SetupConfig;
 use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
 use Framework\Exceptions\RouterException;
@@ -66,7 +67,7 @@ class RouterTest extends TestCase
 
         // Crear mocks
         $this->requestHelper = $this->createMock(RequestHelper::class);
-        $this->configSettings = new ConfigSettings($this->tempConfigFile);
+        $this->configSettings = new ConfigSettings(new SetupConfig($this->tempConfigFile));
         $this->container = $this->createMock(Container::class);
         $this->errorConsole = $this->createMock(ErrorConsole::class);
         $this->redirect = $this->createMock(Redirect::class);
@@ -170,7 +171,7 @@ PHP;
         file_put_contents($this->tempConfigFile, json_encode($configData, JSON_PRETTY_PRINT));
 
         // Recrear ConfigSettings y Router con la nueva configuración
-        $this->configSettings = new ConfigSettings($this->tempConfigFile);
+        $this->configSettings = new ConfigSettings(new SetupConfig($this->tempConfigFile));
         $this->router = new Router(
             $this->requestHelper,
             $this->configSettings,
@@ -263,7 +264,7 @@ PHP;
         file_put_contents($this->tempConfigFile, json_encode($configData, JSON_PRETTY_PRINT));
 
         // Recrear ConfigSettings y Router
-        $this->configSettings = new ConfigSettings($this->tempConfigFile);
+        $this->configSettings = new ConfigSettings(new SetupConfig($this->tempConfigFile));
         $this->router = new Router(
             $this->requestHelper,
             $this->configSettings,

@@ -3,6 +3,7 @@
 namespace Framework\Core;
 
 use Framework\Exceptions\ConfigException;
+use Framework\Config\SetupConfig;
 
 class ConfigSettings
 {
@@ -37,9 +38,12 @@ class ConfigSettings
     ];
     private array $data = [];
 
-    public function __construct(string $configPath)
+    private SetupConfig $setupConfig;
+
+    public function __construct(SetupConfig $setupConfig)
     {
-        $this->configPath = $configPath;
+        $this->setupConfig = $setupConfig;
+        $this->configPath = $setupConfig->configPath;
     }
 
     public function getHandler(): JSONHandler

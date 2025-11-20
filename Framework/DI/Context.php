@@ -26,6 +26,7 @@
 namespace Framework\DI;
 
 use Framework\Config\ViewConfig;
+use Framework\Config\SetupConfig;
 use Framework\Core\ConfigSettings;
 use Framework\DI\Container;
 use Framework\Core\View;
@@ -53,8 +54,12 @@ class Context
     {
         $this->container = $container;
 
-        $container->singleton(ConfigSettings::class, function() {
-            return new ConfigSettings(BASE_PATH . '/resources/config/balero.config.json');
+        $container->singleton(SetupConfig::class, function() {
+            return new SetupConfig(BASE_PATH . '/resources/config/balero.config.json');
+        });
+
+        $container->singleton(ConfigSettings::class, function() use ($container) {
+            return new ConfigSettings($container->get(SetupConfig::class));
         });
 
         $config = $container->get(ConfigSettings::class);

@@ -4,6 +4,7 @@ namespace Tests\Framework\Core;
 
 use Framework\Core\ConfigSettings;
 use Framework\Core\JSONHandler;
+use Framework\Config\SetupConfig;
 use Framework\Exceptions\ConfigException;
 use Framework\Testing\TestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -70,7 +71,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Carga correctamente los valores desde el archivo JSON')]
     public function testLoadsJsonFileContent(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $this->assertSame('localhost', $config->dbhost);
@@ -84,7 +86,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Actualiza un valor correctamente con __set')]
     public function testSetUpdatesValue(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $config->email = 'new@example.com';
@@ -98,7 +101,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Lanza excepción al intentar establecer una propiedad inexistente')]
     public function testThrowsOnInvalidProperty(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $this->expectException(ConfigException::class);
@@ -110,7 +114,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Retorna null al acceder a una propiedad no definida con __get')]
     public function testReturnsNullForUndefinedProperty(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $this->assertNull($config->nonexistent);
@@ -122,7 +127,8 @@ class ConfigSettingsTest extends TestCase
     {
         $_SERVER['SCRIPT_NAME'] = '/index.php';
 
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $path = $config->getFullBasepath();
@@ -137,7 +143,8 @@ class ConfigSettingsTest extends TestCase
     {
         $_SERVER['SCRIPT_NAME'] = '/test/index.php';
 
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $path = $config->getFullBasepath();
@@ -152,7 +159,8 @@ class ConfigSettingsTest extends TestCase
     {
         $_SERVER['SCRIPT_NAME'] = '/myapp/public/index.php';
 
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $path = $config->getFullBasepath();
@@ -165,7 +173,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Lanza excepción si el archivo de configuración no existe')]
     public function testThrowsIfFileNotFound(): void
     {
-        $config = new ConfigSettings('/path/to/nonexistent.json');
+        $setup = new SetupConfig('/path/to/nonexistent.json');
+        $config = new ConfigSettings($setup);
         $this->expectException(ConfigException::class);
         $this->expectExceptionMessage('File not found: /path/to/nonexistent.json');
         $config->getHandler();
@@ -175,7 +184,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('El handler se inicializa de forma lazy')]
     public function testHandlerIsLazyLoaded(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
 
         $handler = $config->getHandler();
         $this->assertInstanceOf(JSONHandler::class, $handler);
@@ -186,7 +196,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Retorna correctamente el path del archivo de configuración')]
     public function testGetConfigPath(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $this->assertSame($this->tmpFile, $config->getConfigPath());
     }
 
@@ -194,7 +205,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Permite cambiar el path del archivo de configuración')]
     public function testSetConfigPath(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $oldPath = $config->getConfigPath();
 
         $newFile = tempnam(sys_get_temp_dir(), 'config_new_');
@@ -211,7 +223,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Resetea el handler al cambiar el path de configuración')]
     public function testSetConfigPathResetsHandler(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $handler1 = $config->getHandler();
 
         $newFile = tempnam(sys_get_temp_dir(), 'config_new_');
@@ -229,7 +242,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('Retorna todos los datos cargados con getData()')]
     public function testGetDataReturnsAllLoadedData(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $data = $config->getData();
@@ -246,7 +260,8 @@ class ConfigSettingsTest extends TestCase
     #[TestDox('LoadSettings carga todos los campos definidos')]
     public function testLoadSettingsLoadsAllFields(): void
     {
-        $config = new ConfigSettings($this->tmpFile);
+        $setup = new SetupConfig($this->tmpFile);
+        $config = new ConfigSettings($setup);
         $config->getHandler();
 
         $data = $config->getData();
