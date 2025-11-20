@@ -38,7 +38,6 @@ class Router
     ) {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
-        $this->configSettings->getHandler();
         $this->container = $container;
         $this->errorConsole = $errorConsole;
         $this->redirect = $redirect;

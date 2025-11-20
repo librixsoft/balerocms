@@ -57,6 +57,8 @@ class Context
         });
 
         $config = $container->get(ConfigSettings::class);
+        $config->getHandler();
+
         $view = $container->get(View::class);
 
         $container->set(View::class, $view);
