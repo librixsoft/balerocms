@@ -216,4 +216,28 @@ class ProcessorTernaryTest extends TestCase
         $result = $this->processor->process($template, $params);
         $this->assertEquals('{admin.save}', trim($result));
     }
+
+    public function testTernaryWithConcatenation()
+    {
+        $template = $this->loadTemplate('ternary_concatenation.html');
+
+        // Test case 1: block_new (sin concatenación)
+        $params = [
+            'mod_id' => 'block_new',
+            'block.id' => '123'
+        ];
+        $result = $this->processor->process($template, $params);
+        $this->assertStringContainsString('action="./admin/blocks/new"', $result);
+
+        // Test case 2: block_edit con concatenación (arrays aplanados -no anidados-)
+        $params = [
+            'mod_id' => 'block_edit',
+            'block.id' => '456',
+            'block.name' => 'Footer',
+            'block.sort_order' => 1,
+            'block.content' => 'test content'
+        ];
+        $result = $this->processor->process($template, $params);
+        $this->assertStringContainsString('action="./admin/blocks/edit/456"', $result);
+    }
 }

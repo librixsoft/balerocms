@@ -6,6 +6,7 @@ class ProcessorTernary
 {
     public function process(string $content, array $params): string
     {
+        // Patrón mejorado para capturar expresiones más complejas
         $pattern = '/\{([a-zA-Z0-9_.]+)\s*(==|!=|===|!==)\s*[\'"]?([^\'"?:]*)[\'"]?\s*\?\s*([^:]+)\s*:\s*([^}]+)\}/';
 
         return preg_replace_callback($pattern, function($matches) use ($params) {
@@ -19,14 +20,51 @@ class ProcessorTernary
             $result = $this->evaluateCondition($currentValue, $operator, $compareValue);
             $returnValue = $result ? $trueValue : $falseValue;
 
-            // CAMBIO: pasar true para preservar llaves en traducciones
-            return $this->resolveValue($returnValue, $params, true);
+            // Resolver concatenaciones antes de retornar
+            return $this->resolveConcatenation($returnValue, $params);
         }, $content);
     }
 
     /**
-     * @param bool $preserveBracesForTranslations Si es true y la variable no existe, mantiene {variable}
+     * Resuelve concatenaciones como: './admin/blocks/edit/' + block.id
      */
+    private function resolveConcatenation(string $value, array $params): string
+    {
+        $value = trim($value);
+
+        // Si contiene +, es una concatenación
+        if (str_contains($value, '+')) {
+            $parts = explode('+', $value);
+            $result = '';
+
+            foreach ($parts as $part) {
+                $part = trim($part);
+
+                // Si es un string literal entre comillas, extraer el contenido
+                if (preg_match('/^[\'"](.*)[\'"]\s*$/', $part, $match)) {
+                    $result .= $match[1];
+                }
+                // Si es una variable (ej: block.id)
+                elseif (preg_match('/^[a-zA-Z0-9_.]+$/', $part)) {
+                    $resolved = $this->resolveNestedProperty($part, $params);
+                    // Si se resolvió, usar el valor
+                    if ($resolved !== $part && !is_array($resolved)) {
+                        $result .= $resolved;
+                    }
+                }
+                // Cualquier otro caso, agregar tal cual (sin comillas)
+                else {
+                    $result .= str_replace(['"', "'"], '', $part);
+                }
+            }
+
+            return $result;
+        }
+
+        // Si no hay concatenación, resolver normalmente
+        return $this->resolveValue($value, $params, true);
+    }
+
     private function resolveValue(string $value, array $params, bool $preserveBracesForTranslations = false)
     {
         $value = trim($value);
@@ -41,7 +79,7 @@ class ProcessorTernary
             return $match[1];
         }
 
-        // 3. Verificar variables anidadas en $params (como user.name)
+        // 3. Verificar variables anidadas en $params (como block.name)
         if (str_contains($value, '.')) {
             $resolved = $this->resolveNestedProperty($value, $params);
 
@@ -54,6 +92,9 @@ class ProcessorTernary
             if ($preserveBracesForTranslations) {
                 return '{' . $value . '}';
             }
+
+            // Si no existe y no debemos preservar, retornar string vacío
+            return '';
         }
 
         // 4. Variable simple
@@ -66,12 +107,18 @@ class ProcessorTernary
             return '{' . $value . '}';
         }
 
-        // 6. Literal sin comillas
-        return $value;
+        // 6. Si no existe, retornar string vacío en lugar del valor literal
+        return '';
     }
 
     private function resolveNestedProperty(string $property, array $params)
     {
+        // Primero intentar buscar la clave aplanada directamente (ej: "block.id")
+        if (isset($params[$property])) {
+            return $params[$property];
+        }
+
+        // Si no existe, intentar navegar como array anidado
         $parts = explode('.', $property);
         $value = $params;
 
@@ -79,7 +126,7 @@ class ProcessorTernary
             if (is_array($value) && isset($value[$part])) {
                 $value = $value[$part];
             } else {
-                return $property; // No se pudo resolver
+                return $property;
             }
         }
 
