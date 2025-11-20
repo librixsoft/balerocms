@@ -7,11 +7,11 @@ class OrCondition implements ConditionInterface
     private array $conditions = [];
 
     /**
-     * Helper para dividir la expresión por OR.
+     * Helper para dividir la expresión por OR o ||.
      */
     public static function splitExpression(string $expression): array
     {
-        return preg_split('/\s+OR\s+/i', $expression);
+        return preg_split('/\s*\|\|\s*|\s+OR\s+/i', $expression);
     }
 
     /**
@@ -20,7 +20,7 @@ class OrCondition implements ConditionInterface
      */
     public function supports(string $expression): bool
     {
-        return false; // Nunca “aplica” a una expresión simple
+        return false; // Nunca "aplica" a una expresión simple
     }
 
     /**

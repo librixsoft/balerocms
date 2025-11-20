@@ -337,4 +337,50 @@ class ProcessorIfBlocksTest extends TestCase
         $this->assertStringNotContainsString('{page.virtual_title}', $result);
         $this->assertStringNotContainsString('No content available', $result);
     }
+
+    // Agregar estos métodos a tu clase ProcessorIfBlocksTest
+
+    public function testIfWithPipesOperator()
+    {
+        $template = $this->loadTemplate('if_pipes_operator.html');
+
+        // Primera condición true
+        $flatParams = ['mod_id' => 'block_new'];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Form Mode: New or Edit', $result);
+
+        // Segunda condición true
+        $flatParams = ['mod_id' => 'block_edit'];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Form Mode: New or Edit', $result);
+
+        // Ninguna condición true
+        $flatParams = ['mod_id' => 'all_blocks'];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('List Mode', $result);
+        $this->assertStringNotContainsString('Form Mode: New or Edit', $result);
+    }
+
+    public function testIfWithAmpersandOperator()
+    {
+        $template = $this->loadTemplate('if_ampersand_operator.html');
+
+        // Ambas condiciones true
+        $flatParams = ['theme' => 'active', 'mode' => 'dark'];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Active Dark Mode', $result);
+
+        // Primera true, segunda false
+        $flatParams = ['theme' => 'active', 'mode' => 'light'];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Not Active Dark', $result);
+        $this->assertStringNotContainsString('Active Dark Mode', $result);
+
+        // Ambas false
+        $flatParams = ['theme' => 'inactive', 'mode' => 'light'];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Not Active Dark', $result);
+        $this->assertStringNotContainsString('Active Dark Mode', $result);
+    }
+
 }

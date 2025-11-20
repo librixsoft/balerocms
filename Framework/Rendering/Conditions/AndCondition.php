@@ -7,11 +7,12 @@ class AndCondition implements ConditionInterface
     private array $conditions = [];
 
     /**
-     * Helper para dividir la expresión por AND.
+     * Helper para dividir la expresión por AND o &&.
      */
     public static function splitExpression(string $expression): array
     {
-        return preg_split('/\s+AND\s+/i', $expression);
+        // Soportar tanto && como AND (case insensitive)
+        return preg_split('/\s*&&\s*|\s+AND\s+/i', $expression);
     }
 
     /**
@@ -20,7 +21,7 @@ class AndCondition implements ConditionInterface
      */
     public function supports(string $expression): bool
     {
-        return false; // Nunca “aplica” a una expresión simple
+        return false; // Nunca "aplica" a una expresión simple
     }
 
     /**
