@@ -16,7 +16,7 @@ class Container
     /** @var array<string, object> Cache de instancias singleton */
     private array $bindings = [];
 
-    /** @var array<string, callable> Factories para crear instancias */
+    /** @var array<string, callable(Container): object> Factories para crear instancias */
     private array $factories = [];
 
     public function __construct()
@@ -28,46 +28,60 @@ class Container
     /**
      * Registra una instancia singleton en el contenedor
      *
-     * @param string $id Identificador de la clase (FQCN)
-     * @param object $instance Instancia a registrar
+     * @template T of object
+     * @param class-string<T> $id Identificador de la clase (FQCN)
+     * @param T $instance Instancia a registrar
+     * @return void
      */
     public function set(string $id, object $instance): void
     {
-
-
         $this->bindings[$id] = $instance;
     }
 
+    /**
+     * Registra una factory para un singleton
+     *
+     * @template T of object
+     * @param class-string<T> $id
+     * @param callable(Container): T $factory
+     * @return void
+     */
     public function singleton(string $id, callable $factory): void
     {
         $this->factories[$id] = $factory;
     }
 
+    /**
+     * Obtiene una instancia del contenedor, resolviendo automáticamente
+     *
+     * @template T of object
+     * @param class-string<T> $className
+     * @return T
+     * @throws ContainerException
+     */
     public function get(string $className): object
     {
         try {
-            // Si piden el Container, retornar esta instancia
             if ($className === Container::class || $className === self::class) {
                 return $this;
             }
 
-            // Retornar singleton si existe
             if (isset($this->bindings[$className])) {
-                return $this->bindings[$className];
+                /** @var T $instance */
+                $instance = $this->bindings[$className];
+                return $instance;
             }
 
-            // Si existe una factory, ejecutarla y cachear
             if (isset($this->factories[$className])) {
+                /** @var T $instance */
                 $instance = ($this->factories[$className])($this);
                 $this->bindings[$className] = $instance;
                 return $instance;
             }
 
-            // Crear nueva instancia usando DependencyFactory Y CACHEARLA
             $factory = new DependencyFactory($this);
+            /** @var T $instance */
             $instance = $factory->create($className);
-
-            // CACHEAR la instancia para futuras peticiones
             $this->bindings[$className] = $instance;
 
             return $instance;
