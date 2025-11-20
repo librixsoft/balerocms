@@ -98,12 +98,21 @@ class Router
 
     private function initializeBasepath(): void
     {
-        if (empty($this->configSettings->basepath)) {
-            $this->configSettings->basepath = rtrim(
-                    $this->configSettings->getFullBasepath(),
-                    '/'
-                ) . '/';
+        $installed = $this->configSettings->installed ?? 'no';
+        $currentBasepath = $this->configSettings->basepath;
+
+        if (empty($currentBasepath)) {
+            // Basepath vacío (en instalación o después): calcular y escribir
+            $calculatedPath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
+            $this->configSettings->basepath = $calculatedPath; // Escribe al archivo
+        } elseif ($installed === 'no') {
+            // Durante instalación con basepath existente: verificar si cambió
+            $calculatedPath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
+            if ($currentBasepath !== $calculatedPath) {
+                $this->configSettings->basepath = $calculatedPath; // Escribe solo si cambió
+            }
         }
+
     }
 
     private function findMatchingController(string $requestedPath): ?string

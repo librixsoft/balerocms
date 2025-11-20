@@ -87,7 +87,6 @@ class BaseController
      */
     public function initControllerAndRoute(?object $controllerInstance = null): void
     {
-        $this->initBasePath();
 
         $httpMethod    = $_SERVER['REQUEST_METHOD'];
         $requestedPath = $this->requestHelper->getPath();
@@ -145,15 +144,6 @@ class BaseController
         }
 
         throw new ControllerException("Route not found: '{$requestedPath}'");
-    }
-
-    public function initBasePath(): void
-    {
-        $basepath = trim($this->configSettings->basepath ?? '');
-        if ($basepath === '') {
-            $basepath = $this->configSettings->getFullBasepath();
-        }
-        $this->configSettings->basepath = $basepath;
     }
 
     public function runMethod(ReflectionMethod $method, array $params = [], ?object $controllerInstance = null): void
