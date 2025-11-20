@@ -1,3 +1,5 @@
+<%-- @if mod_id == "all_blocks" -->
+<!-- LISTA DE BLOQUES -->
 <table class="table table-striped">
     <thead>
     <tr>
@@ -33,3 +35,41 @@
         <i class="fas fa-plus"></i> {admin.new_block}
     </a>
 </div>
+<%-- @endif -->
+
+<%-- @if mod_id == "block_new" OR mod_id == "block_edit" -->
+<!-- FORMULARIO (NEW Y EDIT) -->
+<form action="{mod_id == 'block_new' ? './admin/blocks/new' : './admin/blocks/edit/' + block.id}" method="post">
+    <div class="mb-3">
+        <label class="form-label" for="block_name">{admin.name}</label>
+        <input type="text"
+               id="block_name"
+               class="form-control"
+               name="name"
+               value="{block.name}"
+               required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="sort_order">{admin.order}</label>
+        <input type="number"
+               id="sort_order"
+               class="form-control"
+               name="sort_order"
+               value="{block.sort_order}"
+               required>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">{admin.content}</label>
+        <textarea id="summernote" name="content" style="height:350px;">{block.content}</textarea>
+    </div>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-sm btn-primary">
+            <i class="fas {mod_id == 'block_new' ? 'fa-plus' : 'fa-save'}"></i>
+            {mod_id == 'block_new' ? admin.create : admin.save}
+        </button>
+    </div>
+</form>
+<%-- @endif -->

@@ -168,4 +168,52 @@ class ProcessorTernaryTest extends TestCase
         $this->assertStringContainsString('{title}', $result);
         $this->assertStringContainsString('{description}', $result);
     }
+
+    public function testTernaryWithNestedVariables()
+    {
+        $template = $this->loadTemplate('ternary_nested_variables.html');
+
+        // Test case 1: mod_id == 'block_new'
+        $params = [
+            'mod_id' => 'block_new',
+            'admin' => [
+                'create' => 'Create Block',
+                'save' => 'Save Changes'
+            ]
+        ];
+        $result = $this->processor->process($template, $params);
+        $this->assertStringContainsString('<i class="fas fa-plus"></i>', $result);
+        $this->assertStringContainsString('Create Block', $result);
+
+        // Test case 2: mod_id == 'block_edit'
+        $params = [
+            'mod_id' => 'block_edit',
+            'admin' => [
+                'create' => 'Create Block',
+                'save' => 'Save Changes'
+            ]
+        ];
+        $result = $this->processor->process($template, $params);
+        $this->assertStringContainsString('<i class="fas fa-save"></i>', $result);
+        $this->assertStringContainsString('Save Changes', $result);
+    }
+
+    public function testTernaryPreservesTranslationKeys()
+    {
+        $template = $this->loadTemplate('ternary_translation_keys.html');
+
+        // Solo pasamos mod_id, NO pasamos el array 'admin'
+        // Esto simula que admin.create y admin.save son claves de traducción
+        $params = ['mod_id' => 'block_new'];
+
+        $result = $this->processor->process($template, $params);
+
+        // Debe preservar las llaves para que el procesador de traducciones lo maneje
+        $this->assertEquals('{admin.create}', trim($result));
+
+        // Test case 2: cuando la condición es falsa
+        $params['mod_id'] = 'block_edit';
+        $result = $this->processor->process($template, $params);
+        $this->assertEquals('{admin.save}', trim($result));
+    }
 }
