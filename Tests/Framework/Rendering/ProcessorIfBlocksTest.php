@@ -383,4 +383,39 @@ class ProcessorIfBlocksTest extends TestCase
         $this->assertStringNotContainsString('Active Dark Mode', $result);
     }
 
+    public function testIfMixedOperators()
+    {
+        $template = $this->loadTemplate('if_mixed_operators.html');
+
+        // Expresión: mod_id == "block_new" || (mod_id == "block_edit" && theme == "active" && mode == "dark")
+        // Sin paréntesis, AND tiene precedencia sobre OR
+
+        // Caso 1: mod_id == "block_new" (primera parte del OR es true)
+        $flatParams = [
+            'mod_id' => 'block_new',
+            'theme' => 'inactive',
+            'mode' => 'light'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Edit Mode with Active Dark', $result);
+
+        // Caso 2: mod_id == "block_edit" && theme == "active" && mode == "dark" (segunda parte del OR es true)
+        $flatParams = [
+            'mod_id' => 'block_edit',
+            'theme' => 'active',
+            'mode' => 'dark'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Edit Mode with Active Dark', $result);
+
+        // Caso 3: Ninguna parte es true
+        $flatParams = [
+            'mod_id' => 'block_edit',
+            'theme' => 'inactive',
+            'mode' => 'light'
+        ];
+        $result = $this->processor->process($template, $flatParams);
+        $this->assertStringContainsString('Other Mode', $result);
+        $this->assertStringNotContainsString('Edit Mode with Active Dark', $result);
+    }
 }
