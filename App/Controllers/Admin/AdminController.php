@@ -79,12 +79,13 @@ class AdminController
         }
 
         $data = [
-            'title' => $this->request->post("title"),
-            'description' => $this->request->post("description"),
-            'keywords' => $this->request->post("keywords"),
-            'theme' => $this->request->post("theme"),
-            'language' => $this->request->post("language"),
-            'footer' => $this->request->post("footer"),
+            'title' => $settingsDTO->title,
+            'description' => $settingsDTO->description,
+            'keywords' => $settingsDTO->keywords,
+            'theme' => $settingsDTO->theme,
+            'language' => $settingsDTO->language,
+            'footer' => $settingsDTO->footer,
+            'url' => $settingsDTO->url,
         ];
 
         $this->adminService->updateSettings($data);

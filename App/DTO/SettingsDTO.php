@@ -12,6 +12,7 @@ class SettingsDTO
 
     public ?string $description = null;
     public ?string $keywords = null;
+    public ?string $url = null;
     public ?string $theme = null;
     public ?string $language = null;
     public ?string $footer = null;
@@ -21,6 +22,7 @@ class SettingsDTO
         $this->title = $requestHelper->post('title');
         $this->description = $requestHelper->post('description');
         $this->keywords = $requestHelper->post('keywords');
+        $this->url = $requestHelper->post('url');
         $this->theme = $requestHelper->post('theme');
         $this->language = $requestHelper->post('language');
         $this->footer = $requestHelper->post('footer');

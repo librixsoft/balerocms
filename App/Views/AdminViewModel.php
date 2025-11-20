@@ -54,6 +54,7 @@ class AdminViewModel
 
             'txt_title' => $this->config->title,
             'txt_keywords' => $this->config->keywords,
+            'txt_url' => $this->config->url,
             'txt_description' => $this->config->description,
             'txt_footer' => $this->config->footer,
 

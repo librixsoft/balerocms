@@ -13,6 +13,7 @@ return [
 
     // Labels y botones
     'keywords'          => 'Keywords',
+    'url'          => 'Site URL',
     'description'          => 'Description',
     'footer'          => 'Footer',
     'title'          => 'Title',
