@@ -18,13 +18,7 @@ class ErrorConsole
 
     private function isProduction(): bool
     {
-        return defined('APP_ENV') && APP_ENV === 'prod';
-    }
-
-    private function isInstalled(): bool
-    {
-        return isset($this->configSettings->installed)
-            && $this->configSettings->installed === 'yes';
+        return $this->configSettings->debug === 'prod';
     }
 
     public function register(): void
@@ -79,7 +73,7 @@ class ErrorConsole
         $this->rendered = true;
 
         // ⚡ Caso: app instalada y en producción → renderizar plantilla
-        if ($this->configSettings->installed === 'yes' && APP_ENV === 'prod') {
+        if ($this->configSettings->installed === 'yes' && $this->configSettings->debug === 'prod') {
             $params = [
                 'message' => $message
             ];
@@ -95,15 +89,6 @@ class ErrorConsole
 
         // ⚡ Caso: app NO instalada → consola clásica
         $this->renderConsole($message, $e);
-    }
-
-    private function renderGeneric(): void
-    {
-        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Oops!</title></head><body>';
-        echo '<h1>Oops! Something went wrong.</h1>';
-        echo '<p>We are working to fix the issue. Please try again later.</p>';
-        echo '</body></html>';
-        exit;
     }
 
     private function cleanOutput(): void

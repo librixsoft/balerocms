@@ -22,6 +22,7 @@ class ConfigSettings
         'lastname' => '/config/admin/lastname',
         // System
         'installed' => '/config/system/installed',
+        'debug' => '/config/system/debug',
         // Site
         'language' => '/config/site/language',
         'title' => '/config/site/title',

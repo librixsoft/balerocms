@@ -12,6 +12,7 @@ return [
     'logout'         => 'Cerrar sesión',
 
     // Labels y botones
+    'debug'          => 'Nivel de depuración del sistema',
     'keywords'          => 'Palabras clave',
     'url'          => 'URL Del Sitio',
     'description'          => 'Descripción',

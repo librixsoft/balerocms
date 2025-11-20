@@ -38,9 +38,15 @@ class AdminViewModel
             'mod_id' => 'settings',
 
             'core_version' => _CORE_VERSION,
+
+            'debugOptions' => ['dev' => 'Development', 'prod' => 'Production'],
+            'debug' => $this->config->debug,
+
             'defaultTheme' => $this->config->theme,
             'themes' => $this->themesReader->getThemes(),
+
             'activeMenu' => 'settings',
+
             'lbl_theme' => "Theme",
             'lbl_settings' => '{admin.settings}',
             'lbl_title' => 'Title',

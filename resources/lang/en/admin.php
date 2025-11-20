@@ -12,6 +12,7 @@ return [
     'logout'         => 'Logout',
 
     // Labels y botones
+    'debug'          => 'System Debug Level',
     'keywords'          => 'Keywords',
     'url'          => 'Site URL',
     'description'          => 'Description',

@@ -10,6 +10,22 @@
             </div>
         </div>
 
+        <!-- Debug select -->
+        <div class="row mb-3">
+            <label for="debug" class="col-sm-3 col-form-label text-end">{admin.debug}</label>
+            <div class="col-sm-9">
+                <select class="form-select" id="debug" name="debug">
+                    <%-- @foreach debugOptions as code => label -->
+                    <%-- @if debug == code -->
+                    <option selected value="{code}">{label}</option>
+                    <%-- @else -->
+                    <option value="{code}">{label}</option>
+                    <%-- @endif -->
+                    <%-- @endforeach -->
+                </select>
+            </div>
+        </div>
+
         <div class="row mb-3">
             <label for="language" class="col-sm-3 col-form-label text-end">{admin.language}</label>
             <div class="col-sm-9">

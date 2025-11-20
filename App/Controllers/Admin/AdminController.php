@@ -81,6 +81,7 @@ class AdminController
         $data = [
             'title' => $settingsDTO->title,
             'description' => $settingsDTO->description,
+            'debug' => $settingsDTO->debug,
             'keywords' => $settingsDTO->keywords,
             'theme' => $settingsDTO->theme,
             'language' => $settingsDTO->language,
