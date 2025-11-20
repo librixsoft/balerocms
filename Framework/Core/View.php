@@ -8,33 +8,48 @@
 
 namespace Framework\Core;
 
+use Framework\Config\ViewConfig;
+use Framework\Core\ConfigSettings;
 use Framework\Rendering\TemplateEngine;
 use Framework\I18n\LangManager;
 use Framework\Exceptions\ViewException;
 
 class View
 {
-    private string $viewsPath = BASE_PATH . '/resources/views';
+    private string $viewsPath;
     private string $baseDir;
-    private const ALLOWED_EXTENSIONS = ['html'];
+    private array $allowedExtensions;
 
     private ConfigSettings $configSettings;
     private TemplateEngine $templateEngine;
     private LangManager $langManager;
+    private ViewConfig $viewConfig;
 
     /**
      * View constructor.
+     *
      * @param ConfigSettings $configSettings
      * @param TemplateEngine $templateEngine
      * @param LangManager $langManager
+     * @param ViewConfig $viewConfig
      */
-    public function __construct(ConfigSettings $configSettings, TemplateEngine $templateEngine, LangManager $langManager)
-    {
+    public function __construct(
+        ConfigSettings $configSettings,
+        TemplateEngine $templateEngine,
+        LangManager $langManager,
+        ViewConfig $viewConfig
+    ) {
         $this->configSettings = $configSettings;
         $this->templateEngine = $templateEngine;
         $this->langManager = $langManager;
-    }
+        $this->viewConfig = $viewConfig;
 
+        $this->viewsPath = $viewConfig->viewsPath;
+        $this->allowedExtensions = $viewConfig->allowedExtensions;
+        $this->baseDir = $this->normalizePath($this->viewsPath);
+
+        $this->templateEngine->setBaseDir($this->baseDir);
+    }
 
     private function normalizePath(string $path): string
     {
@@ -55,9 +70,9 @@ class View
     {
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
-        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
+        if (!in_array($extension, $this->allowedExtensions, true)) {
             throw new ViewException(
-                "Invalid template file type. Only " . implode(', ', self::ALLOWED_EXTENSIONS) .
+                "Invalid template file type. Only " . implode(', ', $this->allowedExtensions) .
                 " files are supported. Got: .$extension"
             );
         }
@@ -71,11 +86,10 @@ class View
             // --- Idioma ---
             $sessionLang = $_SESSION['lang'] ?? 'en';
             $this->langManager->setCurrentLang($sessionLang);
-            $this->langManager->load($sessionLang, BASE_PATH . '/resources/lang');
+            $this->langManager->load($sessionLang, $this->viewConfig->langBasePath);
 
             $templateFullPath = $this->resolveTemplatePath($templatePath, $useTheme);
 
-            // Validar que sea un archivo permitido (.html)
             $this->validateTemplateFile($templateFullPath);
 
             $content = file_get_contents($templateFullPath);
@@ -93,29 +107,12 @@ class View
         }
     }
 
-    private function renderPhpTemplate(string $templatePath, array $params): string
-    {
-        // Extraer variables para el template
-        extract($params, EXTR_SKIP);
-
-        ob_start();
-        try {
-            include $templatePath;
-            return ob_get_clean();
-        } catch (\Throwable $e) {
-            ob_end_clean();
-            throw $e;
-        }
-    }
-
     private function resolveTemplatePath(string $templatePath, bool $useTheme): string
     {
-        // Verificar si ya tiene una extensión
         $currentExtension = pathinfo($templatePath, PATHINFO_EXTENSION);
 
-        // Si no tiene extensión, agregar la extensión por defecto
         if (empty($currentExtension)) {
-            $templatePath .= '.' . self::ALLOWED_EXTENSIONS[0];
+            $templatePath .= '.' . $this->allowedExtensions[0];
         }
 
         if ($useTheme) {
@@ -173,28 +170,5 @@ class View
             },
             $text
         );
-    }
-
-    public function getViewsPath(): string
-    {
-        return $this->viewsPath;
-    }
-
-    public function setViewsPath(string $viewsPath): void
-    {
-        $this->viewsPath = $viewsPath;
-        $this->baseDir = $this->normalizePath($viewsPath);
-        $this->templateEngine->setBaseDir($this->baseDir);
-    }
-
-    public function getBaseDir(): string
-    {
-        return $this->baseDir;
-    }
-
-    public function setBaseDir(string $baseDir): void
-    {
-        $this->baseDir = $baseDir;
-        $this->templateEngine->setBaseDir($baseDir);
     }
 }

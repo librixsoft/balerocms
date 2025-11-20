@@ -25,6 +25,7 @@
 
 namespace Framework\DI;
 
+use Framework\Config\ViewConfig;
 use Framework\Core\ConfigSettings;
 use Framework\DI\Container;
 use Framework\Core\View;
@@ -58,6 +59,14 @@ class Context
 
         $config = $container->get(ConfigSettings::class);
         $config->getHandler();
+
+        $container->singleton(ViewConfig::class, function() {
+            return new ViewConfig(
+                BASE_PATH . '/resources/views',
+                BASE_PATH . '/resources/lang',
+                ['html']
+            );
+        });
 
         $view = $container->get(View::class);
 
