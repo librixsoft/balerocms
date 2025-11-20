@@ -71,7 +71,6 @@ class ConfigSettingsTest extends TestCase
     public function testLoadsJsonFileContent(): void
     {
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga del handler y los settings
         $config->getHandler();
 
         $this->assertSame('localhost', $config->dbhost);
@@ -86,13 +85,11 @@ class ConfigSettingsTest extends TestCase
     public function testSetUpdatesValue(): void
     {
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
         $config->email = 'new@example.com';
         $this->assertSame('new@example.com', $config->email);
 
-        // Verificar que el cambio se persistió en el archivo
         $handler = new JSONHandler($this->tmpFile);
         $this->assertSame('new@example.com', $handler->get('/config/admin/email'));
     }
@@ -109,67 +106,59 @@ class ConfigSettingsTest extends TestCase
         $config->nonexistent = 'value';
     }
 
-
     #[Test]
     #[TestDox('Retorna null al acceder a una propiedad no definida con __get')]
     public function testReturnsNullForUndefinedProperty(): void
     {
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
         $this->assertNull($config->nonexistent);
     }
 
     #[Test]
-    #[TestDox('Genera correctamente la URL completa de basepath')]
-    public function testGetFullBasepathGeneratesValidUrl(): void
+    #[TestDox('Genera correctamente el basepath para root')]
+    public function testGetFullBasepathGeneratesValidPath(): void
     {
-        $_SERVER['HTTPS'] = 'on';
-        $_SERVER['HTTP_HOST'] = 'example.com';
         $_SERVER['SCRIPT_NAME'] = '/index.php';
 
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
-        $url = $config->getFullBasepath();
-        $this->assertStringStartsWith('https://example.com', $url);
-        $this->assertStringEndsWith('/', $url);
+        $path = $config->getFullBasepath();
+
+        $this->assertSame('/', $path);
+        $this->assertStringEndsWith('/', $path);
     }
 
     #[Test]
-    #[TestDox('Genera basepath con puerto no estándar')]
-    public function testGetFullBasepathWithCustomPort(): void
-    {
-        $_SERVER['HTTPS'] = 'off';
-        $_SERVER['HTTP_HOST'] = 'localhost';
-        $_SERVER['SERVER_PORT'] = '8080';
-        $_SERVER['SCRIPT_NAME'] = '/app/index.php';
-
-        $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
-        $config->getHandler();
-
-        $url = $config->getFullBasepath();
-        $this->assertStringContainsString(':8080', $url);
-        $this->assertStringStartsWith('http://localhost:8080', $url);
-    }
-
-    #[Test]
-    #[TestDox('Genera basepath con subdirectorio')]
+    #[TestDox('Genera basepath correcto en subdirectorio')]
     public function testGetFullBasepathWithSubdirectory(): void
     {
-        $_SERVER['HTTPS'] = 'on';
-        $_SERVER['HTTP_HOST'] = 'example.com';
+        $_SERVER['SCRIPT_NAME'] = '/test/index.php';
+
+        $config = new ConfigSettings($this->tmpFile);
+        $config->getHandler();
+
+        $path = $config->getFullBasepath();
+
+        $this->assertSame('/test/', $path);
+        $this->assertStringEndsWith('/', $path);
+    }
+
+    #[Test]
+    #[TestDox('Genera basepath con subdirectorio más profundo')]
+    public function testGetFullBasepathWithDeepSubdirectory(): void
+    {
         $_SERVER['SCRIPT_NAME'] = '/myapp/public/index.php';
 
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
-        $url = $config->getFullBasepath();
-        $this->assertStringContainsString('/myapp/public/', $url);
+        $path = $config->getFullBasepath();
+
+        $this->assertSame('/myapp/public/', $path);
+        $this->assertStringEndsWith('/', $path);
     }
 
     #[Test]
@@ -188,11 +177,8 @@ class ConfigSettingsTest extends TestCase
     {
         $config = new ConfigSettings($this->tmpFile);
 
-        // El handler no debe existir hasta que se llame a getHandler()
         $handler = $config->getHandler();
         $this->assertInstanceOf(JSONHandler::class, $handler);
-
-        // Llamadas subsecuentes deben retornar la misma instancia
         $this->assertSame($handler, $config->getHandler());
     }
 
@@ -244,7 +230,6 @@ class ConfigSettingsTest extends TestCase
     public function testGetDataReturnsAllLoadedData(): void
     {
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
         $data = $config->getData();
@@ -262,12 +247,10 @@ class ConfigSettingsTest extends TestCase
     public function testLoadSettingsLoadsAllFields(): void
     {
         $config = new ConfigSettings($this->tmpFile);
-        // Forzar la carga primero
         $config->getHandler();
 
         $data = $config->getData();
 
-        // Verificar que todos los campos esperados están cargados
         $expectedFields = [
             'dbhost', 'dbuser', 'dbpass', 'dbname',
             'username', 'pass', 'email', 'firstname', 'lastname',

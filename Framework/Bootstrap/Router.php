@@ -38,6 +38,7 @@ class Router
     ) {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
+        $this->configSettings->getHandler();
         $this->container = $container;
         $this->errorConsole = $errorConsole;
         $this->redirect = $redirect;
@@ -101,18 +102,21 @@ class Router
         $installed = $this->configSettings->installed ?? 'no';
         $currentBasepath = $this->configSettings->basepath;
 
-        if (empty($currentBasepath)) {
-            // Basepath vacío (en instalación o después): calcular y escribir
-            $calculatedPath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
-            $this->configSettings->basepath = $calculatedPath; // Escribe al archivo
-        } elseif ($installed === 'no') {
-            // Durante instalación con basepath existente: verificar si cambió
-            $calculatedPath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
-            if ($currentBasepath !== $calculatedPath) {
-                $this->configSettings->basepath = $calculatedPath; // Escribe solo si cambió
-            }
-        }
+        // Calcular el path base actual
+        $calculatedPath = rtrim($this->configSettings->getFullBasepath(), '/') . '/';
 
+        if ($installed === 'no') {
+            // Durante la instalación
+            if (empty($currentBasepath) || $currentBasepath !== $calculatedPath) {
+                $this->configSettings->basepath = $calculatedPath;
+            }
+        } else {
+            // Sistema ya instalado
+            if (empty($currentBasepath)) {
+                $this->configSettings->basepath = $calculatedPath;
+            }
+            // Si ya tiene valor → NO TOCAR NADA
+        }
     }
 
     private function findMatchingController(string $requestedPath): ?string
