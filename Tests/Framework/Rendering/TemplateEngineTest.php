@@ -20,7 +20,7 @@ class TemplateEngineTest extends TestCase
 
         $engine->setBaseDir('/base/path');
 
-        $template = 'Hola, {{ nombre }}!';
+        $template = 'Hola, {nombre}!';
         $params = ['nombre' => 'Aníbal'];
 
         $output = $engine->processTemplate($template, $params);
@@ -45,7 +45,7 @@ class TemplateEngineTest extends TestCase
         $processorFlattenParams->method('process')->willReturnCallback(fn($params) => $params);
         $processorForEach->method('process')->willReturnCallback(fn($content, $params) => $content . '[ForEach]');
         $processorTernary->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[Ternary]');
-        $processorVariables->method('process')->willReturnCallback(fn($content, $flatParams) => str_replace('{{ nombre }}', $flatParams['nombre'] ?? '', $content) . '[Variables]');
+        $processorVariables->method('process')->willReturnCallback(fn($content, $flatParams) => str_replace('{nombre}', $flatParams['nombre'] ?? '', $content) . '[Variables]');
         $processorIfBlocks->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[IfBlocks]');
         $processorKeyPath->method('process')->willReturnCallback(fn($content, $flatParams) => $content . '[KeyPath]');
 
