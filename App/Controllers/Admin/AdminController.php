@@ -93,7 +93,7 @@ class AdminController
         $this->redirect->to('/admin/settings');
     }
 
-    #[Get('/new-page')]
+    #[Get('/pages/new')]
     public function getPages()
     {
         $params = $this->adminService->getNewPageViewParams();
