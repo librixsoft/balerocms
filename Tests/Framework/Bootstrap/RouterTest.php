@@ -11,6 +11,7 @@ use Framework\DI\Container;
 use Framework\Exceptions\RouterException;
 use Framework\Http\RequestHelper;
 use Framework\Utils\Redirect;
+use Framework\DTO\DTOGenerator;
 use PHPUnit\Framework\TestCase;
 
 class RouterTest extends TestCase
@@ -119,10 +120,13 @@ PHP;
         };
         $mockBaseController = $this->createMock(BaseController::class);
 
-        $this->container->expects($this->exactly(2))
+        $mockDtoGenerator = $this->createMock(DTOGenerator::class);
+
+        $this->container->expects($this->exactly(3))
             ->method('get')
             ->willReturnMap([
                 ['App\Controllers\Admin\UsersController', $mockController],
+                [DTOGenerator::class, $mockDtoGenerator],
                 [BaseController::class, $mockBaseController]
             ]);
 
@@ -290,8 +294,11 @@ PHP;
         };
         $mockBaseController = $this->createMock(BaseController::class);
 
+        $mockDtoGenerator = $this->createMock(DTOGenerator::class);
+
         $this->container->method('get')->willReturnMap([
             ['App\Controllers\InstallerController', $mockController],
+            [DTOGenerator::class, $mockDtoGenerator],
             [BaseController::class, $mockBaseController]
         ]);
 
@@ -317,8 +324,11 @@ PHP;
         };
         $mockBaseController = $this->createMock(BaseController::class);
 
+        $mockDtoGenerator = $this->createMock(DTOGenerator::class);
+
         $this->container->method('get')->willReturnMap([
             ['App\Controllers\AboutController', $mockController],
+            [DTOGenerator::class, $mockDtoGenerator],
             [BaseController::class, $mockBaseController]
         ]);
 
@@ -345,8 +355,11 @@ PHP;
         };
         $mockBaseController = $this->createMock(BaseController::class);
 
+        $mockDtoGenerator = $this->createMock(DTOGenerator::class);
+
         $this->container->method('get')->willReturnMap([
             ['App\Controllers\Admin\SettingsController', $mockController],
+            [DTOGenerator::class, $mockDtoGenerator],
             [BaseController::class, $mockBaseController]
         ]);
 
@@ -373,8 +386,11 @@ PHP;
         };
         $mockBaseController = $this->createMock(BaseController::class);
 
+        $mockDtoGenerator = $this->createMock(DTOGenerator::class);
+
         $this->container->method('get')->willReturnMap([
             ['App\Controllers\HomeController', $mockController],
+            [DTOGenerator::class, $mockDtoGenerator],
             [BaseController::class, $mockBaseController]
         ]);
 
@@ -417,8 +433,11 @@ PHP;
         };
         $mockBaseController = $this->createMock(BaseController::class);
 
+        $mockDtoGenerator = $this->createMock(DTOGenerator::class);
+
         $this->container->method('get')->willReturnMap([
             ['App\Controllers\HomeController', $mockController],
+            [DTOGenerator::class, $mockDtoGenerator],
             [BaseController::class, $mockBaseController]
         ]);
 

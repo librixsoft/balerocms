@@ -69,9 +69,9 @@ class InstallerService
     /**
      * Procesa la instalación con los datos validados
      */
-    public function processInstallation(InstallerDTO $installerDTO): void
+    public function mapAndSaveSettings(InstallerDTO $installerDTO): void
     {
-        $this->installerMapper->map($installerDTO, $this->configSettings);
+        $this->installerMapper->mapAndSaveSettings($installerDTO, $this->configSettings);
     }
 
     /**

@@ -18,7 +18,7 @@ class InstallerMapper
     }
 
 
-    public function map(InstallerDTO $dto, ConfigSettings $config): void
+    public function mapAndSaveSettings(InstallerDTO $dto, ConfigSettings $config): void
     {
         // Database
         $config->dbhost = $dto->dbhost;

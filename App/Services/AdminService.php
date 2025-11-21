@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\DTO\SettingsDTO;
+use App\Mapper\AdminSettingsMapper;
 use App\Models\AdminModel;
 use App\Views\AdminViewModel;
 use Framework\Attributes\Inject;
 use Framework\Attributes\Service;
+use Framework\Core\ConfigSettings;
 use Framework\Utils\Validator;
 
 #[Service]
@@ -20,6 +22,12 @@ class AdminService
 
     #[Inject]
     private Validator $validator;
+
+    #[Inject]
+    private AdminSettingsMapper $adminSettingsMapper;
+
+    #[Inject]
+    private ConfigSettings $configSettings;
 
     /**
      * Prepara los parámetros para la vista de configuración
@@ -57,9 +65,9 @@ class AdminService
     /**
      * Actualiza la configuración del sistema
      */
-    public function updateSettings(array $data): void
+    public function mapAndSaveSettings(SettingsDTO $settingsDTO): void
     {
-        $this->model->updateSettings($data);
+        $this->adminSettingsMapper->mapAndSaveSettings($settingsDTO, $this->configSettings);
     }
 
     /**

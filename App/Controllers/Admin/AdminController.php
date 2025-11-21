@@ -82,9 +82,7 @@ class AdminController
             return;
         }
 
-        $data = $settingsDTO->toArray();
-
-        $this->adminService->updateSettings($data);
+        $this->adminService->mapAndSaveSettings($settingsDTO );
         $this->redirect->to('/admin/settings');
     }
 

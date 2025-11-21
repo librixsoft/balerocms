@@ -5,8 +5,14 @@ namespace App\DTO;
 use Framework\Attributes\Validation\Email;
 use Framework\Attributes\Validation\NotEmpty;
 use Framework\Attributes\Validation\FieldMatch;
+use Framework\DTO\Attributes\Getter;
+use Framework\DTO\Attributes\Setter;
+use Framework\DTO\Attributes\ToArray;
 use Framework\Http\RequestHelper;
 
+#[Getter]
+#[Setter]
+#[ToArray]
 class InstallerDTO
 {
     // --- DATABASE CONFIG ---
@@ -80,5 +86,5 @@ class InstallerDTO
         $this->firstname = $requestHelper->post('firstname');
         $this->lastname = $requestHelper->post('lastname');
     }
-    
+
 }

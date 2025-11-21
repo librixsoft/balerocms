@@ -132,18 +132,6 @@ class AdminModel
         }
     }
 
-    public function updateSettings(array $data): void
-    {
-        $this->configSettings->title = $data['title'] ?? '';
-        $this->configSettings->description = $data['description'] ?? '';
-        $this->configSettings->keywords = $data['keywords'] ?? '';
-        $this->configSettings->debug = $data['debug'] ?? '';
-        $this->configSettings->url = $data['url'] ?? '';
-        $this->configSettings->theme = $data['theme'] ?? '';
-        $this->configSettings->language = $data['language'] ?? '';
-        $this->configSettings->footer = $data['footer'] ?? '';
-    }
-
     public function deletePage(int $id): bool
     {
         try {
