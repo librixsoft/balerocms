@@ -142,8 +142,8 @@ body {
 }
 
 /* Asegura que badges con clases Bootstrap mantengan estilo visual */
-#sidebar .nav-link .badge.bg-danger {
-    background-color: #dc3545;
+#sidebar .nav-link .badge.bg-blue {
+    background-color: #3a6b9d;
     color: #fff;
     font-size: 0.75rem;
     padding: 0.25rem 0.45rem;
