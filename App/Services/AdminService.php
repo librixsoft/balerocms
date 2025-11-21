@@ -6,8 +6,10 @@ use App\DTO\SettingsDTO;
 use App\Models\AdminModel;
 use App\Views\AdminViewModel;
 use Framework\Attributes\Inject;
+use Framework\Attributes\Service;
 use Framework\Utils\Validator;
 
+#[Service]
 class AdminService
 {
     #[Inject]

@@ -7,9 +7,11 @@ use App\Mapper\InstallerMapper;
 use App\Models\InstallerModel;
 use App\Views\InstallerViewModel;
 use Framework\Attributes\Inject;
+use Framework\Attributes\Service;
 use Framework\Core\ConfigSettings;
 use Framework\Utils\Validator;
 
+#[Service]
 class InstallerService
 {
     #[Inject]

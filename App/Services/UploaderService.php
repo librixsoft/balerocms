@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use Framework\Attributes\Inject;
+use Framework\Attributes\Service;
 use Framework\IO\Uploader;
 
+#[Service]
 class UploaderService
 {
     #[Inject]
