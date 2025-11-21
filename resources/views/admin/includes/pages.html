@@ -9,6 +9,7 @@
         </tr>
         </thead>
         <tbody>
+        <%-- @if pages -->
         <%-- @foreach pages as page -->
         <tr>
             <td>{page.virtual_title}</td>
@@ -27,6 +28,14 @@
             </td>
         </tr>
         <%-- @endforeach -->
+        <%-- @else -->
+        <tr>
+            <td colspan="2" class="text-center text-muted py-4">
+                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                <p class="mb-0">{admin.no_content_found}</p>
+            </td>
+        </tr>
+        <%-- @endif -->
         </tbody>
     </table>
 </div>

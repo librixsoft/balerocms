@@ -38,6 +38,8 @@ return [
     "lbl_content"           => 'Content',
     "lbl_date"           => 'Date',
 
+    'no_content_found' => 'No content found',
+
     // Blocks
     "order"           => 'Order',
     "actions"           => 'Actions',
