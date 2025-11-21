@@ -8,6 +8,7 @@ use App\Services\UploaderService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
+use Framework\DTO\DTOGenerator;
 use Framework\Http\Get;
 use Framework\Http\JsonResponse;
 use Framework\Http\Post;
@@ -40,6 +41,9 @@ class AdminController
     #[Inject]
     private Redirect $redirect;
 
+    #[Inject]
+    private DTOGenerator $dtoGenerator;
+
     #[Get('/')]
     public function home()
     {
@@ -69,7 +73,7 @@ class AdminController
     #[Post('/settings')]
     public function postSettings()
     {
-        $settingsDTO = new SettingsDTO();
+        $settingsDTO = $this->dtoGenerator->create(SettingsDTO::class);
         $settingsDTO->fromRequest($this->request);
 
         if (!$this->adminService->validateSettings($settingsDTO)) {
@@ -78,16 +82,7 @@ class AdminController
             return;
         }
 
-        $data = [
-            'title' => $settingsDTO->title,
-            'description' => $settingsDTO->description,
-            'debug' => $settingsDTO->debug,
-            'keywords' => $settingsDTO->keywords,
-            'theme' => $settingsDTO->theme,
-            'language' => $settingsDTO->language,
-            'footer' => $settingsDTO->footer,
-            'url' => $settingsDTO->url,
-        ];
+        $data = $settingsDTO->toArray();
 
         $this->adminService->updateSettings($data);
         $this->redirect->to('/admin/settings');

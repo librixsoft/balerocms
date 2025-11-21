@@ -3,20 +3,25 @@
 namespace App\DTO;
 
 use Framework\Attributes\Validation\NotEmpty;
+use Framework\DTO\Attributes\Getter;
+use Framework\DTO\Attributes\Setter;
+use Framework\DTO\Attributes\ToArray;
 use Framework\Http\RequestHelper;
 
+#[Getter]
+#[Setter]
+#[ToArray]
 class SettingsDTO
 {
     #[NotEmpty(message: 'El título es requerido.')]
-    public ?string $title = null;
-
-    public ?string $description = null;
-    public ?string $keywords = null;
-    public ?string $debug = null;
-    public ?string $url = null;
-    public ?string $theme = null;
-    public ?string $language = null;
-    public ?string $footer = null;
+    protected ?string $title = null;
+    protected ?string $description = null;
+    protected ?string $keywords = null;
+    protected ?string $debug = null;
+    protected ?string $url = null;
+    protected ?string $theme = null;
+    protected ?string $language = null;
+    protected ?string $footer = null;
 
     public function fromRequest(RequestHelper $requestHelper): void
     {
