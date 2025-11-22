@@ -5,6 +5,10 @@ namespace Framework\Bootstrap;
 use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
 use Framework\Exceptions\BootException;
+use Framework\Exceptions\AutoloadException;
+use Framework\Exceptions\DTOCacheException;
+use Framework\Exceptions\RouterInitializationException;
+use Framework\Exceptions\ContainerInitializationException;
 use Framework\DI\Context;
 use Throwable;
 
@@ -41,6 +45,10 @@ class Boot
             }
 
             $this->container = new Container();
+
+            if ($this->container === null) {
+                throw new BootException("Container initialization failed unexpectedly.");
+            }
         }
     }
 
@@ -52,12 +60,12 @@ class Boot
      */
     public function init(bool $loadRouter = true): void
     {
-        try {
-            // En modo testing, crear un container mock solo si se necesita
-            if ($this->testingMode) {
-                return; // En testing mode no hacemos nada
-            }
+        // En modo testing, crear un container mock solo si se necesita
+        if ($this->testingMode) {
+            return; // En testing mode no hacemos nada
+        }
 
+        try {
             if (!$this->testingMode) {
                 new Context($this->container);
             }
@@ -65,16 +73,20 @@ class Boot
             $this->errorConsole = $this->container->get(ErrorConsole::class);
             $this->errorConsole->register();
 
-            // Cargar caché de DTOs mejorados (para logging, ya está cargado desde constructor)
-            $this->loadDTOCache();
+        } catch (Throwable $e) {
+            throw new ContainerInitializationException("Failed to initialize container context or ErrorConsole: " . $e->getMessage(), 0, $e);
+        }
 
-            if ($loadRouter) {
+        // Cargar caché de DTOs mejorados (para logging, ya está cargado desde constructor)
+        $this->loadDTOCache();
+
+        if ($loadRouter) {
+            try {
                 $router = $this->container->get(Router::class);
                 $router->initBalero();
+            } catch (Throwable $e) {
+                throw new RouterInitializationException("Failed to initialize router: " . $e->getMessage(), 0, $e);
             }
-
-        } catch (Throwable $e) {
-            throw new BootException("Error in Boot: " . $e->getMessage(), previous: $e);
         }
     }
 
@@ -91,11 +103,7 @@ class Boot
         $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
 
         if (!file_exists($dtoCacheFile)) {
-            // No podemos usar ErrorConsole aquí porque no está inicializado
-            // Solo cargar array vacío
-            $this->enhancedDTOs = [];
-            $this->dtoCacheLoaded = true;
-            return;
+            throw new DTOCacheException("DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script.");
         }
 
         $this->enhancedDTOs = require $dtoCacheFile;
@@ -114,9 +122,7 @@ class Boot
         $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
 
         if (!file_exists($dtoCacheFile)) {
-            $this->errorConsole->info("DTOs cache file does not exist: $dtoCacheFile");
-            $this->dtoCacheLoaded = true;
-            return;
+            throw new DTOCacheException("DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script.");
         }
 
         $this->enhancedDTOs = require $dtoCacheFile;
@@ -166,7 +172,7 @@ class Boot
 
             // BLOQUEAR: NO cargar archivos de App/DTO si es un DTO mejorado
             if ($this->isEnhancedDTO($class) && strpos($file, '/App/DTO/') !== false) {
-                throw new BootException(
+                throw new DTOCacheException(
                     "DTO <code>$class</code> is marked as enhanced but cache file not found.<br>" .
                     "Expected cache at: " . BASE_PATH . '/cache/dtos/' . basename($class) . '.php<br>' .
                     "Run cache generation script to create enhanced DTOs."
@@ -179,7 +185,7 @@ class Boot
             }
         }
 
-        throw new BootException("Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>");
+        throw new AutoloadException("Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>");
     }
 
     /**
@@ -222,7 +228,7 @@ class Boot
 
         // Verificar que la clase se cargó correctamente
         if (!class_exists($class, false)) {
-            throw new BootException("Failed to load enhanced DTO: $class from $enhancedFile");
+            throw new DTOCacheException("Failed to load enhanced DTO: $class from $enhancedFile");
         }
 
         return true;

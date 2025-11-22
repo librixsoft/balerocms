@@ -394,17 +394,13 @@ PHP;
         $this->assertTrue(true); // Si llegamos aquí, no hubo excepción
     }
 
-    public function testWarnsWhenCacheFileDoesNotExist(): void
+    public function testThrowsWhenCacheFileDoesNotExist(): void
     {
         // No crear el archivo de caché
         $this->requestHelper->method('getPath')->willReturn('/test');
 
-        $this->errorConsole->expects($this->once())
-            ->method('warning')
-            ->with($this->stringContains('Routes cache file does not exist'));
-
         $this->expectException(RouterException::class);
-        $this->expectExceptionMessage('No controller found for path: /test');
+        $this->expectExceptionMessage('Routes cache file not found');
 
         $this->router->initBalero();
     }
