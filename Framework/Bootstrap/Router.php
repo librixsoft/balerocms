@@ -122,12 +122,13 @@ class Router
     {
         $cacheFile = $this->cachePath ?? BASE_PATH . '/cache/controllers.cache.php';
 
-        if (file_exists($cacheFile)) {
-            return $this->findFromCache($cacheFile, $requestedPath);
+        if (!file_exists($cacheFile)) {
+            throw new RouterException(
+                "Routes cache file not found: {$cacheFile}. Please regenerate the cache."
+            );
         }
 
-        $this->errorConsole->warning("Routes cache file does not exist: $cacheFile");
-        return null;
+        return $this->findFromCache($cacheFile, $requestedPath);
     }
 
     private function findFromCache(string $cacheFile, string $requestedPath): ?string
