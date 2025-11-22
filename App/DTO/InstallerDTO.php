@@ -19,48 +19,48 @@ class InstallerDTO
 {
     // --- DATABASE CONFIG ---
     #[NotEmpty(message: 'Database host cannot be empty.')]
-    public ?string $dbhost = null;
+    private ?string $dbhost = null;
 
     #[NotEmpty(message: 'Database username cannot be empty.')]
-    public ?string $dbuser = null;
+    private ?string $dbuser = null;
 
     // Contraseña puede estar vacía (muchos entornos locales no usan)
-    public ?string $dbpass = null;
+    private ?string $dbpass = null;
 
     #[NotEmpty(message: 'Database name cannot be empty.')]
-    public ?string $dbname = null;
+    private ?string $dbname = null;
 
     // --- SITE INFO ---
     #[NotEmpty(message: 'Base path cannot be empty.')]
-    public ?string $basepath = null;
+    private ?string $basepath = null;
 
     #[NotEmpty(message: 'Site title cannot be empty.')]
-    public ?string $title = null;
+    private ?string $title = null;
 
     #[NotEmpty(message: 'Site URL cannot be empty.')]
-    public ?string $url = null;
+    private ?string $url = null;
 
-    public ?string $keywords = null;
-    public ?string $description = null;
+    private ?string $keywords = null;
+    private ?string $description = null;
 
     // --- ADMIN CONFIG ---
     #[NotEmpty(message: 'Username cannot be empty.')]
-    public ?string $username = null;
+    private ?string $username = null;
 
     #[NotEmpty(message: 'Password cannot be empty.')]
-    public ?string $passwd = null;
+    private ?string $passwd = null;
 
     #[FieldMatch(field: 'passwd', message: 'Passwords do not match.')]
-    public ?string $passwd2 = null;
+    private ?string $passwd2 = null;
 
     #[Email(message: 'Invalid email address.')]
-    public ?string $email = null;
+    private ?string $email = null;
 
     #[NotEmpty(message: 'First name cannot be empty.')]
-    public ?string $firstname = null;
+    private ?string $firstname = null;
 
     #[NotEmpty(message: 'Last name cannot be empty.')]
-    public ?string $lastname = null;
+    private ?string $lastname = null;
 
     /**
      * Carga todos los valores del instalador desde RequestHelper (POST)
