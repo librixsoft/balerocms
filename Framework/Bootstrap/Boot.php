@@ -21,7 +21,25 @@ class Boot
         $this->testingMode = $testingMode;
 
         if (!$this->testingMode) {
-            spl_autoload_register([$this, "autoloadClass"]);
+            // CRÍTICO: Cargar el caché de DTOs ANTES de registrar el autoloader
+            $this->loadDTOCacheEarly();
+
+            // Obtener todos los autoloaders actuales (probablemente Composer)
+            $existingAutoloaders = spl_autoload_functions();
+
+            // Desregistrar todos los autoloaders existentes
+            foreach ($existingAutoloaders as $autoloader) {
+                spl_autoload_unregister($autoloader);
+            }
+
+            // Registrar NUESTRO autoloader PRIMERO
+            spl_autoload_register([$this, "autoloadClass"], true, false);
+
+            // Re-registrar los autoloaders existentes DESPUÉS del nuestro
+            foreach ($existingAutoloaders as $autoloader) {
+                spl_autoload_register($autoloader, true, false);
+            }
+
             $this->container = new Container();
         }
     }
@@ -47,7 +65,7 @@ class Boot
             $this->errorConsole = $this->container->get(ErrorConsole::class);
             $this->errorConsole->register();
 
-            // Cargar caché de DTOs mejorados
+            // Cargar caché de DTOs mejorados (para logging, ya está cargado desde constructor)
             $this->loadDTOCache();
 
             if ($loadRouter) {
@@ -61,7 +79,31 @@ class Boot
     }
 
     /**
-     * Carga el caché de DTOs mejorados
+     * Carga el caché de DTOs mejorados ANTES de inicializar el container
+     * (no puede usar ErrorConsole porque no está disponible aún)
+     */
+    private function loadDTOCacheEarly(): void
+    {
+        if ($this->dtoCacheLoaded || $this->testingMode) {
+            return;
+        }
+
+        $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
+
+        if (!file_exists($dtoCacheFile)) {
+            // No podemos usar ErrorConsole aquí porque no está inicializado
+            // Solo cargar array vacío
+            $this->enhancedDTOs = [];
+            $this->dtoCacheLoaded = true;
+            return;
+        }
+
+        $this->enhancedDTOs = require $dtoCacheFile;
+        $this->dtoCacheLoaded = true;
+    }
+
+    /**
+     * Carga el caché de DTOs mejorados (versión para usar en init)
      */
     private function loadDTOCache(): void
     {
@@ -109,18 +151,28 @@ class Boot
             return;
         }
 
-        // 1. Verificar si es un DTO mejorado y cargarlo desde caché
+        // 1. PRIMERO: Verificar si es un DTO mejorado y cargarlo desde caché
         if ($this->loadEnhancedDTO($class)) {
-            return;
+            return; // Salir inmediatamente si se cargó desde caché
         }
 
-        // 2. Autoload PSR-4 normal
+        // 2. Autoload PSR-4 normal (solo si NO es un DTO mejorado)
         $baseDirs = [BASE_PATH . '/'];
         $relativeClass = ltrim($class, '\\');
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
 
         foreach ($baseDirs as $baseDir) {
             $file = $baseDir . $relativePath;
+
+            // BLOQUEAR: NO cargar archivos de App/DTO si es un DTO mejorado
+            if ($this->isEnhancedDTO($class) && strpos($file, '/App/DTO/') !== false) {
+                throw new BootException(
+                    "DTO <code>$class</code> is marked as enhanced but cache file not found.<br>" .
+                    "Expected cache at: " . BASE_PATH . '/cache/dtos/' . basename($class) . '.php<br>' .
+                    "Run cache generation script to create enhanced DTOs."
+                );
+            }
+
             if (file_exists($file)) {
                 require_once $file;
                 return;
@@ -131,6 +183,14 @@ class Boot
     }
 
     /**
+     * Verifica si una clase es un DTO mejorado
+     */
+    private function isEnhancedDTO(string $class): bool
+    {
+        return in_array($class, $this->enhancedDTOs, true);
+    }
+
+    /**
      * Intenta cargar un DTO mejorado desde el caché
      *
      * @return bool True si se cargó un DTO mejorado, false si no
@@ -138,8 +198,13 @@ class Boot
     private function loadEnhancedDTO(string $class): bool
     {
         // Si no está en la lista de DTOs mejorados, retornar false
-        if (!in_array($class, $this->enhancedDTOs, true)) {
+        if (!$this->isEnhancedDTO($class)) {
             return false;
+        }
+
+        // Si la clase ya fue cargada, no hacer nada más
+        if (class_exists($class, false)) {
+            return true;
         }
 
         // Extraer el nombre corto de la clase
@@ -149,12 +214,17 @@ class Boot
         $enhancedFile = BASE_PATH . '/cache/dtos/' . $shortClassName . '.php';
 
         if (!file_exists($enhancedFile)) {
-            // El caché no existe, permitir que se cargue el original
             return false;
         }
 
         // Cargar la versión mejorada del caché
         require_once $enhancedFile;
+
+        // Verificar que la clase se cargó correctamente
+        if (!class_exists($class, false)) {
+            throw new BootException("Failed to load enhanced DTO: $class from $enhancedFile");
+        }
+
         return true;
     }
 }
