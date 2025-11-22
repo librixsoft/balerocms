@@ -11,8 +11,10 @@ use Throwable;
 class Boot
 {
     private ErrorConsole $errorConsole;
-    private ?Container $container = null;  // Permitir null
+    private ?Container $container = null;
     private bool $testingMode = false;
+    private array $enhancedDTOs = [];
+    private bool $dtoCacheLoaded = false;
 
     public function __construct(bool $testingMode = false)
     {
@@ -45,6 +47,9 @@ class Boot
             $this->errorConsole = $this->container->get(ErrorConsole::class);
             $this->errorConsole->register();
 
+            // Cargar caché de DTOs mejorados
+            $this->loadDTOCache();
+
             if ($loadRouter) {
                 $router = $this->container->get(Router::class);
                 $router->initBalero();
@@ -53,6 +58,27 @@ class Boot
         } catch (Throwable $e) {
             throw new BootException("Error in Boot: " . $e->getMessage(), previous: $e);
         }
+    }
+
+    /**
+     * Carga el caché de DTOs mejorados
+     */
+    private function loadDTOCache(): void
+    {
+        if ($this->dtoCacheLoaded || $this->testingMode) {
+            return;
+        }
+
+        $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
+
+        if (!file_exists($dtoCacheFile)) {
+            $this->errorConsole->info("DTOs cache file does not exist: $dtoCacheFile");
+            $this->dtoCacheLoaded = true;
+            return;
+        }
+
+        $this->enhancedDTOs = require $dtoCacheFile;
+        $this->dtoCacheLoaded = true;
     }
 
     /**
@@ -69,7 +95,7 @@ class Boot
     }
 
     /**
-     * Autoload de clases PSR-4
+     * Autoload de clases PSR-4 con soporte para DTOs mejorados
      */
     public function autoloadClass(string $class): void
     {
@@ -83,6 +109,12 @@ class Boot
             return;
         }
 
+        // 1. Verificar si es un DTO mejorado y cargarlo desde caché
+        if ($this->loadEnhancedDTO($class)) {
+            return;
+        }
+
+        // 2. Autoload PSR-4 normal
         $baseDirs = [BASE_PATH . '/'];
         $relativeClass = ltrim($class, '\\');
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
@@ -96,5 +128,33 @@ class Boot
         }
 
         throw new BootException("Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>");
+    }
+
+    /**
+     * Intenta cargar un DTO mejorado desde el caché
+     *
+     * @return bool True si se cargó un DTO mejorado, false si no
+     */
+    private function loadEnhancedDTO(string $class): bool
+    {
+        // Si no está en la lista de DTOs mejorados, retornar false
+        if (!in_array($class, $this->enhancedDTOs, true)) {
+            return false;
+        }
+
+        // Extraer el nombre corto de la clase
+        $parts = explode('\\', $class);
+        $shortClassName = end($parts);
+
+        $enhancedFile = BASE_PATH . '/cache/dtos/' . $shortClassName . '.php';
+
+        if (!file_exists($enhancedFile)) {
+            // El caché no existe, permitir que se cargue el original
+            return false;
+        }
+
+        // Cargar la versión mejorada del caché
+        require_once $enhancedFile;
+        return true;
     }
 }

@@ -8,7 +8,6 @@ use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
 use Framework\Core\View;
-use Framework\DTO\DTOGenerator;
 use Framework\Http\Get;
 use Framework\Http\Post;
 use Framework\Http\RequestHelper;
@@ -34,9 +33,6 @@ class InstallerController
     #[Inject]
     private Redirect $redirect;
 
-    #[Inject]
-    private DTOGenerator $dtoGenerator;
-
     #[Get('/')]
     public function home()
     {
@@ -54,7 +50,7 @@ class InstallerController
     #[Post('/install')]
     public function postInstall()
     {
-        $installerDTO = $this->dtoGenerator->create(InstallerDTO::class);
+        $installerDTO = new InstallerDTO();
         $installerDTO->fromRequest($this->requestHelper);
 
         if ($this->installerService->validateInstaller($installerDTO)) {

@@ -2,12 +2,14 @@
 
 namespace App\DTO;
 
+use Framework\Attributes\DTO;
 use Framework\Attributes\Validation\NotEmpty;
 use Framework\DTO\Attributes\Getter;
 use Framework\DTO\Attributes\Setter;
 use Framework\DTO\Attributes\ToArray;
 use Framework\Http\RequestHelper;
 
+#[DTO]
 #[Getter]
 #[Setter]
 #[ToArray]

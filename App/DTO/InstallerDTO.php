@@ -2,6 +2,7 @@
 
 namespace App\DTO;
 
+use Framework\Attributes\DTO;
 use Framework\Attributes\Validation\Email;
 use Framework\Attributes\Validation\NotEmpty;
 use Framework\Attributes\Validation\FieldMatch;
@@ -10,6 +11,7 @@ use Framework\DTO\Attributes\Setter;
 use Framework\DTO\Attributes\ToArray;
 use Framework\Http\RequestHelper;
 
+#[DTO]
 #[Getter]
 #[Setter]
 #[ToArray]

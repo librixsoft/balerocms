@@ -5,7 +5,6 @@ namespace Framework\Bootstrap;
 use Framework\Core\BaseController;
 use Framework\Core\ErrorConsole;
 use Framework\DI\Container;
-use Framework\DTO\DTOGenerator;
 use Framework\Exceptions\RouterException;
 use Framework\Core\ConfigSettings;
 use Framework\Http\RequestHelper;
@@ -153,7 +152,6 @@ class Router
     {
         try {
             $controllerInstance = $this->container->get($matchedController);
-            $dtoGenerator = $this->container->get(DTOGenerator::class);
             $baseController = $this->container->get(BaseController::class);
             $baseController->initControllerAndRoute($controllerInstance);
         } catch (\Throwable $e) {
