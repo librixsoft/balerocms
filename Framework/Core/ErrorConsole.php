@@ -74,6 +74,9 @@ class ErrorConsole
 
         // ⚡ Caso: app instalada y en producción → renderizar plantilla
         if ($this->configSettings->installed === 'yes' && $this->configSettings->debug === 'prod') {
+            // Guardar log detallado en el servidor
+            $this->logError($message, $e);
+
             $params = [
                 'message' => $message
             ];
@@ -81,13 +84,6 @@ class ErrorConsole
             exit;
         }
 
-        // ⚡ Caso: app instalada pero no en producción → consola clásica
-        if ($this->configSettings->installed === 'yes') {
-            $this->renderConsole($message, $e);
-            return;
-        }
-
-        // ⚡ Caso: app NO instalada → consola clásica
         $this->renderConsole($message, $e);
     }
 
@@ -137,5 +133,18 @@ class ErrorConsole
 
         echo '</div></div></body></html>';
         exit;
+    }
+
+    private function logError(string $message, ?Throwable $e = null): void
+    {
+        $logMessage = $message;
+
+        if ($e) {
+            $logMessage .= " | BaleroCMS ::: Exception: " . get_class($e);
+            $logMessage .= " | BaleroCMS ::: File: " . $e->getFile() . ":" . $e->getLine();
+        }
+
+        // Guardar en el log del sistema (error_log de PHP o syslog)
+        error_log($logMessage);
     }
 }
