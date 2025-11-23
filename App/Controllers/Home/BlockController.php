@@ -21,9 +21,6 @@ class BlockController
     private BlockViewModel $viewModel;
 
     #[Inject]
-    private BlockModel $model;
-
-    #[Inject]
     private BlockModel $blockModel;
 
     #[Inject]
