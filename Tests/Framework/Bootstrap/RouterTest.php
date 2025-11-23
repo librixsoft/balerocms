@@ -7,7 +7,7 @@ use Framework\Core\BaseController;
 use Framework\Core\ConfigSettings;
 use Framework\Config\SetupConfig;
 use Framework\Core\ErrorConsole;
-use Framework\DI\Container;
+use Framework\DI\Context;
 use Framework\Exceptions\RouterException;
 use Framework\Http\RequestHelper;
 use Framework\Utils\Redirect;
@@ -19,7 +19,7 @@ class RouterTest extends TestCase
     private Router $router;
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
-    private Container $container;
+    private Context $context;
     private ErrorConsole $errorConsole;
     private Redirect $redirect;
     private string $tempConfigFile;
@@ -69,7 +69,7 @@ class RouterTest extends TestCase
         // Crear mocks
         $this->requestHelper = $this->createMock(RequestHelper::class);
         $this->configSettings = new ConfigSettings(new SetupConfig($this->tempConfigFile));
-        $this->container = $this->createMock(Container::class);
+        $this->context = $this->createMock(Context::class);
         $this->errorConsole = $this->createMock(ErrorConsole::class);
         $this->redirect = $this->createMock(Redirect::class);
 
@@ -77,7 +77,7 @@ class RouterTest extends TestCase
         $this->router = new Router(
             $this->requestHelper,
             $this->configSettings,
-            $this->container,
+            $this->context,
             $this->errorConsole,
             $this->redirect
         );
@@ -122,7 +122,7 @@ PHP;
 
 
 
-        $this->container->expects($this->exactly(2))
+        $this->context->expects($this->exactly(2))
             ->method('get')
             ->willReturnMap([
                 ['App\Controllers\Admin\UsersController', $mockController],
@@ -178,7 +178,7 @@ PHP;
         $this->router = new Router(
             $this->requestHelper,
             $this->configSettings,
-            $this->container,
+            $this->context,
             $this->errorConsole,
             $this->redirect
         );
@@ -271,7 +271,7 @@ PHP;
         $this->router = new Router(
             $this->requestHelper,
             $this->configSettings,
-            $this->container,
+            $this->context,
             $this->errorConsole,
             $this->redirect
         );
@@ -295,7 +295,7 @@ PHP;
 
 
 
-        $this->container->method('get')->willReturnMap([
+        $this->context->method('get')->willReturnMap([
             ['App\Controllers\InstallerController', $mockController],
             [BaseController::class, $mockBaseController]
         ]);
@@ -324,7 +324,7 @@ PHP;
 
 
 
-        $this->container->method('get')->willReturnMap([
+        $this->context->method('get')->willReturnMap([
             ['App\Controllers\AboutController', $mockController],
             [BaseController::class, $mockBaseController]
         ]);
@@ -354,7 +354,7 @@ PHP;
 
 
 
-        $this->container->method('get')->willReturnMap([
+        $this->context->method('get')->willReturnMap([
             ['App\Controllers\Admin\SettingsController', $mockController],
             [BaseController::class, $mockBaseController]
         ]);
@@ -384,7 +384,7 @@ PHP;
 
 
 
-        $this->container->method('get')->willReturnMap([
+        $this->context->method('get')->willReturnMap([
             ['App\Controllers\HomeController', $mockController],
             [BaseController::class, $mockBaseController]
         ]);
@@ -426,7 +426,7 @@ PHP;
 
 
 
-        $this->container->method('get')->willReturnMap([
+        $this->context->method('get')->willReturnMap([
             ['App\Controllers\HomeController', $mockController],
             [BaseController::class, $mockBaseController]
         ]);

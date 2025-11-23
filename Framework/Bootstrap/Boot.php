@@ -3,7 +3,6 @@
 namespace Framework\Bootstrap;
 
 use Framework\Core\ErrorConsole;
-use Framework\DI\Container;
 use Framework\Exceptions\BootException;
 use Framework\Exceptions\AutoloadException;
 use Framework\Exceptions\DTOCacheException;
@@ -15,7 +14,7 @@ use Throwable;
 class Boot
 {
     private ErrorConsole $errorConsole;
-    private ?Container $container = null;
+    private ?Context $context = null;
     private bool $testingMode = false;
     private array $enhancedDTOs = [];
     private bool $dtoCacheLoaded = false;
@@ -43,12 +42,6 @@ class Boot
             foreach ($existingAutoloaders as $autoloader) {
                 spl_autoload_register($autoloader, true, false);
             }
-
-            $this->container = new Container();
-
-            if ($this->container === null) {
-                throw new BootException("Container initialization failed unexpectedly.");
-            }
         }
     }
 
@@ -60,21 +53,28 @@ class Boot
      */
     public function init(bool $loadRouter = true): void
     {
-        // En modo testing, crear un container mock solo si se necesita
+        // En modo testing, no hacer nada
         if ($this->testingMode) {
-            return; // En testing mode no hacemos nada
+            return;
         }
 
         try {
-            if (!$this->testingMode) {
-                new Context($this->container);
+            // Context ahora crea su propio Container internamente
+            $this->context = new Context();
+
+            if ($this->context === null) {
+                throw new BootException("Context initialization failed unexpectedly.");
             }
 
-            $this->errorConsole = $this->container->get(ErrorConsole::class);
+            $this->errorConsole = $this->context->get(ErrorConsole::class);
             $this->errorConsole->register();
 
         } catch (Throwable $e) {
-            throw new ContainerInitializationException("Failed to initialize container context or ErrorConsole: " . $e->getMessage(), 0, $e);
+            throw new ContainerInitializationException(
+                "Failed to initialize container context or ErrorConsole: " . $e->getMessage(),
+                0,
+                $e
+            );
         }
 
         // Cargar caché de DTOs mejorados (para logging, ya está cargado desde constructor)
@@ -82,10 +82,14 @@ class Boot
 
         if ($loadRouter) {
             try {
-                $router = $this->container->get(Router::class);
+                $router = $this->context->get(Router::class);
                 $router->initBalero();
             } catch (Throwable $e) {
-                throw new RouterInitializationException("Failed to initialize router: " . $e->getMessage(), 0, $e);
+                throw new RouterInitializationException(
+                    "Failed to initialize router: " . $e->getMessage(),
+                    0,
+                    $e
+                );
             }
         }
     }
@@ -103,7 +107,9 @@ class Boot
         $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
 
         if (!file_exists($dtoCacheFile)) {
-            throw new DTOCacheException("DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script.");
+            throw new DTOCacheException(
+                "DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script."
+            );
         }
 
         $this->enhancedDTOs = require $dtoCacheFile;
@@ -122,7 +128,9 @@ class Boot
         $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
 
         if (!file_exists($dtoCacheFile)) {
-            throw new DTOCacheException("DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script.");
+            throw new DTOCacheException(
+                "DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script."
+            );
         }
 
         $this->enhancedDTOs = require $dtoCacheFile;
@@ -185,7 +193,9 @@ class Boot
             }
         }
 
-        throw new AutoloadException("Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>");
+        throw new AutoloadException(
+            "Error loading class <code>$class</code><br>Expected: <code>$relativePath</code>"
+        );
     }
 
     /**

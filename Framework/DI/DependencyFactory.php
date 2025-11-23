@@ -28,6 +28,7 @@ class DependencyFactory
 {
     /**
      * Contenedor que implementa `get(string $className): object`
+     * Puede ser Container o Context
      *
      * @var object
      */
@@ -36,7 +37,7 @@ class DependencyFactory
     /**
      * Constructor
      *
-     * @param object $resolverContainer Contenedor con método get()
+     * @param object $resolverContainer Contenedor con método get() (Container o Context)
      */
     public function __construct(object $resolverContainer)
     {
@@ -63,14 +64,7 @@ class DependencyFactory
                     continue;
                 }
 
-                $flashStorageAttrs = $param->getAttributes(FlashStorage::class);
-
-                if (!empty($flashStorageAttrs) && $type->getName() === Flash::class) {
-                    $flashKey = $flashStorageAttrs[0]->newInstance();
-                    $params[] = new Flash($flashKey);
-                } else {
-                    $params[] = $this->resolverContainer->get($type->getName());
-                }
+                $params[] = $this->resolverContainer->get($type->getName());
             }
 
             return $reflector->newInstanceArgs($params);
@@ -125,12 +119,7 @@ class DependencyFactory
 
                 $prop->setAccessible(true);
 
-                if (!empty($flashStorageAttrs) && $type->getName() === Flash::class) {
-                    $flashKey = $flashStorageAttrs[0]->newInstance();
-                    $prop->setValue($instance, new Flash($flashKey));
-                } else {
-                    $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
-                }
+                $prop->setValue($instance, $this->resolverContainer->get($type->getName()));
             }
         } catch (Throwable $e) {
             throw new ContainerException(

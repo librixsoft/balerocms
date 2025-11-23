@@ -7,18 +7,6 @@
  * Proporciona acceso global a servicios registrados en el contenedor,
  * especialmente útil en clases que no pasan por DI directamente.
  *
- * Esta clase registra los processors principales y las condiciones necesarias
- * para la evaluación de templates:
- * - Se crean prototipos de OrCondition y AndCondition.
- * - Se instancia ConditionFactory pasando los prototipos.
- * - Se instancia ProcessorIfBlocks con ConditionFactory.
- * - Se instancian ProcessorFlattenParams y ProcessorForEach, pasando
- *   ProcessorIfBlocks donde corresponde.
- *
- * Nota: Esta misma forma de instanciación se usa en los tests unitarios
- *       de ProcessorForEachTest, por lo que el contexto refleja el mismo
- *       flujo de dependencias que los tests.
- *
  * @author Anibal Gomez
  * @license GNU General Public License
  */
@@ -28,7 +16,6 @@ namespace Framework\DI;
 use Framework\Config\ViewConfig;
 use Framework\Config\SetupConfig;
 use Framework\Core\ConfigSettings;
-use Framework\DI\Container;
 use Framework\Core\View;
 use Framework\Core\ErrorConsole;
 use Framework\Utils\Redirect;
@@ -45,14 +32,27 @@ class Context
     /**
      * Constructor de Context.
      *
-     * Aquí se inicializan y registran todos los servicios globales
-     * necesarios para la aplicación (processors, conditions, etc.).
-     *
-     * @param Container $container Contenedor de la aplicación
+     * Inicializa el contenedor y registra todos los servicios globales
+     * necesarios para la aplicación.
      */
-    public function __construct(Container $container)
+    public function __construct()
     {
-        $this->container = $container;
+        // Instanciar el contenedor internamente
+        $this->container = new Container();
+
+        // Registrar servicios
+        $this->registerServices();
+    }
+
+    /**
+     * Registra todos los servicios en el contenedor.
+     *
+     * @return void
+     */
+    // TODO: Separate this to a config class
+    private function registerServices(): void
+    {
+        $container = $this->container;
 
         $container->singleton(SetupConfig::class, function() {
             return new SetupConfig(BASE_PATH . '/resources/config/balero.config.json');
@@ -74,24 +74,17 @@ class Context
         });
 
         $view = $container->get(View::class);
-
         $container->set(View::class, $view);
 
-        $errorConsole = new ErrorConsole($config, $container);
+        $errorConsole = new ErrorConsole($config, $this);
         $container->set(ErrorConsole::class, $errorConsole);
 
         $redirect = new Redirect($config);
         $container->set(Redirect::class, $redirect);
-
     }
 
     /**
      * Obtiene un servicio desde el contenedor.
-     *
-     * Ejemplo de uso:
-     * ```php
-     * $processor = $context->get(ProcessorForEach::class);
-     * ```
      *
      * @template T
      * @param class-string<T> $class

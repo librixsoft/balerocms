@@ -4,7 +4,7 @@ namespace Framework\Bootstrap;
 
 use Framework\Core\BaseController;
 use Framework\Core\ErrorConsole;
-use Framework\DI\Container;
+use Framework\DI\Context;
 use Framework\Exceptions\RouterException;
 use Framework\Core\ConfigSettings;
 use Framework\Http\RequestHelper;
@@ -22,7 +22,7 @@ class Router
 
     private RequestHelper $requestHelper;
     private ConfigSettings $configSettings;
-    private Container $container;
+    private Context $context;
     private ErrorConsole $errorConsole;
     private Redirect $redirect;
 
@@ -32,13 +32,13 @@ class Router
     public function __construct(
         RequestHelper $requestHelper,
         ConfigSettings $configSettings,
-        Container $container,
+        Context $context,
         ErrorConsole $errorConsole,
         Redirect $redirect
     ) {
         $this->requestHelper = $requestHelper;
         $this->configSettings = $configSettings;
-        $this->container = $container;
+        $this->context = $context;
         $this->errorConsole = $errorConsole;
         $this->redirect = $redirect;
     }
@@ -152,8 +152,8 @@ class Router
     private function executeController(string $matchedController): void
     {
         try {
-            $controllerInstance = $this->container->get($matchedController);
-            $baseController = $this->container->get(BaseController::class);
+            $controllerInstance = $this->context->get($matchedController);
+            $baseController = $this->context->get(BaseController::class);
             $baseController->initControllerAndRoute($controllerInstance);
         } catch (\Throwable $e) {
             throw new RouterException(
