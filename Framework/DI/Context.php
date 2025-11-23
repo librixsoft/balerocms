@@ -77,7 +77,7 @@ class Context
 
         $container->set(View::class, $view);
 
-        $errorConsole = new ErrorConsole($view, $config);
+        $errorConsole = new ErrorConsole($config, $container);
         $container->set(ErrorConsole::class, $errorConsole);
 
         $redirect = new Redirect($config);

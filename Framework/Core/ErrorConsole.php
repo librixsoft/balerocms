@@ -2,18 +2,20 @@
 
 namespace Framework\Core;
 
+use App\Controllers\Error\ErrorController;
+use Framework\DI\Container;
 use Throwable;
 
 class ErrorConsole
 {
     private bool $rendered = false;
-    private View $view;
     private ConfigSettings $configSettings;
+    private Container $container;
 
-    public function __construct(View $view, ConfigSettings $configSettings)
+    public function __construct(ConfigSettings $configSettings, Container $container)
     {
-        $this->view = $view;
         $this->configSettings = $configSettings;
+        $this->container = $container;
     }
 
     private function isProduction(): bool
@@ -77,10 +79,9 @@ class ErrorConsole
             // Guardar log detallado en el servidor
             $this->logError($message, $e);
 
-            $params = [
-                'message' => $message
-            ];
-            echo $this->view->render("error.html", $params, useTheme: true);
+            $errorController = $this->container->get(ErrorController::class);
+
+            echo $errorController->index();
             exit;
         }
 

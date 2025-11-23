@@ -5,7 +5,9 @@
     <meta charset="UTF-8"/>
     <link href="favicon.ico" rel="shortcut icon">
     <meta content="width=device-width, initial-scale=1" name="viewport"/>
-    <title>{title} - Error</title>
+    <title>{title}</title>
+    <meta content="{description}" name="description"/>
+    <meta content="{keywords}" name="keywords"/>
 
     <!-- Bootstrap CSS -->
     <link href="assets/css/vendor/bootstrap.min.css" rel="stylesheet">
@@ -13,11 +15,12 @@
     <!-- Font Awesome 6 -->
     <link href="assets/css/vendor/all.min.css" rel="stylesheet">
 
-    <!-- Bootstrap Bundle JS -->
+    <!-- Bootstrap Bundle JS (con Popper incluido) -->
     <script src="assets/js/vendor/bootstrap.bundle.min.js"></script>
 
     <!-- Custom styles -->
     <link href="assets/themes/{theme}/style.css" rel="stylesheet"/>
+
 </head>
 <body>
 
@@ -25,25 +28,54 @@
 <nav class="navbar navbar-expand-md">
     <div class="container">
         <a class="navbar-brand" href="{basepath}">{title}</a>
+        <button aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler"
+                data-bs-target="#navbarMain" data-bs-toggle="collapse" type="button">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{basepath}">Home</a>
+                </li>
+                <%-- @foreach virtual_pages as page -->
+                <li class="nav-item">
+                    <a class="nav-link" href="./page/{page.url}">{page.virtual_title}</a>
+                </li>
+                <%-- @endforeach -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/login">Login</a>
+                </li>
+            </ul>
+        </div>
     </div>
 </nav>
 
-<!-- Hero Header con mensaje de error -->
-<header class="hero-header bg-danger text-white py-5">
-    <div class="hero-content text-center">
-        <h1>Oops! Something went wrong</h1>
-        <small>We are working to fix the issue. Please try again later.</small>
+<!-- Hero Header con degradado azul -->
+<header class="hero-header">
+    <div class="hero-content">
+        <h1>{title}</h1>
+        <p class="slogan">{description}</p>
     </div>
 </header>
 
 <!-- Main vacío -->
 <main class="container my-5 text-center">
-    <p class="text-muted">Si el problema persiste, contacte al administrador del sistema.</p>
+    <h1>Oops! Something went wrong</h1>
+    <small>We are working to fix the issue. Please try again later.</small>
+    <p class="text-muted">If problem persist, contact administrator.</p>
 </main>
 
+
 <!-- Footer -->
-<footer class="text-center py-3">
+<footer class="text-center">
     <p>{footer}</p>
+    <div class="social-icons">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+    </div>
 </footer>
 
 </body>
