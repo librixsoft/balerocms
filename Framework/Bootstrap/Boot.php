@@ -3,6 +3,7 @@
 namespace Framework\Bootstrap;
 
 use Framework\Core\ErrorConsole;
+use Framework\Core\EarlyErrorConsole;
 use Framework\Exceptions\BootException;
 use Framework\Exceptions\AutoloadException;
 use Framework\Exceptions\DTOCacheException;
@@ -13,7 +14,8 @@ use Throwable;
 
 class Boot
 {
-    private ErrorConsole $errorConsole;
+    private ?EarlyErrorConsole $earlyErrorConsole = null;
+    private ?ErrorConsole $errorConsole = null;
     private ?Context $context = null;
     private bool $testingMode = false;
     private array $enhancedDTOs = [];
@@ -24,6 +26,12 @@ class Boot
         $this->testingMode = $testingMode;
 
         if (!$this->testingMode) {
+            // ⚡ CRÍTICO: Crear instancia de EarlyErrorConsole
+            $this->earlyErrorConsole = new EarlyErrorConsole();
+
+            // ⚡ CRÍTICO: Registrar ErrorConsole básico INMEDIATAMENTE
+            $this->registerEarlyErrorHandler();
+
             // CRÍTICO: Cargar el caché de DTOs ANTES de registrar el autoloader
             $this->loadDTOCacheEarly();
 
@@ -43,6 +51,46 @@ class Boot
                 spl_autoload_register($autoloader, true, false);
             }
         }
+    }
+
+    /**
+     * Registra un manejador de errores básico ANTES de inicializar el container
+     * Este handler captura errores tempranos antes de que ErrorConsole completo esté disponible
+     */
+    private function registerEarlyErrorHandler(): void
+    {
+        if (!ob_get_level()) {
+            ob_start();
+        }
+
+        ini_set('display_errors', '1');
+        error_reporting(E_ALL);
+
+        // Handler temporal que usa solo la consola básica
+        set_exception_handler(function(Throwable $e) {
+            $this->renderEarlyError($e);
+        });
+
+        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+            $this->renderEarlyError(new \ErrorException($errstr, 0, $errno, $errfile, $errline));
+        });
+
+        register_shutdown_function(function() {
+            $error = error_get_last();
+            if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+                $this->renderEarlyError(
+                    new \ErrorException($error['message'], 0, $error['type'], $error['file'], $error['line'])
+                );
+            }
+        });
+    }
+
+    /**
+     * Renderiza un error temprano (antes de que ErrorConsole completo esté disponible)
+     */
+    private function renderEarlyError(Throwable $e): void
+    {
+        $this->earlyErrorConsole->render($e);
     }
 
     /**
@@ -66,8 +114,9 @@ class Boot
                 throw new BootException("Context initialization failed unexpectedly.");
             }
 
+            // ⚡ UPGRADE: Reemplazar el handler temporal con el ErrorConsole completo
             $this->errorConsole = $this->context->get(ErrorConsole::class);
-            $this->errorConsole->register();
+            $this->errorConsole->register(); // Esto re-registra los handlers con la versión completa
 
         } catch (Throwable $e) {
             throw new ContainerInitializationException(
