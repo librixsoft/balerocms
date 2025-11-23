@@ -6,6 +6,10 @@ use App\Controllers\Error\ErrorController;
 use Framework\DI\Container;
 use Throwable;
 
+/**
+ * Class ErrorConsole Se usa cuando la carga fue un exito y ya podemos hacer switch entre modo dev (console) y modo prod (view template)
+ * @package Framework\Core
+ */
 class ErrorConsole
 {
     private bool $rendered = false;
