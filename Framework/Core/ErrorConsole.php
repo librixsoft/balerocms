@@ -3,19 +3,19 @@
 namespace Framework\Core;
 
 use App\Controllers\Error\ErrorController;
-use Framework\DI\Context;
+use Framework\DI\Container;
 use Throwable;
 
 class ErrorConsole
 {
     private bool $rendered = false;
     private ConfigSettings $configSettings;
-    private Context $context;
+    private Container $container;
 
-    public function __construct(ConfigSettings $configSettings, Context $context)
+    public function __construct(ConfigSettings $configSettings, Container $container)
     {
         $this->configSettings = $configSettings;
-        $this->context = $context;
+        $this->container = $container;
     }
 
     private function isProduction(): bool
@@ -79,7 +79,7 @@ class ErrorConsole
             // Guardar log detallado en el servidor
             $this->logError($message, $e);
 
-            $errorController = $this->context->get(ErrorController::class);
+            $errorController = $this->container->get(ErrorController::class);
 
             echo $errorController->index();
             exit;

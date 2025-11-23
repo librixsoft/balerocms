@@ -13,12 +13,7 @@
 
 namespace Framework\DI;
 
-use Framework\Config\ViewConfig;
-use Framework\Config\SetupConfig;
-use Framework\Core\ConfigSettings;
-use Framework\Core\View;
-use Framework\Core\ErrorConsole;
-use Framework\Utils\Redirect;
+use Framework\Config\ContextConfig;
 
 class Context
 {
@@ -49,38 +44,10 @@ class Context
      *
      * @return void
      */
-    // TODO: Separate this to a config class
     private function registerServices(): void
     {
-        $container = $this->container;
-
-        $container->singleton(SetupConfig::class, function() {
-            return new SetupConfig(BASE_PATH . '/resources/config/balero.config.json');
-        });
-
-        $container->singleton(ConfigSettings::class, function() use ($container) {
-            return new ConfigSettings($container->get(SetupConfig::class));
-        });
-
-        $config = $container->get(ConfigSettings::class);
-        $config->getHandler();
-
-        $container->singleton(ViewConfig::class, function() {
-            return new ViewConfig(
-                BASE_PATH . '/resources/views',
-                BASE_PATH . '/resources/lang',
-                ['html']
-            );
-        });
-
-        $view = $container->get(View::class);
-        $container->set(View::class, $view);
-
-        $errorConsole = new ErrorConsole($config, $this);
-        $container->set(ErrorConsole::class, $errorConsole);
-
-        $redirect = new Redirect($config);
-        $container->set(Redirect::class, $redirect);
+        $contextConfig = new ContextConfig();
+        $contextConfig->register($this->container);
     }
 
     /**
