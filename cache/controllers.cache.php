@@ -1,5 +1,5 @@
 <?php
-// Controllers cache auto-generated on 2025-11-23 23:09:10
+// Controllers cache auto-generated
 return array (
   0 => 
   array (

@@ -159,7 +159,7 @@ $enhancedDTOs = scanDTOs('App\\DTO', $dtosDir, $cacheDir);
 // Generate autoloader mapping
 $mappingFile = BASE_PATH . 'cache/dtos.cache.php';
 $mappingContent = "<?php\n";
-$mappingContent .= "// DTOs autoloader mapping - auto-generated on " . date('Y-m-d H:i:s') . "\n";
+$mappingContent .= "// DTOs autoloader mapping - auto-generated\n";
 $mappingContent .= "// List of DTO classes that should load from cache\n";
 $mappingContent .= "return " . var_export($enhancedDTOs, true) . ";\n";
 file_put_contents($mappingFile, $mappingContent);

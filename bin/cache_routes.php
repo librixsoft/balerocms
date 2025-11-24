@@ -75,7 +75,7 @@ $controllers = scanControllers('App\\Controllers', $controllersDir);
 
 // Prepare cache content with creation timestamp
 $cacheContent = "<?php\n";
-$cacheContent .= "// Controllers cache auto-generated on " . date('Y-m-d H:i:s') . "\n";
+$cacheContent .= "// Controllers cache auto-generated\n";
 $cacheContent .= "return " . var_export($controllers, true) . ";\n";
 
 // Save cache (always overwrite)
