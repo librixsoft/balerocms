@@ -9,7 +9,6 @@ public/assets/images/uploads
 *.iml
 node_modules/
 /vendor/
-/cache/
 .phpunit.result.cache
 /build/
 .phpunit.cache/
