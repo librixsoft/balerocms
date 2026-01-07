@@ -26,9 +26,9 @@ html, body {
 }
 
 .container {
-    max-width: 1200px;
-    padding-left: 5%;
-    padding-right: 5%;
+    max-width: 1400px;
+    padding-left: 15px;
+    padding-right: 15px;
     margin-left: auto;
     margin-right: auto;
     overflow-x: hidden;
@@ -165,7 +165,6 @@ main.container {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 0 !important;
     font-family: 'Cairo', sans-serif;
     font-size: 1.1rem;
 }
@@ -197,6 +196,13 @@ footer .social-icons a {
 
 footer .social-icons a:hover {
     color: #0d6efd;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
 }
 
 @media (max-width: 768px) {
