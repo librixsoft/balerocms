@@ -199,17 +199,17 @@ footer .social-icons a:hover {
 }
 
 @media (max-width: 1024px) {
-    .container {
-        padding-left: 40px;
-        padding-right: 40px;
+    .container, main.container {
+        padding-left: 40px !important;
+        padding-right: 40px !important;
     }
 }
 
 @media (max-width: 768px) {
-    .container {
-        padding-left: 20px;
-        padding-right: 20px;
-        margin-left: 15px;
-        margin-right: 15px;
+    .container, main.container {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+        margin-left: 15px !important;
+        margin-right: 15px !important;
     }
 }
