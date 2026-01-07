@@ -30,7 +30,7 @@ VALUES (1, 'Welcome Title', 'welcome-title', 'Welcome content ...', '2025-07-04'
 
 INSERT INTO `block` (`id`, `name`, `sort_order`, `content`)
 VALUES (1, 'cards', 1, '<section class="features py-5">
-  <div class="container">
+  <div class="container-fluid">
     <div class="row g-4">
       <div class="col-md-4">
         <div class="card p-4">
