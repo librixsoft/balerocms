@@ -203,5 +203,7 @@ footer .social-icons a:hover {
     .container {
         padding-left: 20px;
         padding-right: 20px;
+        margin-left: 15px;
+        margin-right: 15px;
     }
 }
