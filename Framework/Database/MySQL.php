@@ -42,6 +42,10 @@ class MySQL
         if (!$this->status) {
             throw new MySQLException("Failed to connect to MySQL: " . $this->conn->connect_error);
         }
+
+        if (!$this->conn->set_charset("utf8mb4")) {
+            throw new MySQLException("Error loading character set utf8mb4: " . $this->conn->error);
+        }
     }
 
     public function query(string $query, array $params = []): void
