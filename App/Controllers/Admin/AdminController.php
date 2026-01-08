@@ -105,6 +105,7 @@ class AdminController
             'virtual_content' => $this->request->raw('virtual_content'),
             'visible' => (int)$this->request->post('visible'),
             'date' => $this->request->post('date'),
+            'sort_order' => $this->request->post('sort_order'),
         ];
 
         $this->adminService->createPage($data);
@@ -127,6 +128,7 @@ class AdminController
             'static_url' => $this->request->post("static_url"),
             'virtual_content' => $this->request->raw("virtual_content"),
             'visible' => $this->request->post("visible"),
+            'sort_order' => $this->request->post("sort_order"),
         ];
 
         $this->adminService->updatePage($id, $data);

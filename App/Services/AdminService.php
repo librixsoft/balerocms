@@ -78,6 +78,7 @@ class AdminService
         return $this->viewModel->getPagesParams([
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'next_sort_order' => $this->getNextPageSortOrder(),
         ]);
     }
 
@@ -99,6 +100,16 @@ class AdminService
     public function createPage(array $data): void
     {
         $this->model->createPage($data);
+    }
+
+    /**
+     * Calcula el próximo orden de clasificación para páginas
+     */
+    public function getNextPageSortOrder(): int
+    {
+        $pages = $this->model->getVirtualPages();
+        $maxSort = max(array_column($pages, 'sort_order') ?: [0]);
+        return $maxSort + 1;
     }
 
     /**

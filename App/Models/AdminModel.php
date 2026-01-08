@@ -43,7 +43,8 @@ class AdminModel
         virtual_title = ?, 
         static_url = ?, 
         virtual_content = ?,
-        visible = ?
+        visible = ?,
+        sort_order = ?
         WHERE id = ?";
 
         $params = [
@@ -51,6 +52,7 @@ class AdminModel
             $data['static_url'],
             $data['virtual_content'],
             $data['visible'],
+            $data['sort_order'] ?? 0,
             $id
         ];
 
@@ -61,7 +63,7 @@ class AdminModel
 
     public function createPage(array $data): bool
     {
-        $sql = "INSERT INTO page (virtual_title, static_url, virtual_content, visible, created_at) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO page (virtual_title, static_url, virtual_content, visible, created_at, sort_order) VALUES (?, ?, ?, ?, ?, ?)";
 
         $params = [
             $data['virtual_title'],
@@ -69,6 +71,7 @@ class AdminModel
             $data['virtual_content'],
             $data['visible'],
             $data['date'],
+            $data['sort_order'] ?? 0,
         ];
 
         $this->model->getDb()->query($sql, $params);
@@ -85,7 +88,7 @@ class AdminModel
     public function getVirtualPages(): array
     {
         try {
-            $sql = "SELECT * FROM page ORDER BY id ASC";
+            $sql = "SELECT * FROM page ORDER BY sort_order ASC";
             $this->model->getDb()->query($sql);
             $this->model->getDb()->get();
 

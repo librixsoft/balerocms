@@ -167,11 +167,23 @@ class AdminControllerTest extends TestCase
     #[TestDox('postNewPage crea pagina y redirige')]
     public function testPostNewPageCreatesAndRedirects(): void
     {
-        $this->requestMock->method('post')->willReturn('value');
+        $this->requestMock->method('post')->willReturnCallback(function ($key) {
+            $values = [
+                'virtual_title' => 'Test Title',
+                'static_url' => 'test-url',
+                'visible' => '1',
+                'date' => '2026-01-08',
+                'sort_order' => '1',
+            ];
+            return $values[$key] ?? 'value';
+        });
         $this->requestMock->method('raw')->willReturn('content');
 
         $this->adminServiceMock->expects($this->once())
-            ->method('createPage');
+            ->method('createPage')
+            ->with($this->callback(function ($data) {
+                return isset($data['sort_order']) && $data['sort_order'] === '1';
+            }));
 
         $this->redirectMock->expects($this->once())
             ->method('to')
@@ -205,12 +217,22 @@ class AdminControllerTest extends TestCase
     public function testPostEditPageUpdatesAndRedirects(): void
     {
         $id = 1;
-        $this->requestMock->method('post')->willReturn('value');
-        $this->requestMock->method('raw')->willReturn('content');
+        $this->requestMock->method('post')->willReturnCallback(function ($key) {
+            $values = [
+                'virtual_title' => 'Updated Title',
+                'static_url' => 'updated-url',
+                'visible' => '1',
+                'sort_order' => '2',
+            ];
+            return $values[$key] ?? 'value';
+        });
+        $this->requestMock->method('raw')->willReturn('updated content');
 
         $this->adminServiceMock->expects($this->once())
             ->method('updatePage')
-            ->with($id, $this->anything());
+            ->with($id, $this->callback(function ($data) {
+                return isset($data['sort_order']) && $data['sort_order'] === '2';
+            }));
 
         $this->redirectMock->expects($this->once())
             ->method('to')

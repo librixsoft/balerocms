@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS `page`
     `virtual_content` MEDIUMTEXT CHARACTER SET utf8   NOT NULL,
     `created_at`      DATE                            NOT NULL,
     `visible`         INT(10)                         NOT NULL,
+    `sort_order`      INT(10)                         NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8
@@ -24,9 +25,9 @@ CREATE TABLE IF NOT EXISTS `block`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-INSERT INTO `page` (`id`, `virtual_title`, `static_url`, `virtual_content`, `created_at`, `visible`)
-VALUES (1, 'Welcome Title', 'welcome-title', 'Welcome content ...', '2025-07-04', 1),
-       (2, 'Another Example', 'another-example-page-demo', 'Hello there ...', '2025-07-04', 1);
+INSERT INTO `page` (`id`, `virtual_title`, `static_url`, `virtual_content`, `created_at`, `visible`, `sort_order`)
+VALUES (1, 'Welcome Title', 'welcome-title', 'Welcome content ...', '2025-07-04', 1, 1),
+       (2, 'Another Example', 'another-example-page-demo', 'Hello there ...', '2025-07-04', 1, 2);
 
 INSERT INTO `block` (`id`, `name`, `sort_order`, `content`)
 VALUES (1, 'cards', 1, '<section class="features py-5">
