@@ -22,7 +22,7 @@ class PageModel
     public function getVirtualPages(): array
     {
         try {
-            $sql = "SELECT * FROM page WHERE visible = 1 ORDER BY id ASC";
+            $sql = "SELECT * FROM page WHERE visible = 1 ORDER BY sort_order ASC";
             $this->model->getDb()->query($sql);
             $this->model->getDb()->get();
 
