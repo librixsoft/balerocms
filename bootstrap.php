@@ -5,6 +5,7 @@
  */
 
 // Archivos críticos del framework
+require_once BASE_PATH . '/Framework/Core/EarlyErrorConsole.php';
 require_once BASE_PATH . '/Framework/Core/ErrorConsole.php';
 
 // Autoload de Composer PRIMERO (se registra su autoloader)
