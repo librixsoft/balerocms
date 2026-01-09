@@ -9,6 +9,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     container_name: phpunit-app
+    network_mode: "service:mysql" # Comparte red para usar localhost
     volumes:
       - ./:/app
     working_dir: /app
@@ -18,14 +19,16 @@ services:
       - sh
       - -c
       - "git config --global --add safe.directory /app; php bin/cache_routes.php; php bin/cache_dtos.php; tail -f /dev/null"
+
   # -----------------------------
-  # LAMP Stack (Apache + PHP, sin MySQL)
+  # LAMP Stack (Apache + PHP, sin MySQL) (http://localhost:8080)
   # -----------------------------
   lamp:
     image: mattrayner/lamp:latest-2004-php8
     container_name: lamp-app
-    ports:
-      - "8080:80"       # Apache → http://localhost:8080
+    network_mode: "service:mysql" # Comparte red para usar localhost
+    #ports: (Movidos al servicio mysql para compartir red)
+    #  - "8080:80"       # Apache → http://localhost:8080
     volumes:
       - ./:/var/www/html
       - ./apache/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
@@ -52,18 +55,19 @@ services:
     # volumes:
     #   - mysql_data:/var/lib/mysql
     ports:
-      - "3307:3306"
+      - "3307:3306" # Puerto MySQL
+      - "8080:80"   # Puerto Apache (de lamp)
     restart: unless-stopped
 
   # -----------------------------
-  # PhpMyAdmin (administrador MySQL)
+  # PhpMyAdmin (administrador MySQL) (http://localhost:8081)
   # -----------------------------
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
     restart: unless-stopped
     ports:
-      - "8081:80"   # PhpMyAdmin → http://localhost:8081
+      - "8081:80"
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306

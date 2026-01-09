@@ -1,7 +1,7 @@
 {
     "config": {
         "database": {
-            "dbhost": "mysql",
+            "dbhost": "127.0.0.1",
             "dbuser": "root",
             "dbpass": "root",
             "dbname": "balero_cms"
