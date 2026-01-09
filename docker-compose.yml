@@ -21,14 +21,14 @@ services:
       - "git config --global --add safe.directory /app; php bin/cache_routes.php; php bin/cache_dtos.php; tail -f /dev/null"
 
   # -----------------------------
-  # LAMP Stack (Apache + PHP, sin MySQL) (http://localhost:8080)
+  # LAMP Stack (Apache + PHP oficial)
   # -----------------------------
   lamp:
-    image: mattrayner/lamp:latest-2004-php8
+    build:
+      context: .
+      dockerfile: Dockerfile.lamp
     container_name: lamp-app
     network_mode: "service:mysql" # Comparte red para usar localhost
-    #ports: (Movidos al servicio mysql para compartir red)
-    #  - "8080:80"       # Apache → http://localhost:8080
     volumes:
       - ./:/var/www/html
       - ./apache/vhost.conf:/etc/apache2/sites-enabled/000-default.conf
@@ -56,7 +56,8 @@ services:
     #   - mysql_data:/var/lib/mysql
     ports:
       - "3307:3306" # Puerto MySQL
-      - "8080:80"   # Puerto Apache (de lamp)
+      - "8080:80"   # Puerto Apache (interno 80)
+      - "8081:8081" # Puerto PhpMyAdmin (interno 8081)
     restart: unless-stopped
 
   # -----------------------------
@@ -65,14 +66,14 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin
+    network_mode: "service:mysql" # Comparte red para ver mysql en 127.0.0.1
     restart: unless-stopped
-    ports:
-      - "8081:80"
     environment:
-      PMA_HOST: mysql
+      PMA_HOST: 127.0.0.1
       PMA_PORT: 3306
       PMA_USER: root
       PMA_PASSWORD: root
+      APACHE_PORT: 8081 # Cambia el puerto interno para que no choque con LAMP
     depends_on:
       - mysql
 
