@@ -50,6 +50,28 @@ class AdminTheme {
                         this.langOpen = false; // Agregué el langOpen
                     }
                 },
+                handleSlugInput(event) {
+                    // Convertir automáticamente a formato slug válido
+                    let value = event.target.value;
+                    
+                    // Convertir a minúsculas
+                    value = value.toLowerCase();
+                    
+                    // Reemplazar espacios y caracteres especiales con guiones
+                    value = value.replace(/\s+/g, '-')           // espacios a guiones
+                                 .replace(/[áàäâã]/g, 'a')       // vocales con acentos
+                                 .replace(/[éèëê]/g, 'e')
+                                 .replace(/[íìïî]/g, 'i')
+                                 .replace(/[óòöôõ]/g, 'o')
+                                 .replace(/[úùüû]/g, 'u')
+                                 .replace(/ñ/g, 'n')
+                                 .replace(/[^a-z0-9-]/g, '-')    // cualquier otro caracter a guion
+                                 .replace(/-+/g, '-')            // múltiples guiones a uno solo
+                                 .replace(/^-|-$/g, '');         // eliminar guiones al inicio/fin
+                    
+                    event.target.value = value;
+                    this.staticUrl = value;
+                },
             },
             computed: {
                 // ... (tus computed properties) ...

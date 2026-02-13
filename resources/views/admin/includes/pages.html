@@ -86,7 +86,14 @@
                        type="text"
                        placeholder="{mod_id == 'page_new' ? 'example-page-slug' : ''}"
                        value="{page.static_url == '' ? '' : page.static_url}"
+                       pattern="^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                       title="Solo minúsculas, números y guiones. Ejemplo: my-page-slug"
+                       onkeydown="return event.key !== ' ';"
+                       oninput="this.value = this.value.toLowerCase().replace(/\s+/g, '-').replace(/[áàäâã]/g, 'a').replace(/[éèëê]/g, 'e').replace(/[íìïî]/g, 'i').replace(/[óòöôõ]/g, 'o').replace(/[úùüû]/g, 'u').replace(/ñ/g, 'n').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+/g, '');"
                        required>
+                <small class="form-text text-muted">
+                    Solo se permiten letras minúsculas, números y guiones (sin espacios)
+                </small>
             </div>
         </div>
 
