@@ -50,13 +50,6 @@ class AdminTheme {
                         this.langOpen = false; // Agregué el langOpen
                     }
                 },
-                generateSlug(title) {
-                    return title.toLowerCase()
-                        .replace(/[^\w\s-]/g, '')
-                        .trim()
-                        .replace(/[\s_-]+/g, '-')
-                        .replace(/^-+|-+$/g, '');
-                },
             },
             computed: {
                 // ... (tus computed properties) ...
@@ -91,9 +84,6 @@ class AdminTheme {
             watch: {
                 isDark() {
                     this.applyThemeToBody();
-                },
-                virtualTitle(newTitle) {
-                    this.staticUrl = this.generateSlug(newTitle);
                 }
             }
         };

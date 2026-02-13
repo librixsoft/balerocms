@@ -1,0 +1,20 @@
+# robots.txt for BáleroCMS
+# This file tells search engine crawlers which pages or files they can or can't request from your site.
+
+# Allow all robots to access all content by default
+User-agent: *
+Disallow: /App/
+Disallow: /Framework/
+Disallow: /Tests/
+Disallow: /vendor/
+Disallow: /.git/
+Disallow: /config/
+
+# Allow access to public assets
+Allow: /assets/
+
+# Crawl-delay (optional, uncomment if needed)
+# Crawl-delay: 10
+
+# Sitemap location (update with your actual sitemap URL when available)
+# Sitemap: https://yourdomain.com/sitemap.xml

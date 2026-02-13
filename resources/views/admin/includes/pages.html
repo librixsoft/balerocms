@@ -60,7 +60,6 @@
                        id="virtual_title"
                        name="virtual_title"
                        required
-                       v-model="virtualTitle"
                        type="text"
                        value="{page.virtual_title == '' ? '' : page.virtual_title}">
             </div>
@@ -84,13 +83,10 @@
                 <input class="form-control"
                        id="static_url"
                        name="static_url"
-                       readonly
-                       v-model="staticUrl"
-                       style="background-color: #e9ecef; cursor: not-allowed;"
                        type="text"
-                       placeholder="{mod_id == 'page_new' ? 'Slug will be auto-generated' : ''}"
+                       placeholder="{mod_id == 'page_new' ? 'example-page-slug' : ''}"
                        value="{page.static_url == '' ? '' : page.static_url}"
-                       title="{mod_id == 'page_edit' ? admin.readonly_field : ''}">
+                       required>
             </div>
         </div>
 
