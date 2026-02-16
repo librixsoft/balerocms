@@ -42,7 +42,7 @@ class PageModel
     public function getVirtualPageBySlug(string $slug): array
     {
         try {
-            $sql = "SELECT * FROM page WHERE static_url = ? AND visible = 1 LIMIT 1";
+            $sql = "SELECT * FROM page WHERE static_url = ? LIMIT 1";
             $params = [$slug];
             $this->model->getDb()->query($sql, $params);
             $this->model->getDb()->get();
