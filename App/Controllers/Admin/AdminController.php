@@ -203,4 +203,11 @@ class AdminController
         $this->adminService->deleteBlock($id);
         $this->redirect->to('/admin/blocks');
     }
+
+    #[Get('/update')]
+    public function updateSystem()
+    {
+        $params = $this->adminService->getUpdateViewParams();
+        return $this->view->render("admin/dashboard.html", $params, false);
+    }
 }

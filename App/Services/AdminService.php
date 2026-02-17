@@ -5,6 +5,7 @@ namespace App\Services;
 use App\DTO\SettingsDTO;
 use App\Mapper\AdminSettingsMapper;
 use App\Models\AdminModel;
+use App\Services\UpdateService;
 use App\Views\AdminViewModel;
 use Framework\Attributes\Inject;
 use Framework\Attributes\Service;
@@ -28,6 +29,9 @@ class AdminService
 
     #[Inject]
     private ConfigSettings $configSettings;
+
+    #[Inject]
+    private UpdateService $updateService;
 
     /**
      * Prepara los parámetros para la vista de configuración
@@ -208,5 +212,14 @@ class AdminService
     public function deleteBlock(int $id): void
     {
         $this->model->deleteBlock($id);
+    }
+
+    /**
+     * Prepara los parámetros para la vista de actualización
+     */
+    public function getUpdateViewParams(): array
+    {
+        $updateInfo = $this->updateService->isUpdateAvailable();
+        return $this->viewModel->getUpdateParams($updateInfo);
     }
 }

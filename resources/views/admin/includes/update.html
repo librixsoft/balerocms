@@ -1,0 +1,41 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+             <div class="card-header">
+                System Update
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label text-end">Current Version:</label>
+                    <div class="col-sm-9">
+                         <input type="text" readonly class="form-control-plaintext" value="{current_version}">
+                    </div>
+                </div>
+                 <div class="row mb-3">
+                    <label class="col-sm-3 col-form-label text-end">Latest Version:</label>
+                    <div class="col-sm-9">
+                         <input type="text" readonly class="form-control-plaintext" value="{remote_version}">
+                    </div>
+                </div>
+
+                <%-- @if update_available -->
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Update Available!</h4>
+                    <p>A new version of BaleroCMS is available.</p>
+                    <hr>
+                    <p class="mb-0">
+                         <a href="{repo_url}" target="_blank" class="btn btn-primary">Go to Repository</a>
+                         <a href="{repo_url}/archive/refs/heads/development.zip" class="btn btn-success">Download Update (Zip)</a>
+                    </p>
+                </div>
+                <%-- @else -->
+                <div class="alert alert-success" role="alert">
+                    <h4 class="alert-heading">System is Up to Date</h4>
+                    <p>You are running the latest version of BaleroCMS.</p>
+                </div>
+                <%-- @endif -->
+
+            </div>
+        </div>
+    </div>
+</div>

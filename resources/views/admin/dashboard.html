@@ -143,6 +143,12 @@
                             {admin.blocks} <span class="badge bg-blue float-end">{blocks_count}</span>
                         </a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {activeMenu == 'update' ? 'active' : ''}" href="./admin/update">
+                            System Update
+                        </a>
+                    </li>
                 </ul>
             </div>
 
@@ -178,6 +184,10 @@
 
                         <%-- @if mod_id == "all_blocks" OR mod_id == "block_new" OR mod_id == "block_edit" -->
                             <%-- @include "admin/includes/blocks.html" -->
+                        <%-- @endif -->
+
+                        <%-- @if mod_id == "update" -->
+                             <%-- @include "admin/includes/update.html" -->
                         <%-- @endif -->
 
                     </div>

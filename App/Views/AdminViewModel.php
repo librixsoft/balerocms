@@ -205,4 +205,21 @@ class AdminViewModel
 
         return $viewModel->all();
     }
+
+    public function getUpdateParams(array $extraParams = []): array
+    {
+        $viewModel = $this->createViewModel();
+
+        $viewModel->addAll([
+            'mod_name' => 'System Update',
+            'mod_id' => 'update',
+            'activeMenu' => 'update',
+        ]);
+
+        if (!empty($extraParams)) {
+            $viewModel->addAll($extraParams);
+        }
+
+        return $viewModel->all();
+    }
 }
