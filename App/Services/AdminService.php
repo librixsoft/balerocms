@@ -222,4 +222,12 @@ class AdminService
         $updateInfo = $this->updateService->isUpdateAvailable();
         return $this->viewModel->getUpdateParams($updateInfo);
     }
+
+    /**
+     * Realiza la actualización automática del sistema
+     */
+    public function performUpdate(): array
+    {
+        return $this->updateService->performUpdate();
+    }
 }

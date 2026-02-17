@@ -20,18 +20,31 @@
 
                 <%-- @if update_available -->
                 <div class="alert alert-warning" role="alert">
-                    <h4 class="alert-heading">Update Available!</h4>
-                    <p>A new version of BaleroCMS is available.</p>
+                    <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Update Available!</h4>
+                    <p>A new version of BaleroCMS is available (v{remote_version}).</p>
                     <hr>
-                    <p class="mb-0">
-                         <a href="{repo_url}" target="_blank" class="btn btn-primary">Go to Repository</a>
-                         <a href="{repo_url}/archive/refs/heads/development.zip" class="btn btn-success">Download Update (Zip)</a>
-                    </p>
+                    <button id="btnAutoUpdate" class="btn btn-success">
+                        <i class="fas fa-download"></i> Update Automatically
+                    </button>
                 </div>
+
+                <!-- Progress section (hidden by default) -->
+                <div id="updateProgress" class="alert alert-info" style="display: none;">
+                    <h5><i class="fas fa-spinner fa-spin"></i> Updating System...</h5>
+                    <p id="updateStatus">Preparing update...</p>
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <!-- Result section (hidden by default) -->
+                <div id="updateResult" style="display: none;"></div>
+
                 <%-- @else -->
                 <div class="alert alert-success" role="alert">
-                    <h4 class="alert-heading">System is Up to Date</h4>
-                    <p>You are running the latest version of BaleroCMS.</p>
+                    <h4 class="alert-heading"><i class="fas fa-check-circle"></i> System is Up to Date</h4>
+                    <p>You are running the latest version of BaleroCMS (v{current_version}).</p>
                 </div>
                 <%-- @endif -->
 
@@ -39,3 +52,85 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const btnAutoUpdate = document.getElementById('btnAutoUpdate');
+    if (!btnAutoUpdate) return;
+
+    btnAutoUpdate.addEventListener('click', function() {
+        if (!confirm('This will update your BaleroCMS installation. A backup will be created automatically. Continue?')) {
+            return;
+        }
+
+        // Disable button and show progress
+        btnAutoUpdate.disabled = true;
+        document.getElementById('updateProgress').style.display = 'block';
+        document.getElementById('updateResult').style.display = 'none';
+
+        // Simulate progress steps
+        updateProgressBar(25, 'Downloading update...');
+
+        // Perform AJAX request
+        fetch('./admin/update/perform', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            updateProgressBar(100, 'Update complete!');
+            
+            setTimeout(() => {
+                document.getElementById('updateProgress').style.display = 'none';
+                const resultDiv = document.getElementById('updateResult');
+                
+                if (data.success) {
+                    resultDiv.className = 'alert alert-success';
+                    resultDiv.innerHTML = `
+                        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> Update Successful!</h4>
+                        <p>${data.message}</p>
+                        ${data.backup_file ? `<p class="mb-0"><small>Backup saved: ${data.backup_file}</small></p>` : ''}
+                        <hr>
+                        <button class="btn btn-primary" onclick="location.reload()">Reload Page</button>
+                    `;
+                } else {
+                    resultDiv.className = 'alert alert-danger';
+                    resultDiv.innerHTML = `
+                        <h4 class="alert-heading"><i class="fas fa-times-circle"></i> Update Failed</h4>
+                        <p>${data.message}</p>
+                        <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+                    `;
+                    btnAutoUpdate.disabled = false;
+                }
+                
+                resultDiv.style.display = 'block';
+            }, 500);
+        })
+        .catch(error => {
+            updateProgressBar(0, 'Error occurred');
+            document.getElementById('updateProgress').style.display = 'none';
+            
+            const resultDiv = document.getElementById('updateResult');
+            resultDiv.className = 'alert alert-danger';
+            resultDiv.innerHTML = `
+                <h4 class="alert-heading"><i class="fas fa-times-circle"></i> Update Failed</h4>
+                <p>An error occurred: ${error.message}</p>
+                <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+            `;
+            resultDiv.style.display = 'block';
+            btnAutoUpdate.disabled = false;
+        });
+    });
+
+    function updateProgressBar(percent, status) {
+        const progressBar = document.getElementById('progressBar');
+        const statusText = document.getElementById('updateStatus');
+        
+        progressBar.style.width = percent + '%';
+        progressBar.setAttribute('aria-valuenow', percent);
+        statusText.textContent = status;
+    }
+});
+</script>

@@ -210,4 +210,11 @@ class AdminController
         $params = $this->adminService->getUpdateViewParams();
         return $this->view->render("admin/dashboard.html", $params, false);
     }
+
+    #[Post('/update/perform')]
+    #[JsonResponse]
+    public function performUpdate()
+    {
+        return $this->adminService->performUpdate();
+    }
 }
