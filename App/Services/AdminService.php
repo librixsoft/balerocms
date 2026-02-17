@@ -220,6 +220,11 @@ class AdminService
     public function getUpdateViewParams(): array
     {
         $updateInfo = $this->updateService->isUpdateAvailable();
+        
+        // Add pages_count and blocks_count like other views
+        $updateInfo['pages_count'] = $this->model->getPagesCount();
+        $updateInfo['blocks_count'] = $this->model->getBlocksCount();
+        
         return $this->viewModel->getUpdateParams($updateInfo);
     }
 
