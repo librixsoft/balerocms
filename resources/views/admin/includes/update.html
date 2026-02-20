@@ -1,20 +1,20 @@
 <div class="row">
     <div class="col-md-12">
         <div class="card">
-             <div class="card-header">
+            <div class="card-header">
                 System Update
             </div>
             <div class="card-body">
                 <div class="row mb-3">
                     <label class="col-sm-3 col-form-label text-end">Current Version:</label>
                     <div class="col-sm-9">
-                         <input type="text" readonly class="form-control-plaintext" value="{current_version}">
+                        <input type="text" readonly class="form-control-plaintext" value="{current_version}">
                     </div>
                 </div>
-                 <div class="row mb-3">
+                <div class="row mb-3">
                     <label class="col-sm-3 col-form-label text-end">Latest Version:</label>
                     <div class="col-sm-9">
-                         <input type="text" readonly class="form-control-plaintext" value="{remote_version}">
+                        <input type="text" readonly class="form-control-plaintext" value="{remote_version}">
                     </div>
                 </div>
 
@@ -23,23 +23,49 @@
                     <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Update Available!</h4>
                     <p>A new version of BaleroCMS is available (v{remote_version}).</p>
                     <hr>
-                    <button id="btnAutoUpdate" class="btn btn-success">
+                    <button
+                        id="btnAutoUpdate"
+                        class="btn btn-success"
+                        :disabled="isUpdating"
+                        @click="performUpdate"
+                    >
                         <i class="fas fa-download"></i> Update Automatically
                     </button>
                 </div>
 
-                <!-- Progress section (hidden by default) -->
-                <div id="updateProgress" class="alert alert-info" style="display: none;">
+                <!-- Progress section -->
+                <div v-show="updateProgress" class="alert alert-info">
                     <h5><i class="fas fa-spinner fa-spin"></i> Updating System...</h5>
-                    <p id="updateStatus">Preparing update...</p>
+                    <p>{{ updateStatus }}</p>
                     <div class="progress">
-                        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" style="width: 0%"></div>
+                        <div
+                            class="progress-bar progress-bar-striped progress-bar-animated"
+                            role="progressbar"
+                            :style="{ width: progressPercent + '%' }"
+                            :aria-valuenow="progressPercent"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                        ></div>
                     </div>
                 </div>
 
-                <!-- Result section (hidden by default) -->
-                <div id="updateResult" style="display: none;"></div>
+                <!-- Result section -->
+                <div v-show="updateResult">
+                    <!-- Success -->
+                    <div v-if="updateSuccess" class="alert alert-success">
+                        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> Update Successful!</h4>
+                        <p>{{ updateMessage }}</p>
+                        <p v-if="updateBackupFile" class="mb-0"><small>Backup saved: {{ updateBackupFile }}</small></p>
+                        <hr>
+                        <button class="btn btn-primary" onclick="location.reload()">Reload Page</button>
+                    </div>
+                    <!-- Failure -->
+                    <div v-else class="alert alert-danger">
+                        <h4 class="alert-heading"><i class="fas fa-times-circle"></i> Update Failed</h4>
+                        <p>{{ updateMessage }}</p>
+                        <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
+                    </div>
+                </div>
 
                 <%-- @else -->
                 <div class="alert alert-success" role="alert">
@@ -52,85 +78,3 @@
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const btnAutoUpdate = document.getElementById('btnAutoUpdate');
-    if (!btnAutoUpdate) return;
-
-    btnAutoUpdate.addEventListener('click', function() {
-        if (!confirm('This will update your BaleroCMS installation. A backup will be created automatically. Continue?')) {
-            return;
-        }
-
-        // Disable button and show progress
-        btnAutoUpdate.disabled = true;
-        document.getElementById('updateProgress').style.display = 'block';
-        document.getElementById('updateResult').style.display = 'none';
-
-        // Simulate progress steps
-        updateProgressBar(25, 'Downloading update...');
-
-        // Perform AJAX request
-        fetch('./admin/update/perform', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            updateProgressBar(100, 'Update complete!');
-            
-            setTimeout(() => {
-                document.getElementById('updateProgress').style.display = 'none';
-                const resultDiv = document.getElementById('updateResult');
-                
-                if (data.success) {
-                    resultDiv.className = 'alert alert-success';
-                    resultDiv.innerHTML = `
-                        <h4 class="alert-heading"><i class="fas fa-check-circle"></i> Update Successful!</h4>
-                        <p>${data.message}</p>
-                        ${data.backup_file ? `<p class="mb-0"><small>Backup saved: ${data.backup_file}</small></p>` : ''}
-                        <hr>
-                        <button class="btn btn-primary" onclick="location.reload()">Reload Page</button>
-                    `;
-                } else {
-                    resultDiv.className = 'alert alert-danger';
-                    resultDiv.innerHTML = `
-                        <h4 class="alert-heading"><i class="fas fa-times-circle"></i> Update Failed</h4>
-                        <p>${data.message}</p>
-                        <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
-                    `;
-                    btnAutoUpdate.disabled = false;
-                }
-                
-                resultDiv.style.display = 'block';
-            }, 500);
-        })
-        .catch(error => {
-            updateProgressBar(0, 'Error occurred');
-            document.getElementById('updateProgress').style.display = 'none';
-            
-            const resultDiv = document.getElementById('updateResult');
-            resultDiv.className = 'alert alert-danger';
-            resultDiv.innerHTML = `
-                <h4 class="alert-heading"><i class="fas fa-times-circle"></i> Update Failed</h4>
-                <p>An error occurred: ${error.message}</p>
-                <button class="btn btn-secondary" onclick="location.reload()">Try Again</button>
-            `;
-            resultDiv.style.display = 'block';
-            btnAutoUpdate.disabled = false;
-        });
-    });
-
-    function updateProgressBar(percent, status) {
-        const progressBar = document.getElementById('progressBar');
-        const statusText = document.getElementById('updateStatus');
-        
-        progressBar.style.width = percent + '%';
-        progressBar.setAttribute('aria-valuenow', percent);
-        statusText.textContent = status;
-    }
-});
-</script>

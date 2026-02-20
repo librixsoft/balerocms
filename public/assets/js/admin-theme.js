@@ -19,6 +19,16 @@ class AdminTheme {
                     staticUrl: window.PAGE_DATA?.staticUrl || '',
                     visible: window.PAGE_DATA?.visible || '1',
                     sortOrder: window.BLOCK_CONFIG?.nextSortOrder || 0,
+
+                    // --- System Update ---
+                    isUpdating: false,
+                    updateProgress: false,
+                    updateStatus: 'Preparing update...',
+                    progressPercent: 0,
+                    updateResult: false,
+                    updateSuccess: false,
+                    updateMessage: '',
+                    updateBackupFile: '',
                 }
             },
             methods: {
@@ -71,6 +81,57 @@ class AdminTheme {
                     
                     event.target.value = value;
                     this.staticUrl = value;
+                },
+
+                // ── System Update ──────────────────────────────────────────
+                setProgress(percent, status) {
+                    this.progressPercent = percent;
+                    this.updateStatus   = status;
+                },
+
+                async performUpdate() {
+                    if (!confirm('This will update your BaleroCMS installation. A backup will be created automatically. Continue?')) {
+                        return;
+                    }
+
+                    this.isUpdating     = true;
+                    this.updateProgress = true;
+                    this.updateResult   = false;
+                    this.setProgress(25, 'Downloading update...');
+
+                    try {
+                        const response = await fetch('./admin/update/perform', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        });
+
+                        const data = await response.json();
+                        this.setProgress(100, 'Update complete!');
+
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        this.updateProgress  = false;
+                        this.updateSuccess   = data.success;
+                        this.updateMessage   = data.message;
+                        this.updateBackupFile = data.backup_file || '';
+                        this.updateResult    = true;
+
+                        if (!data.success) {
+                            this.isUpdating = false;
+                        }
+
+                    } catch (error) {
+                        this.setProgress(0, 'Error occurred');
+
+                        await new Promise(resolve => setTimeout(resolve, 300));
+
+                        this.updateProgress  = false;
+                        this.updateSuccess   = false;
+                        this.updateMessage   = `An error occurred: ${error.message}`;
+                        this.updateBackupFile = '';
+                        this.updateResult    = true;
+                        this.isUpdating      = false;
+                    }
                 },
             },
             computed: {
