@@ -55,7 +55,11 @@ class UploaderService
      */
     public function linkImagesToRecord(string $htmlContent, int $recordId, string $recordType, string $recordUrl): void
     {
-        // Patrón de la ruta relativa de uploads: assets/images/uploads/<hash>.<ext>
+        // 1. Limpiar previamente la referencia de este registro en TODO el sistema de archivos JSON.
+        //    (Así, si el usuario borró la imagen del editor HTML, se desvincula).
+        $this->uploader->removeRecordFromAllMetadata($recordId, $recordType);
+
+        // 2. Patrón de la ruta relativa de uploads: assets/images/uploads/<hash>.<ext>
         $pattern = '/assets\/images\/uploads\/([a-f0-9]{32})\.[a-z]{3,4}/i';
 
         if (!preg_match_all($pattern, $htmlContent, $matches)) {
@@ -79,5 +83,13 @@ class UploaderService
     public function getAllMedia(): array
     {
         return $this->uploader->getAllMediaMetadata();
+    }
+
+    /**
+     * Intenta eliminar un archivo de la galería. Lanza un UploaderException si está protegido.
+     */
+    public function deleteMedia(string $hash): void
+    {
+        $this->uploader->deleteMedia($hash);
     }
 }

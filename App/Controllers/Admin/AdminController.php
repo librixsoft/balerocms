@@ -154,9 +154,13 @@ class AdminController
     }
 
     #[Post('/pages/delete/{id}')]
-    public function postDeletePage(int $id)
+    public function deletePage(int $id)
     {
         $this->adminService->deletePage($id);
+        
+        // Limpiar todas las referencias a esta página (pasa a ser imagen huérfana y permite su borrado seguro)
+        $this->uploaderService->linkImagesToRecord('', $id, 'page', '');
+
         $this->redirect->to('/admin/pages');
     }
 
@@ -246,6 +250,10 @@ class AdminController
     public function deleteBlock(int $id)
     {
         $this->adminService->deleteBlock($id);
+        
+        // Limpiar referencias en imágenes. Pasamos un html vacío y se hará el remove del json.
+        $this->uploaderService->linkImagesToRecord('', $id, 'block', '');
+
         $this->redirect->to('/admin/blocks');
     }
 
@@ -254,6 +262,21 @@ class AdminController
     {
         $params = $this->adminService->getMediaViewParams();
         return $this->view->render("admin/dashboard.html", $params, false);
+    }
+
+    #[Post('/media/delete/{hash}')]
+    public function deleteMedia(string $hash)
+    {
+        try {
+            $this->uploaderService->deleteMedia($hash);
+        } catch (\Framework\Exceptions\UploaderException $e) {
+            // El usuario trató de borrar una imagen que todavía está en uso
+            $this->flash->set("danger", $e->getMessage());
+        } catch (\Throwable $e) {
+            $this->flash->set("danger", "Unknown error occurred while trying to delete media.");
+        }
+        
+        $this->redirect->to('/admin/media');
     }
 
     #[Get('/update')]

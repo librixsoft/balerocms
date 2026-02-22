@@ -28,10 +28,22 @@
                     <span class="text-muted">{media.uploaded_at}</span>
                 </p>
             </div>
-            <div class="card-footer bg-transparent border-top-0 pt-0 text-center">
-                <a href=".{media.url}" target="_blank" class="btn btn-sm btn-outline-primary w-100">
-                    <i class="fas fa-external-link-alt"></i> View Image
+            <div class="card-footer bg-transparent pt-0 border-top-0 d-flex gap-2">
+                <a href=".{media.url}" target="_blank" class="btn btn-sm btn-outline-primary flex-fill">
+                    <i class="fas fa-external-link-alt"></i> View
                 </a>
+                
+                <form action="./admin/media/delete/{media.hash}" method="POST" class="flex-fill m-0 p-0" onsubmit="return confirm('Irreversible action. Are you sure you want to delete this media file?');">
+                    <%-- @if media.records -->
+                    <button type="button" class="btn btn-sm btn-outline-danger w-100" disabled title="Cannot delete: This image is currently in use.">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <%-- @else -->
+                    <button type="submit" class="btn btn-sm btn-outline-danger w-100" title="Delete orphaned image">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <%-- @endif -->
+                </form>
             </div>
         </div>
     </div>

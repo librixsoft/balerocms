@@ -148,6 +148,69 @@ class Uploader
             );
         }
     }
+
+    /**
+     * Elimina una referencia a un registro de todos los JSON de metadatos.
+     * Esto se usa al borrar una página o un bloque completo o al actualizarlos.
+     */
+    public function removeRecordFromAllMetadata(int $recordId, string $recordType): void
+    {
+        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
+        if (!is_dir($uploadDir)) return;
+
+        $files = glob($uploadDir . '*.json');
+        if (!$files) return;
+
+        foreach ($files as $file) {
+            $json = file_get_contents($file);
+            if (!$json) continue;
+            
+            $metadata = json_decode($json, true);
+            if (!isset($metadata['records']) || !is_array($metadata['records'])) continue;
+
+            $originalCount = count($metadata['records']);
+            $metadata['records'] = array_filter($metadata['records'], function($r) use ($recordId, $recordType) {
+                return !($r['id'] == $recordId && $r['type'] === $recordType);
+            });
+
+            // Reindexar array
+            $metadata['records'] = array_values($metadata['records']);
+
+            if (count($metadata['records']) !== $originalCount) {
+                file_put_contents(
+                    $file,
+                    json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+                );
+            }
+        }
+    }
+
+    /**
+     * Borra físicamente la imagen y su JSON de disco. Lanza excepción si la imagen está en uso.
+     */
+    public function deleteMedia(string $hash): void
+    {
+        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
+        $jsonPath  = $uploadDir . $hash . '.json';
+        
+        if (!file_exists($jsonPath)) {
+            throw new UploaderException("Media file metadata not found.");
+        }
+
+        $metadata = json_decode(file_get_contents($jsonPath), true) ?? [];
+        if (!empty($metadata['records'])) {
+            throw new UploaderException("Cannot delete media. It is currently in use in " . count($metadata['records']) . " location(s).");
+        }
+
+        $filename = $metadata['filename'] ?? ($hash . '.' . ($metadata['extension'] ?? 'jpg'));
+        $imagePath = $uploadDir . $filename;
+
+        // Borrar imagen y JSON
+        if (file_exists($imagePath)) {
+            unlink($imagePath);
+        }
+        unlink($jsonPath);
+    }
     public function getAllMediaMetadata(): array
     {
         $uploadDir = rtrim($this->uploadsPath, '/') . '/';
