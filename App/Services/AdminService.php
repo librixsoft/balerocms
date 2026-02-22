@@ -6,6 +6,7 @@ use App\DTO\SettingsDTO;
 use App\Mapper\AdminSettingsMapper;
 use App\Models\AdminModel;
 use App\Services\UpdateService;
+use App\Services\UploaderService;
 use App\Views\AdminViewModel;
 use Framework\Attributes\Inject;
 use Framework\Attributes\Service;
@@ -32,6 +33,9 @@ class AdminService
 
     #[Inject]
     private UpdateService $updateService;
+
+    #[Inject]
+    private UploaderService $uploaderService;
 
     /**
      * Prepara los parámetros para la vista de configuración
@@ -234,5 +238,19 @@ class AdminService
     public function performUpdate(): array
     {
         return $this->updateService->performUpdate();
+    }
+
+    /**
+     * Prepara los parámetros de la galería de medios (Media)
+     */
+    public function getMediaViewParams(): array
+    {
+        $params = [
+            'pages_count'  => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
+            'media_items'  => $this->uploaderService->getAllMedia(),
+        ];
+
+        return $this->viewModel->getMediaParams($params);
     }
 }

@@ -249,6 +249,13 @@ class AdminController
         $this->redirect->to('/admin/blocks');
     }
 
+    #[Get('/media')]
+    public function getMediaList()
+    {
+        $params = $this->adminService->getMediaViewParams();
+        return $this->view->render("admin/dashboard.html", $params, false);
+    }
+
     #[Get('/update')]
     public function updateSystem()
     {

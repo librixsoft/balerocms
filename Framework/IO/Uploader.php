@@ -148,6 +148,56 @@ class Uploader
             );
         }
     }
+    public function getAllMediaMetadata(): array
+    {
+        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
+        $media = [];
+
+        if (is_dir($uploadDir)) {
+            $files = glob($uploadDir . '*.json');
+            if ($files) {
+                foreach ($files as $file) {
+                    $json = file_get_contents($file);
+                    if ($json) {
+                        $data = json_decode($json, true);
+                        if ($data) {
+                            // Crear un resumen textual de los registros
+                            $recordsStr = '';
+                            if (!empty($data['records'])) {
+                                $types = [];
+                                foreach ($data['records'] as $r) {
+                                    $types[] = ($r['type'] ?? '?') . ' #' . ($r['id'] ?? '?');
+                                }
+                                $recordsStr = implode(', ', $types);
+                            } else {
+                                $recordsStr = 'Not linked';
+                            }
+                            $data['records_summary'] = $recordsStr;
+
+                            // Formatear tamaño a KB o MB
+                            $bytes = $data['size_bytes'] ?? 0;
+                            if ($bytes > 1024 * 1024) {
+                                $data['size_formatted'] = round($bytes / (1024 * 1024), 2) . ' MB';
+                            } else {
+                                $data['size_formatted'] = round($bytes / 1024, 2) . ' KB';
+                            }
+
+                            $media[] = $data;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Ordenar por fecha de subida, más reciente primero
+        usort($media, function ($a, $b) {
+            $dateA = strtotime($a['uploaded_at'] ?? '0');
+            $dateB = strtotime($b['uploaded_at'] ?? '0');
+            return $dateB <=> $dateA;
+        });
+
+        return $media;
+    }
 
     public function getUploadsPath(): string
     {

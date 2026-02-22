@@ -222,4 +222,21 @@ class AdminViewModel
 
         return $viewModel->all();
     }
+
+    public function getMediaParams(array $extraParams = []): array
+    {
+        $viewModel = $this->createViewModel();
+
+        $viewModel->addAll([
+            'mod_name' => $this->translator->t("admin.media") ?? 'Media',
+            'mod_id' => 'media',
+            'activeMenu' => 'media',
+        ]);
+
+        if (!empty($extraParams)) {
+            $viewModel->addAll($extraParams);
+        }
+
+        return $viewModel->all();
+    }
 }

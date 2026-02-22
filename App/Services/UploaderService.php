@@ -72,4 +72,12 @@ class UploaderService
             ]);
         }
     }
+
+    /**
+     * Devuelve toda la galería leyendo los metadatos JSON de los uploads.
+     */
+    public function getAllMedia(): array
+    {
+        return $this->uploader->getAllMediaMetadata();
+    }
 }

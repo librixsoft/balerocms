@@ -145,6 +145,12 @@
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link {activeMenu == 'media' ? 'active' : ''}" href="./admin/media">
+                            Media
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link {activeMenu == 'update' ? 'active' : ''}" href="./admin/update">
                             System Update
                         </a>
@@ -184,6 +190,10 @@
 
                         <%-- @if mod_id == "all_blocks" OR mod_id == "block_new" OR mod_id == "block_edit" -->
                             <%-- @include "admin/includes/blocks.html" -->
+                        <%-- @endif -->
+
+                        <%-- @if mod_id == "media" -->
+                             <%-- @include "admin/includes/media.html" -->
                         <%-- @endif -->
 
                         <%-- @if mod_id == "update" -->
