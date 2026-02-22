@@ -13,15 +13,18 @@ class UpdateService
     public function getCurrentVersion(): string
     {
         if (!defined('_CORE_VERSION')) {
-             $publicRoot = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') : '';
-             $projectRoot = dirname(__DIR__, 2);
+             $projectRoot = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
              
-             if (empty($publicRoot) || !is_dir($publicRoot)) {
-                 if (is_dir($projectRoot . '/public_html')) {
-                     $publicRoot = $projectRoot . '/public_html';
-                 } else {
-                     $publicRoot = $projectRoot . '/public';
+             // Prevent recursive nesting block
+             if (basename($projectRoot) === 'public_html' || basename($projectRoot) === 'public') {
+                 if (is_dir(dirname($projectRoot) . '/App')) {
+                     $projectRoot = dirname($projectRoot);
                  }
+             }
+             
+             $publicRoot = $projectRoot . '/public';
+             if (is_dir($projectRoot . '/public_html')) {
+                 $publicRoot = $projectRoot . '/public_html';
              }
 
              $path = $publicRoot . '/version.php';
@@ -216,15 +219,21 @@ class UpdateService
      */
     public function installUpdate(string $extractedFolder): array
     {
-        $projectRoot = dirname(__DIR__, 2);
+        $projectRoot = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
         
-        $publicRoot = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') : '';
-        if (empty($publicRoot) || !is_dir($publicRoot)) {
-            if (is_dir($projectRoot . '/public_html')) {
-                $publicRoot = $projectRoot . '/public_html';
-            } else {
-                $publicRoot = $projectRoot . '/public';
+        // Prevent recursive nesting if UpdateService.php was accidentally copied inside public_html in a prior bug
+        if (basename($projectRoot) === 'public_html' || basename($projectRoot) === 'public') {
+            if (is_dir(dirname($projectRoot) . '/App')) {
+                $projectRoot = dirname($projectRoot);
             }
+        }
+        
+        // Dynamically detect the correct public folder based strictly on project directories
+        $publicRoot = $projectRoot . '/public';
+        if (is_dir($projectRoot . '/public_html')) {
+            $publicRoot = $projectRoot . '/public_html';
+        } elseif (is_dir($projectRoot . '/www')) {
+            $publicRoot = $projectRoot . '/www';
         }
         
         // Directories to update mapping (source => destination)
