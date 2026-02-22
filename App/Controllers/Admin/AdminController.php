@@ -100,15 +100,24 @@ class AdminController
     public function postNewPage()
     {
         $data = [
-            'virtual_title' => $this->request->post('virtual_title'),
-            'static_url' => $this->request->post('static_url'),
+            'virtual_title'   => $this->request->post('virtual_title'),
+            'static_url'      => $this->request->post('static_url'),
             'virtual_content' => $this->request->raw('virtual_content'),
-            'visible' => (int)$this->request->post('visible'),
-            'date' => $this->request->post('date'),
-            'sort_order' => $this->request->post('sort_order'),
+            'visible'         => (int)$this->request->post('visible'),
+            'date'            => $this->request->post('date'),
+            'sort_order'      => $this->request->post('sort_order'),
         ];
 
-        $this->adminService->createPage($data);
+        $newId = $this->adminService->createPage($data);
+
+        // Vincular imágenes subidas durante la edición con este registro
+        $this->uploaderService->linkImagesToRecord(
+            $data['virtual_content'],
+            $newId,
+            'page',
+            $data['static_url'] ?? ''
+        );
+
         $this->redirect->to('/admin/pages');
     }
 
@@ -123,15 +132,24 @@ class AdminController
     public function postEditPage(int $id)
     {
         $data = [
-            'id' => $id,
-            'virtual_title' => $this->request->post("virtual_title"),
-            'static_url' => $this->request->post("static_url"),
+            'id'              => $id,
+            'virtual_title'   => $this->request->post("virtual_title"),
+            'static_url'      => $this->request->post("static_url"),
             'virtual_content' => $this->request->raw("virtual_content"),
-            'visible' => $this->request->post("visible"),
-            'sort_order' => $this->request->post("sort_order"),
+            'visible'         => $this->request->post("visible"),
+            'sort_order'      => $this->request->post("sort_order"),
         ];
 
         $this->adminService->updatePage($id, $data);
+
+        // Vincular imágenes recién subidas en esta edición con el registro
+        $this->uploaderService->linkImagesToRecord(
+            $data['virtual_content'],
+            $id,
+            'page',
+            $data['static_url'] ?? ''
+        );
+
         $this->redirect->to('/admin/pages');
     }
 
@@ -147,7 +165,16 @@ class AdminController
     public function postUploader()
     {
         $file = $_FILES['file'] ?? null;
-        return $this->uploaderService->uploadImage($file);
+
+        $meta = [
+            'original_name' => $this->request->post('meta_original_name') ?? '',
+            'size'          => (int) ($this->request->post('meta_size') ?? 0),
+            'mime'          => $this->request->post('meta_mime') ?? '',
+            'uploaded_at'   => $this->request->post('meta_uploaded_at') ?? date('c'),
+            'context'       => $this->request->post('meta_context') ?? 'unknown',
+        ];
+
+        return $this->uploaderService->uploadImage($file, $meta);
     }
 
     #[Get('/blocks')]
@@ -168,12 +195,21 @@ class AdminController
     public function createBlock()
     {
         $data = [
-            'name' => $this->request->post('name'),
+            'name'       => $this->request->post('name'),
             'sort_order' => $this->request->post('sort_order'),
-            'content' => $this->request->raw('content'),
+            'content'    => $this->request->raw('content'),
         ];
 
-        $this->adminService->createBlock($data);
+        $newId = $this->adminService->createBlock($data);
+
+        // Vincular imágenes subidas durante la edición con este registro
+        $this->uploaderService->linkImagesToRecord(
+            $data['content'],
+            $newId,
+            'block',
+            $data['name'] ?? ''
+        );
+
         $this->redirect->to('/admin/blocks');
     }
 
@@ -188,12 +224,21 @@ class AdminController
     public function postEditBlock(int $id)
     {
         $data = [
-            'name' => $this->request->post('name'),
+            'name'       => $this->request->post('name'),
             'sort_order' => $this->request->post('sort_order'),
-            'content' => $this->request->raw('content'),
+            'content'    => $this->request->raw('content'),
         ];
 
         $this->adminService->updateBlock($id, $data);
+
+        // Vincular imágenes recién subidas en esta edición con el registro
+        $this->uploaderService->linkImagesToRecord(
+            $data['content'],
+            $id,
+            'block',
+            $data['name'] ?? ''
+        );
+
         $this->redirect->to('/admin/blocks');
     }
 

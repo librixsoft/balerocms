@@ -246,6 +246,17 @@ if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
                         const formData = new FormData();
                         formData.append('file', file);
 
+                        // Metadatos adicionales que se persisten junto a la imagen
+                        formData.append('meta_original_name', file.name);
+                        formData.append('meta_size',          file.size);
+                        formData.append('meta_mime',          file.type);
+                        formData.append('meta_uploaded_at',   new Date().toISOString());
+
+                        // Detectar sección desde la URL actual (pages, blocks, etc.)
+                        const pathParts = window.location.pathname.replace(/\/+$/, '').split('/');
+                        const context   = pathParts.find(p => ['pages', 'blocks'].includes(p)) ?? 'unknown';
+                        formData.append('meta_context', context);
+
                         fetch('/admin/uploader', {
                             method: 'POST',
                             body: formData

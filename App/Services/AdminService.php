@@ -101,9 +101,9 @@ class AdminService
     /**
      * Crea una nueva página
      */
-    public function createPage(array $data): void
+    public function createPage(array $data): int
     {
-        $this->model->createPage($data);
+        return $this->model->createPage($data);
     }
 
     /**
@@ -181,9 +181,9 @@ class AdminService
     /**
      * Crea un nuevo bloque
      */
-    public function createBlock(array $data): void
+    public function createBlock(array $data): int
     {
-        $this->model->createBlock($data);
+        return $this->model->createBlock($data);
     }
 
     /**

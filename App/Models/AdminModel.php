@@ -61,7 +61,7 @@ class AdminModel
         return true;
     }
 
-    public function createPage(array $data): bool
+    public function createPage(array $data): int
     {
         $sql = "INSERT INTO page (virtual_title, static_url, virtual_content, visible, created_at, sort_order) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -76,7 +76,7 @@ class AdminModel
 
         $this->model->getDb()->query($sql, $params);
 
-        return true;
+        return $this->model->getDb()->getInsertId();
     }
 
     public function getPagesCount(): int
@@ -165,7 +165,7 @@ class AdminModel
         }
     }
 
-    public function createBlock(array $data): bool
+    public function createBlock(array $data): int
     {
         try {
             $sortOrder = isset($data['sort_order']) && is_numeric($data['sort_order'])
@@ -179,7 +179,7 @@ class AdminModel
                 $data['content'] ?? '',
             ];
             $this->model->getDb()->query($sql, $params);
-            return true;
+            return $this->model->getDb()->getInsertId();
         } catch (Throwable $e) {
             throw new ModelException("Error creating block: " . $e->getMessage(), previous: $e);
         }

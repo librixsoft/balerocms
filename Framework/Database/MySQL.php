@@ -129,6 +129,11 @@ class MySQL
         return $this->conn->real_escape_string($value);
     }
 
+    public function getInsertId(): int
+    {
+        return (int) $this->conn->insert_id;
+    }
+
     public function queryArray(): array
     {
         return $this->rows;
