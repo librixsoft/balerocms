@@ -62,7 +62,13 @@
 <!-- Main dinámico de páginas -->
 <main class="container my-5">
 
-    <%-- @if blocks -->
+    <%-- @if is_error -->
+    <div class="text-center">
+        <h1>Oops! Something went wrong</h1>
+        <small>We are working to fix the issue. Please try again later.</small>
+        <p class="text-muted">If problem persist, contact administrator.</p>
+    </div>
+    <%-- @elseif blocks -->
         <%-- @foreach blocks as block -->
         <p>{block.content}</p>
         <%-- @endforeach -->

@@ -30,10 +30,11 @@ class ErrorController
     public function index()
     {
         $params = $this->viewModel->setErrorParams([
+            'is_error' => true,
             'blocks' => $this->blockModel->getBlocks(),
             'virtual_pages' => $this->pageModel->getVirtualPages(),
         ]);
-        return $this->view->render("error.html", $params);
+        return $this->view->render("main.html", $params);
     }
 
 }

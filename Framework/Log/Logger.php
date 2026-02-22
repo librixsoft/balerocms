@@ -26,9 +26,10 @@ class Logger
     {
         if ($this->isProduction) {
             // Producción → vista genérica
-            $this->view->render('error.html', [
-                'title'   => 'Oops!',
-                'message' => 'We are working to fix the issue. Please try again later.'
+            $this->view->render('main.html', [
+                'title'    => 'Oops!',
+                'message'  => 'We are working to fix the issue. Please try again later.',
+                'is_error' => true
             ]);
         } else {
             // Desarrollo → usar ErrorConsole
