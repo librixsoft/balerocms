@@ -13,9 +13,20 @@ class UpdateService
     public function getCurrentVersion(): string
     {
         if (!defined('_CORE_VERSION')) {
-             $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+             $publicRoot = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') : '';
+             $projectRoot = dirname(__DIR__, 2);
+             
+             if (empty($publicRoot) || !is_dir($publicRoot)) {
+                 if (is_dir($projectRoot . '/public_html')) {
+                     $publicRoot = $projectRoot . '/public_html';
+                 } else {
+                     $publicRoot = $projectRoot . '/public';
+                 }
+             }
+
+             $path = $publicRoot . '/version.php';
              if (file_exists($path)) {
-                include_once $path;
+                 include_once $path;
              }
              if (!defined('_CORE_VERSION')) {
                  return 'Unknown';
@@ -77,7 +88,7 @@ class UpdateService
      */
     public function downloadUpdate(): array
     {
-        $zipUrl = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip';
+        $zipUrl = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip?v=' . time();
         $tempDir = sys_get_temp_dir();
         $zipFile = $tempDir . '/balerocms-update.zip';
 
@@ -148,7 +159,8 @@ class UpdateService
      */
     public function createBackup(): array
     {
-        $backupDir = $_SERVER['DOCUMENT_ROOT'] . '/../backups';
+        $projectRoot = dirname(__DIR__, 2);
+        $backupDir = $projectRoot . '/backups';
         if (!is_dir($backupDir)) {
             if (!mkdir($backupDir, 0755, true)) {
                 return ['success' => false, 'message' => 'Failed to create backup directory'];
@@ -166,8 +178,7 @@ class UpdateService
             return ['success' => false, 'message' => 'Failed to create backup ZIP'];
         }
 
-        $rootPath = $_SERVER['DOCUMENT_ROOT'];
-        $this->addFilesToZip($zip, $rootPath, $rootPath);
+        $this->addFilesToZip($zip, $projectRoot, $projectRoot);
         
         $zip->close();
 
@@ -205,28 +216,41 @@ class UpdateService
      */
     public function installUpdate(string $extractedFolder): array
     {
-        $rootPath = $_SERVER['DOCUMENT_ROOT'];
+        $projectRoot = dirname(__DIR__, 2);
         
-        // Directories to update (core files only)
-        $dirsToUpdate = ['App', 'Framework', 'public', 'resources'];
+        $publicRoot = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') : '';
+        if (empty($publicRoot) || !is_dir($publicRoot)) {
+            if (is_dir($projectRoot . '/public_html')) {
+                $publicRoot = $projectRoot . '/public_html';
+            } else {
+                $publicRoot = $projectRoot . '/public';
+            }
+        }
         
-        foreach ($dirsToUpdate as $dir) {
-            $source = $extractedFolder . '/' . $dir;
-            $destination = $rootPath . '/' . $dir;
+        // Directories to update mapping (source => destination)
+        $dirsMap = [
+            'App' => $projectRoot . '/App',
+            'Framework' => $projectRoot . '/Framework',
+            'resources' => $projectRoot . '/resources',
+            'public' => $publicRoot
+        ];
+        
+        foreach ($dirsMap as $srcDir => $destDir) {
+            $source = $extractedFolder . '/' . $srcDir;
             
             if (!is_dir($source)) {
                 continue;
             }
             
             // Copy files recursively, but preserve certain files
-            if (!$this->copyDirectory($source, $destination)) {
-                return ['success' => false, 'message' => "Failed to copy $dir"];
+            if (!$this->copyDirectory($source, $destDir)) {
+                return ['success' => false, 'message' => "Failed to copy $srcDir"];
             }
         }
 
         // Update version.php
         $versionSource = $extractedFolder . '/public/version.php';
-        $versionDest = $rootPath . '/version.php';
+        $versionDest = $publicRoot . '/version.php';
         if (file_exists($versionSource)) {
             copy($versionSource, $versionDest);
         }
@@ -253,6 +277,13 @@ class UpdateService
         foreach ($files as $file) {
             $targetPath = $destination . '/' . substr($file->getPathname(), strlen($source) + 1);
             
+            // Skip themes and config directory entirely
+            if (strpos($targetPath, '/resources/views/themes') !== false ||
+                strpos($targetPath, '/assets/themes') !== false ||
+                strpos($targetPath, '/resources/config') !== false) {
+                continue;
+            }
+            
             if ($file->isDir()) {
                 if (!is_dir($targetPath)) {
                     mkdir($targetPath, 0755, true);
@@ -262,6 +293,11 @@ class UpdateService
                 if (strpos($targetPath, '/config/settings.php') !== false ||
                     strpos($targetPath, '/assets/images/uploads/') !== false) {
                     continue;
+                }
+                
+                $dir = dirname($targetPath);
+                if (!is_dir($dir)) {
+                    mkdir($dir, 0755, true);
                 }
                 
                 copy($file->getPathname(), $targetPath);
