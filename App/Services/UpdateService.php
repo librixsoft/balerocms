@@ -188,6 +188,10 @@ class UpdateService
 
         $backupFile = $backupDir . '/backup-' . date('Y-m-d') . '.zip';
 
+        if (file_exists($backupFile) && !@unlink($backupFile)) {
+            return ['success' => false, 'message' => 'Failed to remove existing backup file'];
+        }
+
         if (!class_exists('ZipArchive')) {
             return ['success' => false, 'message' => 'ZipArchive extension is not available'];
         }
