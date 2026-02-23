@@ -90,7 +90,7 @@ class AdminTheme {
                 },
 
                 async performUpdate() {
-                    if (!confirm('This will update your BaleroCMS installation. A backup will be created automatically. Continue?')) {
+                    if (!confirm('This will update your BaleroCMS installation. Please, create a backup before updating. Continue?')) {
                         return;
                     }
 
