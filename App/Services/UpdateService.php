@@ -13,23 +13,9 @@ class UpdateService
     public function getCurrentVersion(): string
     {
         if (!defined('_CORE_VERSION')) {
-             $projectRoot = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
-             
-             // Prevent recursive nesting block
-             if (basename($projectRoot) === 'public_html' || basename($projectRoot) === 'public') {
-                 if (is_dir(dirname($projectRoot) . '/App')) {
-                     $projectRoot = dirname($projectRoot);
-                 }
-             }
-             
-             $publicRoot = $projectRoot . '/public';
-             if (is_dir($projectRoot . '/public_html')) {
-                 $publicRoot = $projectRoot . '/public_html';
-             }
-
-             $path = $publicRoot . '/version.php';
+             $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
              if (file_exists($path)) {
-                 include_once $path;
+                include_once $path;
              }
              if (!defined('_CORE_VERSION')) {
                  return 'Unknown';
@@ -91,7 +77,7 @@ class UpdateService
      */
     public function downloadUpdate(): array
     {
-        $zipUrl = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip?v=' . time();
+        $zipUrl = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip';
         $tempDir = sys_get_temp_dir();
         $zipFile = $tempDir . '/balerocms-update.zip';
 
@@ -162,8 +148,8 @@ class UpdateService
      */
     public function createBackup(): array
     {
-        $projectRoot = dirname(__DIR__, 2);
-        $backupDir = $projectRoot . '/backups';
+        $rootPath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
+        $backupDir = $rootPath . '/backups';
         if (!is_dir($backupDir)) {
             if (!mkdir($backupDir, 0755, true)) {
                 return ['success' => false, 'message' => 'Failed to create backup directory'];
@@ -181,7 +167,7 @@ class UpdateService
             return ['success' => false, 'message' => 'Failed to create backup ZIP'];
         }
 
-        $this->addFilesToZip($zip, $projectRoot, $projectRoot);
+        $this->addFilesToZip($zip, $rootPath, $rootPath);
         
         $zip->close();
 
@@ -219,47 +205,33 @@ class UpdateService
      */
     public function installUpdate(string $extractedFolder): array
     {
-        $projectRoot = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
+        $rootPath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
         
-        // Prevent recursive nesting if UpdateService.php was accidentally copied inside public_html in a prior bug
-        if (basename($projectRoot) === 'public_html' || basename($projectRoot) === 'public') {
-            if (is_dir(dirname($projectRoot) . '/App')) {
-                $projectRoot = dirname($projectRoot);
+        // Directories to update (core files only)
+        $dirsToUpdate = ['App', 'Framework', 'public', 'resources'];
+        
+        foreach ($dirsToUpdate as $dir) {
+            $source = $extractedFolder . '/' . $dir;
+            
+            if ($dir === 'public') {
+                $destination = $_SERVER['DOCUMENT_ROOT'];
+            } else {
+                $destination = $rootPath . '/' . $dir;
             }
-        }
-        
-        // Dynamically detect the correct public folder based strictly on project directories
-        $publicRoot = $projectRoot . '/public';
-        if (is_dir($projectRoot . '/public_html')) {
-            $publicRoot = $projectRoot . '/public_html';
-        } elseif (is_dir($projectRoot . '/www')) {
-            $publicRoot = $projectRoot . '/www';
-        }
-        
-        // Directories to update mapping (source => destination)
-        $dirsMap = [
-            'App' => $projectRoot . '/App',
-            'Framework' => $projectRoot . '/Framework',
-            'resources' => $projectRoot . '/resources',
-            'public' => $publicRoot
-        ];
-        
-        foreach ($dirsMap as $srcDir => $destDir) {
-            $source = $extractedFolder . '/' . $srcDir;
             
             if (!is_dir($source)) {
                 continue;
             }
             
             // Copy files recursively, but preserve certain files
-            if (!$this->copyDirectory($source, $destDir)) {
-                return ['success' => false, 'message' => "Failed to copy $srcDir"];
+            if (!$this->copyDirectory($source, $destination)) {
+                return ['success' => false, 'message' => "Failed to copy $dir"];
             }
         }
 
         // Update version.php
         $versionSource = $extractedFolder . '/public/version.php';
-        $versionDest = $publicRoot . '/version.php';
+        $versionDest = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
         if (file_exists($versionSource)) {
             copy($versionSource, $versionDest);
         }
@@ -286,13 +258,6 @@ class UpdateService
         foreach ($files as $file) {
             $targetPath = $destination . '/' . substr($file->getPathname(), strlen($source) + 1);
             
-            // Skip themes and config directory entirely
-            if (strpos($targetPath, '/resources/views/themes') !== false ||
-                strpos($targetPath, '/assets/themes') !== false ||
-                strpos($targetPath, '/resources/config') !== false) {
-                continue;
-            }
-            
             if ($file->isDir()) {
                 if (!is_dir($targetPath)) {
                     mkdir($targetPath, 0755, true);
@@ -302,11 +267,6 @@ class UpdateService
                 if (strpos($targetPath, '/config/settings.php') !== false ||
                     strpos($targetPath, '/assets/images/uploads/') !== false) {
                     continue;
-                }
-                
-                $dir = dirname($targetPath);
-                if (!is_dir($dir)) {
-                    mkdir($dir, 0755, true);
                 }
                 
                 copy($file->getPathname(), $targetPath);
