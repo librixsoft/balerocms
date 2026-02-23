@@ -263,9 +263,12 @@ class UpdateService
                     mkdir($targetPath, 0755, true);
                 }
             } else {
-                // Skip config files and uploads
-                if (strpos($targetPath, '/config/settings.php') !== false ||
-                    strpos($targetPath, '/assets/images/uploads/') !== false) {
+                // Skip specific directories and files
+                if (strpos($targetPath, '/resources/config/balero.config.json') !== false ||
+                    strpos($targetPath, '/assets/images/uploads/') !== false ||
+                    strpos($targetPath, '/resources/views/themes/') !== false ||
+                    strpos($targetPath, '/resources/config/') !== false ||
+                    strpos($targetPath, '/favicon.ico') !== false) {
                     continue;
                 }
                 
