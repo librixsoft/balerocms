@@ -9,26 +9,26 @@ class UpdateService
 {
     private const REPO_URL = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/public/version.php';
     private const GITHUB_REPO = 'https://github.com/librixsoft/balerocms/tree/development';
+    private const SERVICE_URL = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/App/Services/UpdateService.php';
 
     public function getCurrentVersion(): string
     {
         if (!defined('_CORE_VERSION')) {
-             $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
-             if (file_exists($path)) {
+            $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+            if (file_exists($path)) {
                 include_once $path;
-             }
-             if (!defined('_CORE_VERSION')) {
-                 return 'Unknown';
-             }
+            }
+            if (!defined('_CORE_VERSION')) {
+                return 'Unknown';
+            }
         }
         return _CORE_VERSION;
     }
 
     public function getRemoteVersion(): ?string
     {
-        // Use cURL instead of file_get_contents to avoid allow_url_fopen restrictions
         if (!function_exists('curl_init')) {
-            return null; // cURL not available
+            return null;
         }
 
         $ch = curl_init();
@@ -38,11 +38,11 @@ class UpdateService
         curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
         curl_setopt($ch, CURLOPT_TIMEOUT, 10);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        
+
         $content = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        
+
         if ($content === false || $httpCode !== 200) {
             return null;
         }
@@ -73,6 +73,38 @@ class UpdateService
     }
 
     /**
+     * Self-update UpdateService.php from repo before performing update
+     */
+    public function selfUpdate(): array
+    {
+        if (!function_exists('curl_init')) {
+            return ['success' => false, 'message' => 'cURL is not available'];
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, self::SERVICE_URL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
+        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
+        $content = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($content === false || $httpCode !== 200) {
+            return ['success' => false, 'message' => 'Failed to download UpdateService.php from repo'];
+        }
+
+        if (file_put_contents(__FILE__, $content) === false) {
+            return ['success' => false, 'message' => 'Failed to write UpdateService.php'];
+        }
+
+        return ['success' => true, 'message' => 'UpdateService.php self-updated successfully'];
+    }
+
+    /**
      * Download the update ZIP from GitHub
      */
     public function downloadUpdate(): array
@@ -81,7 +113,6 @@ class UpdateService
         $tempDir = sys_get_temp_dir();
         $zipFile = $tempDir . '/balerocms-update.zip';
 
-        // Download using cURL
         if (!function_exists('curl_init')) {
             return ['success' => false, 'message' => 'cURL is not available'];
         }
@@ -91,7 +122,7 @@ class UpdateService
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
-        curl_setopt($ch, CURLOPT_TIMEOUT, 300); // 5 minutes for large files
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 
         $content = curl_exec($ch);
@@ -102,7 +133,6 @@ class UpdateService
             return ['success' => false, 'message' => 'Failed to download update'];
         }
 
-        // Save ZIP file
         if (file_put_contents($zipFile, $content) === false) {
             return ['success' => false, 'message' => 'Failed to save update file'];
         }
@@ -120,7 +150,7 @@ class UpdateService
         }
 
         $tempDir = sys_get_temp_dir() . '/balerocms-update-' . time();
-        
+
         $zip = new \ZipArchive();
         if ($zip->open($zipFile) !== true) {
             return ['success' => false, 'message' => 'Failed to open ZIP file'];
@@ -133,9 +163,8 @@ class UpdateService
 
         $zip->close();
 
-        // GitHub creates a folder like "balerocms-development" inside the ZIP
         $extractedFolder = $tempDir . '/balerocms-development';
-        
+
         if (!is_dir($extractedFolder)) {
             return ['success' => false, 'message' => 'Extracted folder not found'];
         }
@@ -150,6 +179,7 @@ class UpdateService
     {
         $rootPath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
         $backupDir = $rootPath . '/backups';
+
         if (!is_dir($backupDir)) {
             if (!mkdir($backupDir, 0755, true)) {
                 return ['success' => false, 'message' => 'Failed to create backup directory'];
@@ -157,7 +187,7 @@ class UpdateService
         }
 
         $backupFile = $backupDir . '/backup-' . date('Y-m-d') . '.zip';
-        
+
         if (!class_exists('ZipArchive')) {
             return ['success' => false, 'message' => 'ZipArchive extension is not available'];
         }
@@ -168,7 +198,7 @@ class UpdateService
         }
 
         $this->addFilesToZip($zip, $rootPath, $rootPath);
-        
+
         $zip->close();
 
         return ['success' => true, 'backup_file' => $backupFile];
@@ -187,19 +217,18 @@ class UpdateService
         foreach ($files as $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
-                
+
                 if (empty($filePath) || !is_file($filePath) || !is_readable($filePath)) {
                     continue;
                 }
 
                 $relativePath = substr($filePath, strlen($rootPath) + 1);
-                
-                // Skip certain directories
+
                 if (strpos($relativePath, 'backups/') === 0 ||
                     strpos($relativePath, 'public/assets/images/uploads/') === 0) {
                     continue;
                 }
-                
+
                 $zip->addFile($filePath, $relativePath);
             }
         }
@@ -211,30 +240,27 @@ class UpdateService
     public function installUpdate(string $extractedFolder): array
     {
         $rootPath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
-        
-        // Directories to update (core files only)
+
         $dirsToUpdate = ['App', 'Framework', 'public', 'resources'];
-        
+
         foreach ($dirsToUpdate as $dir) {
             $source = $extractedFolder . '/' . $dir;
-            
+
             if ($dir === 'public') {
                 $destination = $_SERVER['DOCUMENT_ROOT'];
             } else {
                 $destination = $rootPath . '/' . $dir;
             }
-            
+
             if (!is_dir($source)) {
                 continue;
             }
-            
-            // Copy files recursively, but preserve certain files
+
             if (!$this->copyDirectory($source, $destination)) {
                 return ['success' => false, 'message' => "Failed to copy $dir"];
             }
         }
 
-        // Update version.php
         $versionSource = $extractedFolder . '/public/version.php';
         $versionDest = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
         if (file_exists($versionSource)) {
@@ -262,13 +288,12 @@ class UpdateService
 
         foreach ($files as $file) {
             $targetPath = $destination . '/' . substr($file->getPathname(), strlen($source) + 1);
-            
+
             if ($file->isDir()) {
                 if (!is_dir($targetPath)) {
                     mkdir($targetPath, 0755, true);
                 }
             } else {
-                // Skip specific directories and files
                 if (strpos($targetPath, '/resources/config/balero.config.json') !== false ||
                     strpos($targetPath, '/assets/images/uploads/') !== false ||
                     strpos($targetPath, '/resources/views/themes/') !== false ||
@@ -276,7 +301,7 @@ class UpdateService
                     strpos($targetPath, '/favicon.ico') !== false) {
                     continue;
                 }
-                
+
                 copy($file->getPathname(), $targetPath);
             }
         }
@@ -289,6 +314,12 @@ class UpdateService
      */
     public function performUpdate(): array
     {
+        // Step 0: Self-update this service first
+        $selfUpdateResult = $this->selfUpdate();
+        if (!$selfUpdateResult['success']) {
+            return $selfUpdateResult;
+        }
+
         // Step 1: Download
         $downloadResult = $this->downloadUpdate();
         if (!$downloadResult['success']) {
@@ -312,13 +343,14 @@ class UpdateService
 
         // Step 4: Install
         $installResult = $this->installUpdate($extractResult['extracted_folder']);
-        
+
         // Cleanup
         @unlink($downloadResult['zip_file']);
         $this->removeDirectory($extractResult['extracted_folder']);
 
         if ($installResult['success']) {
             $installResult['backup_file'] = $backupResult['backup_file'];
+            $installResult['self_updated'] = true;
         }
 
         return $installResult;
