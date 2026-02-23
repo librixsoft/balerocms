@@ -1,5 +1,5 @@
 <?php
 
-const _CORE_VERSION = "1.1.4";
+const _CORE_VERSION = "1.1.5";
 
 echo _CORE_VERSION;

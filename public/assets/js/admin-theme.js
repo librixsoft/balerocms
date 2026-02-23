@@ -63,10 +63,10 @@ class AdminTheme {
                 handleSlugInput(event) {
                     // Convertir automáticamente a formato slug válido
                     let value = event.target.value;
-                    
+
                     // Convertir a minúsculas
                     value = value.toLowerCase();
-                    
+
                     // Reemplazar espacios y caracteres especiales con guiones
                     value = value.replace(/\s+/g, '-')           // espacios a guiones
                                  .replace(/[áàäâã]/g, 'a')       // vocales con acentos
@@ -78,7 +78,7 @@ class AdminTheme {
                                  .replace(/[^a-z0-9-]/g, '-')    // cualquier otro caracter a guion
                                  .replace(/-+/g, '-')            // múltiples guiones a uno solo
                                  .replace(/^-|-$/g, '');         // eliminar guiones al inicio/fin
-                    
+
                     event.target.value = value;
                     this.staticUrl = value;
                 },
@@ -97,10 +97,23 @@ class AdminTheme {
                     this.isUpdating     = true;
                     this.updateProgress = true;
                     this.updateResult   = false;
-                    this.setProgress(25, 'Downloading update...');
 
                     try {
-                        const response = await fetch('./admin/update/perform', {
+                        // Step 0: Self-update UpdateService.php
+                        this.setProgress(15, 'Updating core service...');
+                        const selfUpdateResponse = await fetch('/admin/update/self-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        });
+
+                        const selfUpdateData = await selfUpdateResponse.json();
+                        if (!selfUpdateData.success) {
+                            throw new Error(selfUpdateData.message);
+                        }
+
+                        // Step 1-4: Perform the actual update (new request = new PHP load)
+                        this.setProgress(40, 'Downloading update...');
+                        const response = await fetch('/admin/update/perform', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                         });
@@ -110,11 +123,11 @@ class AdminTheme {
 
                         await new Promise(resolve => setTimeout(resolve, 500));
 
-                        this.updateProgress  = false;
-                        this.updateSuccess   = data.success;
-                        this.updateMessage   = data.message;
+                        this.updateProgress   = false;
+                        this.updateSuccess    = data.success;
+                        this.updateMessage    = data.message;
                         this.updateBackupFile = data.backup_file || '';
-                        this.updateResult    = true;
+                        this.updateResult     = true;
 
                         if (!data.success) {
                             this.isUpdating = false;
@@ -125,12 +138,12 @@ class AdminTheme {
 
                         await new Promise(resolve => setTimeout(resolve, 300));
 
-                        this.updateProgress  = false;
-                        this.updateSuccess   = false;
-                        this.updateMessage   = `An error occurred: ${error.message}`;
+                        this.updateProgress   = false;
+                        this.updateSuccess    = false;
+                        this.updateMessage    = `An error occurred: ${error.message}`;
                         this.updateBackupFile = '';
-                        this.updateResult    = true;
-                        this.isUpdating      = false;
+                        this.updateResult     = true;
+                        this.isUpdating       = false;
                     }
                 },
             },

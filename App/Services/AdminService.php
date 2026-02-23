@@ -37,9 +37,6 @@ class AdminService
     #[Inject]
     private UploaderService $uploaderService;
 
-    /**
-     * Prepara los parámetros para la vista de configuración
-     */
     public function getSettingsViewParams(array $additionalParams = []): array
     {
         $params = [
@@ -53,34 +50,22 @@ class AdminService
         );
     }
 
-    /**
-     * Valida los datos de configuración
-     */
     public function validateSettings(SettingsDTO $settingsDTO): bool
     {
         $this->validator->validate($settingsDTO);
         return !$this->validator->fails();
     }
 
-    /**
-     * Obtiene los errores de validación
-     */
     public function getValidationErrors(): array
     {
         return $this->validator->errors();
     }
 
-    /**
-     * Actualiza la configuración del sistema
-     */
     public function mapAndSaveSettings(SettingsDTO $settingsDTO): void
     {
         $this->adminSettingsMapper->mapAndSaveSettings($settingsDTO, $this->configSettings);
     }
 
-    /**
-     * Prepara los parámetros para la vista de nueva página
-     */
     public function getNewPageViewParams(): array
     {
         return $this->viewModel->getPagesParams([
@@ -90,9 +75,6 @@ class AdminService
         ]);
     }
 
-    /**
-     * Prepara los parámetros para la vista de todas las páginas
-     */
     public function getAllPagesViewParams(): array
     {
         return $this->viewModel->getAllPagesParams([
@@ -102,17 +84,11 @@ class AdminService
         ]);
     }
 
-    /**
-     * Crea una nueva página
-     */
     public function createPage(array $data): int
     {
         return $this->model->createPage($data);
     }
 
-    /**
-     * Calcula el próximo orden de clasificación para páginas
-     */
     public function getNextPageSortOrder(): int
     {
         $pages = $this->model->getVirtualPages();
@@ -120,9 +96,6 @@ class AdminService
         return $maxSort + 1;
     }
 
-    /**
-     * Prepara los parámetros para editar una página
-     */
     public function getEditPageViewParams(int $id): array
     {
         return $this->viewModel->getEditPageParams([
@@ -132,25 +105,16 @@ class AdminService
         ]);
     }
 
-    /**
-     * Actualiza una página existente
-     */
     public function updatePage(int $id, array $data): void
     {
         $this->model->updatePage($id, $data);
     }
 
-    /**
-     * Elimina una página
-     */
     public function deletePage(int $id): void
     {
         $this->model->deletePage($id);
     }
 
-    /**
-     * Prepara los parámetros para la vista de todos los bloques
-     */
     public function getAllBlocksViewParams(): array
     {
         return $this->viewModel->getAllBlocksParams([
@@ -160,9 +124,6 @@ class AdminService
         ]);
     }
 
-    /**
-     * Calcula el próximo orden de clasificación para bloques
-     */
     public function getNextBlockSortOrder(): int
     {
         $blocks = $this->model->getBlocks();
@@ -170,9 +131,6 @@ class AdminService
         return $maxSort + 1;
     }
 
-    /**
-     * Prepara los parámetros para crear un nuevo bloque
-     */
     public function getNewBlockViewParams(): array
     {
         return $this->viewModel->getNewBlockParams([
@@ -182,17 +140,11 @@ class AdminService
         ]);
     }
 
-    /**
-     * Crea un nuevo bloque
-     */
     public function createBlock(array $data): int
     {
         return $this->model->createBlock($data);
     }
 
-    /**
-     * Prepara los parámetros para editar un bloque
-     */
     public function getEditBlockViewParams(int $id): array
     {
         return $this->viewModel->getEditBlockParams([
@@ -202,34 +154,32 @@ class AdminService
         ]);
     }
 
-    /**
-     * Actualiza un bloque existente
-     */
     public function updateBlock(int $id, array $data): void
     {
         $this->model->updateBlock($id, $data);
     }
 
-    /**
-     * Elimina un bloque
-     */
     public function deleteBlock(int $id): void
     {
         $this->model->deleteBlock($id);
     }
 
-    /**
-     * Prepara los parámetros para la vista de actualización
-     */
     public function getUpdateViewParams(): array
     {
         $updateInfo = $this->updateService->isUpdateAvailable();
-        
-        // Add pages_count and blocks_count like other views
+
         $updateInfo['pages_count'] = $this->model->getPagesCount();
         $updateInfo['blocks_count'] = $this->model->getBlocksCount();
-        
+
         return $this->viewModel->getUpdateParams($updateInfo);
+    }
+
+    /**
+     * Self-update UpdateService.php from repo
+     */
+    public function selfUpdateService(): array
+    {
+        return $this->updateService->selfUpdate();
     }
 
     /**
@@ -240,9 +190,6 @@ class AdminService
         return $this->updateService->performUpdate();
     }
 
-    /**
-     * Prepara los parámetros de la galería de medios (Media)
-     */
     public function getMediaViewParams(): array
     {
         $params = [

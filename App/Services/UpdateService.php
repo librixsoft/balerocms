@@ -73,7 +73,7 @@ class UpdateService
     }
 
     /**
-     * Self-update UpdateService.php from repo before performing update
+     * Self-update UpdateService.php from repo
      */
     public function selfUpdate(): array
     {
@@ -314,12 +314,6 @@ class UpdateService
      */
     public function performUpdate(): array
     {
-        // Step 0: Self-update this service first
-        $selfUpdateResult = $this->selfUpdate();
-        if (!$selfUpdateResult['success']) {
-            return $selfUpdateResult;
-        }
-
         // Step 1: Download
         $downloadResult = $this->downloadUpdate();
         if (!$downloadResult['success']) {
@@ -350,7 +344,6 @@ class UpdateService
 
         if ($installResult['success']) {
             $installResult['backup_file'] = $backupResult['backup_file'];
-            $installResult['self_updated'] = true;
         }
 
         return $installResult;
