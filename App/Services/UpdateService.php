@@ -173,72 +173,6 @@ class UpdateService
     }
 
     /**
-     * Create backup of current installation
-     */
-    public function createBackup(): array
-    {
-        $rootPath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
-        $backupDir = $rootPath . '/backups';
-
-        if (!is_dir($backupDir)) {
-            if (!mkdir($backupDir, 0755, true)) {
-                return ['success' => false, 'message' => 'Failed to create backup directory'];
-            }
-        }
-
-        $backupFile = $backupDir . '/backup-' . date('Y-m-d') . '.zip';
-
-        if (file_exists($backupFile) && !@unlink($backupFile)) {
-            return ['success' => false, 'message' => 'Failed to remove existing backup file'];
-        }
-
-        if (!class_exists('ZipArchive')) {
-            return ['success' => false, 'message' => 'ZipArchive extension is not available'];
-        }
-
-        $zip = new \ZipArchive();
-        if ($zip->open($backupFile, \ZipArchive::CREATE) !== true) {
-            return ['success' => false, 'message' => 'Failed to create backup ZIP'];
-        }
-
-        $this->addFilesToZip($zip, $rootPath, $rootPath);
-
-        $zip->close();
-
-        return ['success' => true, 'backup_file' => $backupFile];
-    }
-
-    /**
-     * Recursively add files to ZIP (helper method)
-     */
-    private function addFilesToZip(\ZipArchive $zip, string $path, string $rootPath): void
-    {
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($path),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
-
-        foreach ($files as $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-
-                if (empty($filePath) || !is_file($filePath) || !is_readable($filePath)) {
-                    continue;
-                }
-
-                $relativePath = substr($filePath, strlen($rootPath) + 1);
-
-                if (strpos($relativePath, 'backups/') === 0 ||
-                    strpos($relativePath, 'public/assets/images/uploads/') === 0) {
-                    continue;
-                }
-
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-    }
-
-    /**
      * Install the update
      */
     public function installUpdate(string $extractedFolder): array
@@ -331,24 +265,12 @@ class UpdateService
             return $extractResult;
         }
 
-        // Step 3: Backup
-        $backupResult = $this->createBackup();
-        if (!$backupResult['success']) {
-            @unlink($downloadResult['zip_file']);
-            $this->removeDirectory($extractResult['extracted_folder']);
-            return $backupResult;
-        }
-
-        // Step 4: Install
+        // Step 3: Install
         $installResult = $this->installUpdate($extractResult['extracted_folder']);
 
         // Cleanup
         @unlink($downloadResult['zip_file']);
         $this->removeDirectory($extractResult['extracted_folder']);
-
-        if ($installResult['success']) {
-            $installResult['backup_file'] = $backupResult['backup_file'];
-        }
 
         return $installResult;
     }
