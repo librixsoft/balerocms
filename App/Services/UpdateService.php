@@ -156,7 +156,7 @@ class UpdateService
             }
         }
 
-        $backupFile = $backupDir . '/backup-' . date('Y-m-d-His') . '.zip';
+        $backupFile = $backupDir . '/backup-' . date('Y-m-d') . '.zip';
         
         if (!class_exists('ZipArchive')) {
             return ['success' => false, 'message' => 'ZipArchive extension is not available'];
