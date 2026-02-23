@@ -188,7 +188,7 @@ class UpdateService
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
                 
-                if (empty($filePath)) {
+                if (empty($filePath) || !is_file($filePath) || !is_readable($filePath)) {
                     continue;
                 }
 
