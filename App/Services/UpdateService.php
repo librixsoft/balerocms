@@ -187,6 +187,11 @@ class UpdateService
         foreach ($files as $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
+                
+                if (empty($filePath)) {
+                    continue;
+                }
+
                 $relativePath = substr($filePath, strlen($rootPath) + 1);
                 
                 // Skip certain directories
