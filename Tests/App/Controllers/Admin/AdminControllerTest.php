@@ -254,7 +254,7 @@ class AdminControllerTest extends TestCase
             ->method('to')
             ->with('/admin/pages');
 
-        $this->controller->postDeletePage($id);
+        $this->controller->deletePage($id);
     }
 
     #[Test]

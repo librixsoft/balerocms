@@ -51,6 +51,7 @@ class ErrorControllerTest extends TestCase
         $viewModelMock->expects($this->once())
             ->method('setErrorParams')
             ->with([
+                'is_error' => true,
                 'blocks' => $blocks,
                 'virtual_pages' => $virtualPages,
             ])
@@ -58,7 +59,7 @@ class ErrorControllerTest extends TestCase
 
         $viewMock->expects($this->once())
             ->method('render')
-            ->with('error.html', $params)
+            ->with('main.html', $params)
             ->willReturn('rendered content');
 
         $result = $this->controller->index();
