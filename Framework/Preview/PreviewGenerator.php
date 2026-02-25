@@ -24,7 +24,7 @@ class PreviewGenerator
 
         // 2. Identify the section/page title we are visiting
         $title = $params['title'] ?? 'Preview';
-        
+
         if (isset($params['page'])) {
             if (is_array($params['page']) && !empty($params['page']['virtual_title'])) {
                 $title = $params['page']['virtual_title'];
@@ -36,7 +36,7 @@ class PreviewGenerator
         }
 
         // 3. Fallback: Generate a dynamic image URL internally via our PageController GD method
-        $basepath = rtrim($params['basepath'] ?? '.', '/');
+        $url = rtrim($params['url'] ?? '.', '/');
 
         // Check if we are viewing a page
         $slug = null;
@@ -50,10 +50,10 @@ class PreviewGenerator
 
         if ($slug) {
             $encodedSlug = urlencode($slug);
-            return "{$basepath}/page/og/{$encodedSlug}";
+            return "{$url}/page/og/{$encodedSlug}";
         }
 
         $encodedTitle = urlencode($title);
-        return "{$basepath}/page/og/generic?title={$encodedTitle}";
+        return "{$url}/page/og/generic?title={$encodedTitle}";
     }
 }
