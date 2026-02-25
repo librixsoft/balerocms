@@ -5,56 +5,83 @@ namespace App\Services;
 class PreviewService
 {
     /**
+     * Serves the static fallback OG image.
+     */
+    public function serveStaticOgImage(): void
+    {
+        $imagePath = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/assets/images/og-image.png';
+
+        if (!file_exists($imagePath)) {
+            http_response_code(404);
+            exit;
+        }
+
+        header('Content-Type: image/png');
+        header('Cache-Control: public, max-age=86400');
+        readfile($imagePath);
+        exit;
+    }
+
+    /**
+     * Resolves and serves the correct OG image for a given page.
+     * If the page is null/empty, serves the static fallback.
+     *
+     * @param object|array|null $page
+     */
+    public function serveOgImage(mixed $page): void
+    {
+        if (empty($page)) {
+            $this->serveStaticOgImage();
+            return;
+        }
+
+        $title = is_object($page) ? $page->virtual_title : $page['virtual_title'];
+        $this->generateOpenGraphImage($title);
+    }
+
+    /**
      * Generates and outputs an Open Graph image with the given title.
      *
      * @param string $title The text to display on the image.
      */
     public function generateOpenGraphImage(string $title): void
     {
-        // 1200x627 is standard Open Graph image size
-        $width = 1200;
+        $width  = 1200;
         $height = 627;
 
         $image = imagecreatetruecolor($width, $height);
 
-        // Background color #1a1a1d
-        $bgColor = imagecolorallocate($image, 26, 26, 29);
-        imagefilledrectangle($image, 0, 0, $width, $height, $bgColor);
-
-        // Text color #ffffff
+        $bgColor   = imagecolorallocate($image, 26, 26, 29);
         $textColor = imagecolorallocate($image, 255, 255, 255);
 
-        // Path to font
-        $fontPath = rtrim(BASE_PATH, '/') . '/public/assets/fonts/Roboto-Bold.ttf';
-        
+        imagefilledrectangle($image, 0, 0, $width, $height, $bgColor);
+
+        $fontPath = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/assets/fonts/Roboto-Bold.ttf';
         $fontSize = 60;
 
         if (file_exists($fontPath) && function_exists('imagettftext')) {
-            // Get bounding box of text for centering
-            $bbox = imagettfbbox($fontSize, 0, $fontPath, $title);
-            $textWidth = abs($bbox[4] - $bbox[0]);
+            $bbox       = imagettfbbox($fontSize, 0, $fontPath, $title);
+            $textWidth  = abs($bbox[4] - $bbox[0]);
             $textHeight = abs($bbox[5] - $bbox[1]);
 
             $x = (int) (($width - $textWidth) / 2);
-            $y = (int) (($height + $textHeight) / 2); // Y is baseline for imagettftext
+            $y = (int) (($height + $textHeight) / 2);
 
             imagettftext($image, $fontSize, 0, $x, $y, $textColor, $fontPath, $title);
         } else {
-            // Fallback if font or FreeType not available
-            $font = 5;
-            $tw = imagefontwidth($font) * strlen($title);
-            $th = imagefontheight($font);
-
-            $scale = 4;
+            $font    = 5;
+            $tw      = imagefontwidth($font) * strlen($title);
+            $th      = imagefontheight($font);
+            $scale   = 4;
             $scaledW = $tw * $scale;
             $scaledH = $th * $scale;
 
-            $small = imagecreatetruecolor($tw, $th);
+            $small   = imagecreatetruecolor($tw, $th);
             $smallBg = imagecolorallocate($small, 26, 26, 29);
-            $smallTxt = imagecolorallocate($small, 255, 255, 255);
+            $smallTx = imagecolorallocate($small, 255, 255, 255);
 
             imagefilledrectangle($small, 0, 0, $tw, $th, $smallBg);
-            imagestring($small, $font, 0, 0, $title, $smallTxt);
+            imagestring($small, $font, 0, 0, $title, $smallTx);
 
             $x = ($width - $scaledW) / 2;
             $y = ($height - $scaledH) / 2;
@@ -64,7 +91,7 @@ class PreviewService
         }
 
         header('Content-Type: image/png');
-        header('Cache-Control: public, max-age=86400'); // Cache for 1 day
+        header('Cache-Control: public, max-age=86400');
         imagepng($image);
         imagedestroy($image);
         exit;

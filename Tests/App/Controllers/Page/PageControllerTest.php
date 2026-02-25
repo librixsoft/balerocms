@@ -13,7 +13,6 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
 use App\Services\PreviewService;
-use Framework\Http\RequestHelper;
 
 #[SetupTestContainer]
 #[CoversClass(PageController::class)]
@@ -32,8 +31,8 @@ class PageControllerTest extends TestCase
     #[TestDox('Verifica que home renderice correctamente')]
     public function testHomeRendersCorrectly(): void
     {
-        $viewMock = $this->getMock(View::class);
-        $modelMock = $this->getMock(PageModel::class);
+        $viewMock      = $this->getMock(View::class);
+        $modelMock     = $this->getMock(PageModel::class);
         $viewModelMock = $this->getMock(PageViewModel::class);
 
         $modelMock->expects($this->once())
@@ -59,11 +58,11 @@ class PageControllerTest extends TestCase
     #[TestDox('Verifica que page renderice correctamente cuando la pagina existe')]
     public function testPageRendersCorrectlyWhenPageExists(): void
     {
-        $viewMock = $this->getMock(View::class);
-        $modelMock = $this->getMock(PageModel::class);
+        $viewMock      = $this->getMock(View::class);
+        $modelMock     = $this->getMock(PageModel::class);
         $viewModelMock = $this->getMock(PageViewModel::class);
 
-        $slug = 'existing-page';
+        $slug     = 'existing-page';
         $pageData = ['id' => 1, 'slug' => $slug, 'title' => 'Existing Page'];
 
         $modelMock->expects($this->once())
@@ -78,8 +77,8 @@ class PageControllerTest extends TestCase
         $viewModelMock->expects($this->once())
             ->method('setPageParams')
             ->with([
-                'page' => $pageData,
-                'virtual_pages' => ['page1', 'page2']
+                'page'          => $pageData,
+                'virtual_pages' => ['page1', 'page2'],
             ])
             ->willReturn(['params' => 'values']);
 
@@ -97,8 +96,8 @@ class PageControllerTest extends TestCase
     #[TestDox('Verifica que page renderice error cuando la pagina no existe')]
     public function testPageRendersErrorWhenPageDoesNotExist(): void
     {
-        $viewMock = $this->getMock(View::class);
-        $modelMock = $this->getMock(PageModel::class);
+        $viewMock      = $this->getMock(View::class);
+        $modelMock     = $this->getMock(PageModel::class);
         $viewModelMock = $this->getMock(PageViewModel::class);
 
         $slug = 'non-existing-page';
@@ -116,7 +115,7 @@ class PageControllerTest extends TestCase
             ->method('setPageParams')
             ->with([
                 'error_message' => "La página solicitada no existe.",
-                'virtual_pages' => ['page1', 'page2']
+                'virtual_pages' => ['page1', 'page2'],
             ])
             ->willReturn(['params' => 'values']);
 
@@ -131,34 +130,26 @@ class PageControllerTest extends TestCase
     }
 
     #[Test]
-    #[TestDox('Verifica que ogImage genere imagen generica cuando url es generic')]
-    public function testOgImageGeneratesGenericWhenUrlIsGeneric(): void
+    #[TestDox('Verifica que ogImage sirva imagen estatica cuando url es generic')]
+    public function testOgImageServesStaticImageWhenUrlIsGeneric(): void
     {
-        $requestMock = $this->getMock(RequestHelper::class);
         $previewMock = $this->getMock(PreviewService::class);
 
-        // Simulated query parameter
-        $requestMock->expects($this->once())
-            ->method('get')
-            ->with('title')
-            ->willReturn(urlencode('Test Title'));
-
         $previewMock->expects($this->once())
-            ->method('generateOpenGraphImage')
-            ->with('Test Title');
+            ->method('serveOgImage')
+            ->with(null);
 
-        // Execute method
         $this->controller->ogImage('generic');
     }
 
     #[Test]
-    #[TestDox('Verifica que ogImage genere imagen de la pagina cuando la url no es generic')]
-    public function testOgImageGeneratesPageImageWhenUrlIsNotGeneric(): void
+    #[TestDox('Verifica que ogImage genere imagen dinamica cuando la pagina existe')]
+    public function testOgImageGeneratesDynamicImageWhenPageExists(): void
     {
         $previewMock = $this->getMock(PreviewService::class);
-        $modelMock = $this->getMock(PageModel::class);
+        $modelMock   = $this->getMock(PageModel::class);
 
-        $slug = 'some-real-page';
+        $slug     = 'some-real-page';
         $pageData = ['virtual_title' => 'Page Title'];
 
         $modelMock->expects($this->once())
@@ -167,10 +158,30 @@ class PageControllerTest extends TestCase
             ->willReturn($pageData);
 
         $previewMock->expects($this->once())
-            ->method('generateOpenGraphImage')
-            ->with('Page Title');
+            ->method('serveOgImage')
+            ->with($pageData);
 
-        // Execute method
+        $this->controller->ogImage($slug);
+    }
+
+    #[Test]
+    #[TestDox('Verifica que ogImage sirva imagen estatica cuando la pagina no existe')]
+    public function testOgImageServesStaticImageWhenPageDoesNotExist(): void
+    {
+        $previewMock = $this->getMock(PreviewService::class);
+        $modelMock   = $this->getMock(PageModel::class);
+
+        $slug = 'non-existing-page';
+
+        $modelMock->expects($this->once())
+            ->method('getVirtualPageBySlug')
+            ->with($slug)
+            ->willReturn([]);
+
+        $previewMock->expects($this->once())
+            ->method('serveOgImage')
+            ->with([]);
+
         $this->controller->ogImage($slug);
     }
 }
