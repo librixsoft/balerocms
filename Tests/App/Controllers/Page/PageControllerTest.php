@@ -12,6 +12,8 @@ use Framework\Testing\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestDox;
+use App\Services\PreviewService;
+use Framework\Http\RequestHelper;
 
 #[SetupTestContainer]
 #[CoversClass(PageController::class)]
@@ -126,5 +128,49 @@ class PageControllerTest extends TestCase
         $result = $this->controller->page($slug);
 
         $this->assertSame('rendered content', $result);
+    }
+
+    #[Test]
+    #[TestDox('Verifica que ogImage genere imagen generica cuando url es generic')]
+    public function testOgImageGeneratesGenericWhenUrlIsGeneric(): void
+    {
+        $requestMock = $this->getMock(RequestHelper::class);
+        $previewMock = $this->getMock(PreviewService::class);
+
+        // Simulated query parameter
+        $requestMock->expects($this->once())
+            ->method('get')
+            ->with('title')
+            ->willReturn(urlencode('Test Title'));
+
+        $previewMock->expects($this->once())
+            ->method('generateOpenGraphImage')
+            ->with('Test Title');
+
+        // Execute method
+        $this->controller->ogImage('generic');
+    }
+
+    #[Test]
+    #[TestDox('Verifica que ogImage genere imagen de la pagina cuando la url no es generic')]
+    public function testOgImageGeneratesPageImageWhenUrlIsNotGeneric(): void
+    {
+        $previewMock = $this->getMock(PreviewService::class);
+        $modelMock = $this->getMock(PageModel::class);
+
+        $slug = 'some-real-page';
+        $pageData = ['virtual_title' => 'Page Title'];
+
+        $modelMock->expects($this->once())
+            ->method('getVirtualPageBySlug')
+            ->with($slug)
+            ->willReturn($pageData);
+
+        $previewMock->expects($this->once())
+            ->method('generateOpenGraphImage')
+            ->with('Page Title');
+
+        // Execute method
+        $this->controller->ogImage($slug);
     }
 }

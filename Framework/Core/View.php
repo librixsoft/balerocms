@@ -13,6 +13,7 @@ use Framework\Core\ConfigSettings;
 use Framework\Rendering\TemplateEngine;
 use Framework\I18n\LangManager;
 use Framework\Exceptions\ViewException;
+use Framework\Preview\PreviewGenerator;
 
 class View
 {
@@ -24,6 +25,7 @@ class View
     private TemplateEngine $templateEngine;
     private LangManager $langManager;
     private ViewConfig $viewConfig;
+    private PreviewGenerator $previewGenerator;
 
     /**
      * View constructor.
@@ -32,17 +34,20 @@ class View
      * @param TemplateEngine $templateEngine
      * @param LangManager $langManager
      * @param ViewConfig $viewConfig
+     * @param PreviewGenerator $previewGenerator
      */
     public function __construct(
         ConfigSettings $configSettings,
         TemplateEngine $templateEngine,
         LangManager $langManager,
-        ViewConfig $viewConfig
+        ViewConfig $viewConfig,
+        PreviewGenerator $previewGenerator
     ) {
         $this->configSettings = $configSettings;
         $this->templateEngine = $templateEngine;
         $this->langManager = $langManager;
         $this->viewConfig = $viewConfig;
+        $this->previewGenerator = $previewGenerator;
 
         $this->viewsPath = $viewConfig->viewsPath;
         $this->allowedExtensions = $viewConfig->allowedExtensions;
@@ -139,7 +144,7 @@ class View
 
     private function getDefaultParams(array $params = []): array
     {
-        return array_merge([
+        $merged = array_merge([
             'title' => $this->configSettings->title,
             'url' => $this->configSettings->url,
             'keywords' => $this->configSettings->keywords,
@@ -149,6 +154,11 @@ class View
             'footer' => $this->configSettings->footer,
             'theme' => $this->configSettings->theme,
         ], $params);
+
+        // Calculate dynamic preview image
+        $merged['preview_image'] = $this->previewGenerator->generatePreviewUrl($merged);
+
+        return $merged;
     }
 
     private function parsePlaceholders(string $text, array $extraParams = []): string

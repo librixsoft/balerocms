@@ -265,7 +265,18 @@ class AdminControllerTest extends TestCase
         $response = ['status' => 'success'];
         $this->uploaderServiceMock->expects($this->once())
             ->method('uploadImage')
-            ->with($_FILES['file'])
+            ->with(
+                $_FILES['file'],
+                $this->callback(function ($meta) {
+                    $this->assertIsArray($meta);
+                    $this->assertArrayHasKey('original_name', $meta);
+                    $this->assertArrayHasKey('size', $meta);
+                    $this->assertArrayHasKey('mime', $meta);
+                    $this->assertArrayHasKey('uploaded_at', $meta);
+                    $this->assertArrayHasKey('context', $meta);
+                    return true;
+                })
+            )
             ->willReturn($response);
 
         $result = $this->controller->postUploader();
