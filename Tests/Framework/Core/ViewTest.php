@@ -15,6 +15,7 @@ use Framework\Rendering\ProcessorVariables;
 use Framework\Rendering\ProcessorTernary;
 use Framework\I18n\LangManager;
 use Framework\Exceptions\ViewException;
+use Framework\Preview\PreviewGenerator;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,14 +30,12 @@ class ViewTest extends TestCase
 
     protected function setUp(): void
     {
-        // Crear directorio temporal con template
         $this->tempDir = sys_get_temp_dir() . '/view_test_' . uniqid();
         mkdir($this->tempDir . '/themes/default', 0777, true);
         mkdir($this->tempDir . '/lang', 0777, true);
 
         file_put_contents($this->tempDir . '/themes/default/test.html', 'Hello {title}');
 
-        // Mocks de ConfigSettings
         $configSettings = $this->createMock(ConfigSettings::class);
         $configSettings->title = 'Test Title';
         $configSettings->url = 'https://example.com';
@@ -47,20 +46,25 @@ class ViewTest extends TestCase
         $configSettings->theme = 'default';
         $configSettings->method('loadSettings')->willReturnCallback(fn() => null);
 
-        // Mock de LangManager
         $langManager = $this->createMock(LangManager::class);
         $langManager->method('setCurrentLang')->willReturnCallback(fn() => null);
         $langManager->method('load')->willReturnCallback(fn() => null);
         $langManager->method('get')->willReturnCallback(fn($key, $default) => $default);
 
-        // Crear TemplateEngine mockeado con procesadores internos
+        $previewGenerator = $this->createMock(PreviewGenerator::class);
+        $previewGenerator->method('generatePreviewUrl')->willReturn('https://example.com/preview.png');
+
         $templateEngine = $this->createTemplateEngineWithMocks('Test Title');
 
-        // ViewConfig apuntando al directorio temporal
         $viewConfig = new ViewConfig($this->tempDir, $this->tempDir . '/lang', ['html']);
 
-        // Instanciar View con mocks
-        $this->view = new View($configSettings, $templateEngine, $langManager, $viewConfig);
+        $this->view = new View(
+            $configSettings,
+            $templateEngine,
+            $langManager,
+            $viewConfig,
+            $previewGenerator
+        );
     }
 
     protected function tearDown(): void
