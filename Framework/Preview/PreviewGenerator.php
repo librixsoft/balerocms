@@ -4,50 +4,27 @@ namespace Framework\Preview;
 
 class PreviewGenerator
 {
-    /**
-     * Generate a dynamic preview image URL based on current page parameters.
-     *
-     * @param array $params View parameters
-     * @return string Image URL
-     */
     public function generatePreviewUrl(array $params): string
     {
-        // Generamos un identificador único basado en tiempo para romper el cache (v=20240520)
-        // Si prefieres que cambie cada segundo usa time(), pero date('YmdHi') es suficiente.
         $cacheBuster = date('YmdHis');
 
-        // 1. If an explicit image is provided in the params, use it
+        // Buscamos la URL base. Si 'url' en View.php ya es dinámica,
+        // lo mejor es extraer el dominio o usar una variable que sea siempre la raíz.
+        // Usaremos 'basepath' si contiene la URL completa, si no, calculamos la raíz de 'url'.
+
+        $rawUrl = $params['url'] ?? '';
+        $parsed = parse_url($rawUrl);
+        $baseUrl = $parsed['scheme'] . '://' . $parsed['host'];
+
+        // 1. Imagen explícita
         if (!empty($params['og_image'])) {
-            $baseUrl = $params['url'] ?? '';
-
-            // If it's an absolute URL, return it directly (añadiendo buster)
             if (strpos($params['og_image'], 'http') === 0) {
-                $separator = (strpos($params['og_image'], '?') === false) ? '?' : '&';
-                return $params['og_image'] . $separator . "v=" . $cacheBuster;
+                return $params['og_image'] . (strpos($params['og_image'], '?') === false ? '?' : '&') . "v=" . $cacheBuster;
             }
-
-            $fullPath = rtrim($baseUrl, '/') . '/' . ltrim($params['og_image'], '/');
-            $separator = (strpos($fullPath, '?') === false) ? '?' : '&';
-            return $fullPath . $separator . "v=" . $cacheBuster;
+            return $baseUrl . '/' . ltrim($params['og_image'], '/') . "?v=" . $cacheBuster;
         }
 
-        // 2. Identify the section/page title we are visiting
-        $title = $params['title'] ?? 'Preview';
-
-        if (isset($params['page'])) {
-            if (is_array($params['page']) && !empty($params['page']['virtual_title'])) {
-                $title = $params['page']['virtual_title'];
-            } elseif (is_object($params['page']) && !empty($params['page']->virtual_title)) {
-                $title = $params['page']->virtual_title;
-            }
-        } elseif (!empty($params['mod_name'])) {
-            $title = $params['mod_name'];
-        }
-
-        // 3. Fallback: Generate a dynamic image URL internally
-        $url = rtrim($params['url'] ?? '.', '/');
-
-        // Check if we are viewing a page
+        // 2. Determinar Slug
         $slug = null;
         if (isset($params['page'])) {
             if (is_array($params['page']) && !empty($params['page']['static_url'])) {
@@ -57,14 +34,14 @@ class PreviewGenerator
             }
         }
 
-        // Si hay slug, retornamos la ruta absoluta con el parámetro de refresco
+        // 3. Retornar URL ABSOLUTA
         if ($slug) {
             $encodedSlug = urlencode($slug);
-            return "{$url}/page/og/{$encodedSlug}?v={$cacheBuster}";
+            return "{$baseUrl}/page/og/{$encodedSlug}?v={$cacheBuster}";
         }
 
-        // Fallback genérico con título y buster
+        $title = $params['title'] ?? 'Preview';
         $encodedTitle = urlencode($title);
-        return "{$url}/page/og/generic?title={$encodedTitle}&v={$cacheBuster}";
+        return "{$baseUrl}/page/og/generic?title={$encodedTitle}&v={$cacheBuster}";
     }
 }

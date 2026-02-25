@@ -144,9 +144,26 @@ class View
 
     private function getDefaultParams(array $params = []): array
     {
+        $baseUrl = rtrim($this->configSettings->url, '/');
+        $currentUrl = $baseUrl . '/';
+
+        // Si detectamos que hay un objeto o array 'page', construimos la URL interna
+        if (isset($params['page'])) {
+            $slug = '';
+            if (is_array($params['page']) && !empty($params['page']['static_url'])) {
+                $slug = $params['page']['static_url'];
+            } elseif (is_object($params['page']) && !empty($params['page']->static_url)) {
+                $slug = $params['page']->static_url;
+            }
+
+            if (!empty($slug)) {
+                $currentUrl = $baseUrl . '/page/' . $slug;
+            }
+        }
+
         $merged = array_merge([
             'title' => $this->configSettings->title,
-            'url' => $this->configSettings->url,
+            'url' => $currentUrl, // <--- Ahora es dinámica
             'keywords' => $this->configSettings->keywords,
             'description' => $this->configSettings->description,
             'basepath' => $this->configSettings->basepath,
