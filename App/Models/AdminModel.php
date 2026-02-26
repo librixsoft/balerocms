@@ -49,7 +49,7 @@ class AdminModel
 
         $params = [
             $data['virtual_title'],
-            $data['static_url'],
+            $this->utils->slugify($data['static_url']), // <-- limpia al guardar
             $data['virtual_content'],
             $data['visible'],
             $data['sort_order'] ?? 0,
@@ -57,7 +57,6 @@ class AdminModel
         ];
 
         $this->model->getDb()->query($sql, $params);
-
         return true;
     }
 
@@ -67,7 +66,7 @@ class AdminModel
 
         $params = [
             $data['virtual_title'],
-            $data['static_url'],
+            $this->utils->slugify($data['static_url']), // <-- limpia al guardar
             $data['virtual_content'],
             $data['visible'],
             $data['date'],
@@ -75,7 +74,6 @@ class AdminModel
         ];
 
         $this->model->getDb()->query($sql, $params);
-
         return $this->model->getDb()->getInsertId();
     }
 
@@ -93,11 +91,6 @@ class AdminModel
             $this->model->getDb()->get();
 
             $rows = $this->model->getDb()->getRows() ?? [];
-
-            foreach ($rows as &$row) {
-                $slug = $this->utils->slugify($row['static_url']);
-                $row['url'] = "{$slug}";
-            }
 
             return $rows;
         } catch (Throwable $e) {

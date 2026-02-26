@@ -4,19 +4,16 @@ namespace App\Models;
 
 use Framework\Core\Model;
 use Framework\Exceptions\ModelException;
-use Framework\Utils\Utils;
 use Throwable;
 
 class PageModel
 {
 
     private Model $model;
-    private Utils $utils;
 
-    public function __construct(Model $model, Utils $utils)
+    public function __construct(Model $model)
     {
         $this->model = $model;
-        $this->utils = $utils;
     }
 
     public function getVirtualPages(): array
@@ -27,11 +24,6 @@ class PageModel
             $this->model->getDb()->get();
 
             $rows = $this->model->getDb()->getRows() ?? [];
-
-            foreach ($rows as &$row) {
-                $slug = $this->utils->slugify($row['static_url']);
-                $row['url'] = "{$slug}";
-            }
 
             return $rows;
         } catch (Throwable $e) {
