@@ -30,14 +30,25 @@ class AdminViewModel
 
         $currentLang = $this->config->language ?? 'en';
 
-        include_once $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+        $coreVersion = '';
+        if (defined('_CORE_VERSION')) {
+            $coreVersion = _CORE_VERSION;
+        } else {
+            $versionFile = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+            if (file_exists($versionFile)) {
+                $content = file_get_contents($versionFile);
+                if (preg_match('/CORE_VERSION\s*=\s*["\']([^"\']+)["\']/', $content, $m)) {
+                    $coreVersion = $m[1];
+                }
+            }
+        }
 
         $viewModel->addAll([
 
             'mod_name' => $this->translator->t("admin.settings"),
             'mod_id' => 'settings',
 
-            'core_version' => _CORE_VERSION,
+            'core_version' => $coreVersion,
 
             'debugOptions' => ['dev' => 'Development', 'prod' => 'Production'],
             'debug' => $this->config->debug,
