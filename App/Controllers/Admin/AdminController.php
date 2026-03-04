@@ -283,6 +283,18 @@ class AdminController
         $this->redirect->to('/admin/themes');
     }
 
+    #[Post('/themes/delete/{themeName}')]
+    public function deleteTheme(string $themeName)
+    {
+        try {
+            $this->adminService->deleteTheme($themeName);
+            $this->flash->set("success", "Theme '{$themeName}' deleted successfully.");
+        } catch (\Exception $e) {
+            $this->flash->set("danger", $e->getMessage());
+        }
+        $this->redirect->to('/admin/themes');
+    }
+
     #[Get('/media')]
     public function getMediaList()
     {

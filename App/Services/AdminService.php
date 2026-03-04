@@ -290,4 +290,36 @@ class AdminService
         // Setting the theme automatically updates the config JSON mapping.
         $this->configSettings->theme = $themeName;
     }
+
+    public function deleteTheme(string $themeName): void
+    {
+        $themeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $themeName);
+        if (empty($themeName)) {
+            throw new \Exception("Invalid theme name.");
+        }
+
+        if ($this->configSettings->theme === $themeName) {
+            throw new \Exception("Cannot delete the active theme.");
+        }
+
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+        $publicThemesDir = rtrim(BASE_PATH, '/') . '/public/assets/themes/' . $themeName;
+
+        $this->removeDirectory($resourcesThemesDir);
+        $this->removeDirectory($publicThemesDir);
+    }
+
+    private function removeDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = $dir . DIRECTORY_SEPARATOR . $file;
+            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
+    }
 }
