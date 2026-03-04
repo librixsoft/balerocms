@@ -88,6 +88,7 @@ class AdminViewModel
             'email' => $this->config->email,
             'lang_selected_en' => $lang_selected_en,
             'lang_selected_es' => $lang_selected_es,
+            'themes_count' => count($this->themesReader->getThemes()),
         ]);
 
         return $viewModel;
