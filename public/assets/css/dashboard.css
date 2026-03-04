@@ -173,10 +173,13 @@ body {
 @media (max-width: 991px) {
     #sidebar {
         position: relative;
-        width: 100%;
+        width: 92%;
         height: auto;
         top: 0;
         border-right: none;
+        margin-left: 20px;
+        margin-right: 20px;
+        margin-top: 20px !important;
     }
 
     #content {
