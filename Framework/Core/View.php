@@ -161,6 +161,16 @@ class View
             }
         }
 
+        $coreVersion = '';
+        if (defined('_CORE_VERSION')) {
+            $coreVersion = _CORE_VERSION;
+        } elseif (isset($_SERVER['DOCUMENT_ROOT']) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/version.php')) {
+            include_once $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+            if (defined('_CORE_VERSION')) {
+                $coreVersion = _CORE_VERSION;
+            }
+        }
+
         $merged = array_merge([
             'title' => $this->configSettings->title,
             'url' => $currentUrl, // <--- Ahora es dinámica
@@ -170,6 +180,7 @@ class View
             'year' => date('Y'),
             'footer' => $this->configSettings->footer,
             'theme' => $this->configSettings->theme,
+            'core_version' => $coreVersion,
         ], $params);
 
         // Calculate dynamic preview image
