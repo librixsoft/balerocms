@@ -226,7 +226,11 @@ class AdminService
             throw new \Exception("Invalid theme name.");
         }
 
-        $publicThemesDir = rtrim(BASE_PATH, '/') . '/public/assets/themes/' . $themeName;
+        $publicPath = !empty($_SERVER['DOCUMENT_ROOT']) 
+            ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') 
+            : rtrim(BASE_PATH, '/') . '/public';
+
+        $publicThemesDir = $publicPath . '/assets/themes/' . $themeName;
         $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
 
         // Limpiar el tema anterior si ya existe para reemplazarlo completamente
@@ -310,8 +314,12 @@ class AdminService
             throw new \Exception("Cannot delete the active theme.");
         }
 
+        $publicPath = !empty($_SERVER['DOCUMENT_ROOT']) 
+            ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') 
+            : rtrim(BASE_PATH, '/') . '/public';
+
         $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
-        $publicThemesDir = rtrim(BASE_PATH, '/') . '/public/assets/themes/' . $themeName;
+        $publicThemesDir = $publicPath . '/assets/themes/' . $themeName;
 
         $this->removeDirectory($resourcesThemesDir);
         $this->removeDirectory($publicThemesDir);
@@ -323,11 +331,18 @@ class AdminService
             return;
         }
 
-        $files = array_diff(scandir($dir), ['.', '..']);
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
         foreach ($files as $file) {
-            $path = $dir . DIRECTORY_SEPARATOR . $file;
-            is_dir($path) ? $this->removeDirectory($path) : unlink($path);
+            if ($file->isDir()) {
+                @rmdir($file->getPathname());
+            } else {
+                @unlink($file->getPathname());
+            }
         }
-        rmdir($dir);
+        @rmdir($dir);
     }
 }
