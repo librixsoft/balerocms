@@ -229,8 +229,16 @@ class AdminService
         $publicThemesDir = rtrim(BASE_PATH, '/') . '/public/assets/themes/' . $themeName;
         $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
 
-        if (!is_dir($publicThemesDir)) mkdir($publicThemesDir, 0755, true);
-        if (!is_dir($resourcesThemesDir)) mkdir($resourcesThemesDir, 0755, true);
+        // Limpiar el tema anterior si ya existe para reemplazarlo completamente
+        if (is_dir($publicThemesDir)) {
+            $this->removeDirectory($publicThemesDir);
+        }
+        if (is_dir($resourcesThemesDir)) {
+            $this->removeDirectory($resourcesThemesDir);
+        }
+
+        mkdir($publicThemesDir, 0755, true);
+        mkdir($resourcesThemesDir, 0755, true);
 
         // Find the root directory inside the zip (where main.html is located)
         $rootDir = '';
