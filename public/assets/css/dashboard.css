@@ -182,7 +182,9 @@ body {
     #content {
         margin-left: 0 !important;
         width: 100% !important;
-        padding-top: 72px;
+        padding-top: 15px;
+        padding-left: 20px;
+        padding-right: 20px;
     }
 }
 
