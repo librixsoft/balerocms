@@ -1,0 +1,71 @@
+<%-- @if mod_id == "themes" -->
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <h3>Themes</h3>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadThemeModal">
+        <i class="fas fa-upload"></i> Upload Theme
+    </button>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+    <%-- @if themes_list -->
+    <%-- @foreach themes_list as theme -->
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0">
+            <div class="d-flex flex-column align-items-center justify-content-center p-3" style="height: 180px; overflow: hidden; background: {theme.primary_color}; position: relative; border-radius: calc(.25rem - 1px) calc(.25rem - 1px) 0 0;">
+                <div style="width: 100%; border-radius: 8px; background: #ffffff; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+                    <h5 style="color: {theme.header_color}; margin-top: 0; margin-bottom: 10px; font-weight: bold; text-transform: capitalize;">{theme.name}</h5>
+                    <p style="color: {theme.text_color}; font-size: 13px; margin-bottom: 0;">Preview styling rendered directly from properties extracted from style.css</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <h6 class="card-title text-capitalize">{theme.name} Theme</h6>
+            </div>
+            <div class="card-footer bg-transparent pt-0 border-top-0 d-flex gap-2">
+                <%-- @if current_theme == "{theme.id}" -->
+                <button type="button" class="btn btn-sm btn-success w-100 disabled">
+                    <i class="fas fa-check-circle"></i> Active
+                </button>
+                <%-- @else -->
+                <form action="./admin/themes/activate/{theme.id}" method="POST" class="flex-fill m-0 p-0">
+                    <button type="submit" class="btn btn-sm btn-outline-primary w-100" title="Activate {theme.name} Theme">
+                        <i class="fas fa-magic"></i> Activate
+                    </button>
+                </form>
+                <%-- @endif -->
+            </div>
+        </div>
+    </div>
+    <%-- @endforeach -->
+    <%-- @else -->
+    <div class="col-12 text-center py-5">
+        <i class="fas fa-paint-roller fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No themes found.</h5>
+    </div>
+    <%-- @endif -->
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadThemeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="./admin/themes/upload" method="POST" enctype="multipart/form-data">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Theme</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="themeZip" class="form-label">Theme ZIP File</label>
+                        <input class="form-control" type="file" id="themeZip" name="theme_zip" accept=".zip" required>
+                        <div class="form-text">Needs to contain main.html and style files at the root. The theme name will be the name of the ZIP file.</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<%-- @endif -->
