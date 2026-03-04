@@ -247,6 +247,42 @@ class AdminController
         $this->redirect->to('/admin/blocks');
     }
 
+    #[Get('/themes')]
+    public function getThemes()
+    {
+        $params = $this->adminService->getThemesViewParams();
+        return $this->view->render("admin/dashboard.html", $params, false);
+    }
+
+    #[Post('/themes/upload')]
+    public function uploadTheme()
+    {
+        $file = $_FILES['theme_zip'] ?? null;
+        if ($file && $file['error'] === UPLOAD_ERR_OK) {
+            try {
+                $this->adminService->uploadThemeZip($file);
+                $this->flash->set("success", "Theme uploaded successfully.");
+            } catch (\Exception $e) {
+                $this->flash->set("danger", $e->getMessage());
+            }
+        } else {
+            $this->flash->set("danger", "Failed to upload file.");
+        }
+        $this->redirect->to('/admin/themes');
+    }
+
+    #[Post('/themes/activate/{themeName}')]
+    public function activateTheme(string $themeName)
+    {
+        try {
+            $this->adminService->activateTheme($themeName);
+            $this->flash->set("success", "Theme '{$themeName}' activated successfully.");
+        } catch (\Exception $e) {
+            $this->flash->set("danger", "Failed to activate theme.");
+        }
+        $this->redirect->to('/admin/themes');
+    }
+
     #[Get('/media')]
     public function getMediaList()
     {

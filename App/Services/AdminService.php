@@ -200,4 +200,94 @@ class AdminService
 
         return $this->viewModel->getMediaParams($params);
     }
+    public function getThemesViewParams(): array
+    {
+        $params = [
+            'pages_count'  => $this->model->getPagesCount(),
+            'blocks_count' => $this->model->getBlocksCount(),
+        ];
+
+        return $this->viewModel->getThemesParams($params);
+    }
+
+    public function uploadThemeZip(array $file): void
+    {
+        $zipPath = $file['tmp_name'];
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            throw new \Exception("Invalid ZIP file.");
+        }
+        
+        $themeName = pathinfo($file['name'], PATHINFO_FILENAME);
+        // Ensure valid directory name
+        $themeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $themeName);
+        if (empty($themeName)) {
+            $zip->close();
+            throw new \Exception("Invalid theme name.");
+        }
+
+        $publicThemesDir = rtrim(BASE_PATH, '/') . '/public/assets/themes/' . $themeName;
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+
+        if (!is_dir($publicThemesDir)) mkdir($publicThemesDir, 0755, true);
+        if (!is_dir($resourcesThemesDir)) mkdir($resourcesThemesDir, 0755, true);
+
+        // Find the root directory inside the zip (where main.html is located)
+        $rootDir = '';
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = str_replace('\\', '/', $zip->getNameIndex($i));
+            if (basename($name) === 'main.html') {
+                $rootDir = dirname($name);
+                if ($rootDir === '.' || $rootDir === '') {
+                    $rootDir = '';
+                } else {
+                    $rootDir .= '/';
+                }
+                break;
+            }
+        }
+
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $filename = str_replace('\\', '/', $zip->getNameIndex($i));
+            
+            // Skip directories
+            if (substr($filename, -1) == '/') {
+                continue;
+            }
+
+            // Normalizamos removiendo el directorio base del zip si existe
+            if ($rootDir !== '' && strpos($filename, $rootDir) === 0) {
+                $relativePath = substr($filename, strlen($rootDir));
+            } elseif ($rootDir === '') {
+                $relativePath = $filename;
+            } else {
+                continue; // Ignore files outside the theme root
+            }
+
+            $content = $zip->getFromIndex($i);
+            
+            if ($relativePath === 'main.html') {
+                file_put_contents($resourcesThemesDir . '/main.html', $content);
+            } else {
+                $destPath = $publicThemesDir . '/' . $relativePath;
+                $destDir = dirname($destPath);
+                if (!is_dir($destDir)) mkdir($destDir, 0755, true);
+                
+                file_put_contents($destPath, $content);
+            }
+        }
+        $zip->close();
+    }
+
+    public function activateTheme(string $themeName): void
+    {
+        // Simple validation to check if the theme directory exists
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+        if (!is_dir($resourcesThemesDir)) {
+            throw new \Exception("Theme does not exist.");
+        }
+
+        // Setting the theme automatically updates the config JSON mapping.
+        $this->configSettings->theme = $themeName;
+    }
 }

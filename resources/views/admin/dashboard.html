@@ -151,6 +151,12 @@
                     </li>
 
                     <li class="nav-item">
+                        <a class="nav-link {activeMenu == 'themes' ? 'active' : ''}" href="./admin/themes">
+                            Themes
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
                         <a class="nav-link {activeMenu == 'update' ? 'active' : ''}" href="./admin/update">
                             System Update
                         </a>
@@ -198,6 +204,10 @@
 
                         <%-- @if mod_id == "update" -->
                              <%-- @include "admin/includes/update.html" -->
+                        <%-- @endif -->
+
+                        <%-- @if mod_id == "themes" -->
+                             <%-- @include "admin/includes/themes.html" -->
                         <%-- @endif -->
 
                     </div>

@@ -239,4 +239,63 @@ class AdminViewModel
 
         return $viewModel->all();
     }
+
+    public function getThemesParams(array $extraParams = []): array
+    {
+        $viewModel = $this->createViewModel();
+
+        $themeDirs = $this->themesReader->getThemes();
+        $themesList = [];
+
+        foreach ($themeDirs as $themeDir) {
+            $cssPath = rtrim(BASE_PATH, '/') . '/public/assets/themes/' . $themeDir . '/style.css';
+            
+            $primaryColor = '#1e3c72';
+            $textColor = '#343a40';
+            $headerColor = '#1e3c72';
+            
+            if (file_exists($cssPath)) {
+                $cssContent = file_get_contents($cssPath);
+                
+                // Extraer el color de texto del body
+                if (preg_match('/body[^{]*{[^}]*color:\s*(#[0-9a-fA-F]{3,6}|rgba?\([^)]+\))/si', $cssContent, $m)) {
+                    $textColor = $m[1];
+                }
+                
+                // Extraer color de los encabezados (h1, h2, etc)
+                if (preg_match('/h[1-6][^{]*{[^}]*color:\s*(#[0-9a-fA-F]{3,6}|rgba?\([^)]+\))/si', $cssContent, $m)) {
+                    $headerColor = $m[1];
+                }
+                
+                // Extraer el fondo primario / hero header
+                if (preg_match('/\.hero-header[^{]*{[^}]*background:\s*([^;]+);/si', $cssContent, $m)) {
+                    $primaryColor = trim($m[1]);
+                } elseif (preg_match('/background:\s*(linear-gradient[^;]+);/si', $cssContent, $m)) {
+                    $primaryColor = trim($m[1]);
+                }
+            }
+
+            $themesList[] = [
+                'id' => $themeDir,
+                'name' => ucfirst($themeDir),
+                'primary_color' => str_replace('"', "'", $primaryColor), // sanitize for html attr
+                'text_color' => $textColor,
+                'header_color' => $headerColor,
+            ];
+        }
+
+        $viewModel->addAll([
+            'mod_name' => $this->translator->t("admin.themes") ?? 'Themes',
+            'mod_id' => 'themes',
+            'activeMenu' => 'themes',
+            'themes_list' => $themesList,
+            'current_theme' => $this->config->theme,
+        ]);
+
+        if (!empty($extraParams)) {
+            $viewModel->addAll($extraParams);
+        }
+
+        return $viewModel->all();
+    }
 }
