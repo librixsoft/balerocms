@@ -143,9 +143,9 @@
         }
 
         .user-icon-only {
-            border-radius: 999px;
-            padding: .2rem;
-            min-width: 42px;
+            border-radius: 999px 12px 12px 999px;
+            padding: .2rem .35rem .2rem .2rem;
+            min-width: 48px;
             min-height: 42px;
             display: inline-flex;
             align-items: center;
@@ -295,44 +295,6 @@
             min-height: auto;
         }
 
-        .dashboard-hero {
-            background: radial-gradient(circle at top right, #dbeafe 0%, #eff6ff 35%, #ffffff 100%);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
-            padding: 1rem 1.2rem;
-            margin-bottom: 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: .8rem;
-            flex-wrap: wrap;
-        }
-
-        .dashboard-title {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.01em;
-        }
-
-        .dashboard-subtitle {
-            margin: .25rem 0 0;
-            color: var(--text-2);
-            font-size: .92rem;
-        }
-
-        .dashboard-status {
-            display: inline-flex;
-            align-items: center;
-            gap: .4rem;
-            padding: .35rem .7rem;
-            border-radius: 999px;
-            font-size: .78rem;
-            font-weight: 600;
-            color: #065f46;
-            background: #d1fae5;
-        }
 
         .stats-grid {
             display: grid;
@@ -418,27 +380,19 @@
             background: transparent !important;
         }
 
-        body.dark-theme .dashboard-hero,
         body.dark-theme .stat-card {
             background: #1c1c1e;
             border-color: #2c2c2e;
             color: #e5e7eb;
         }
 
-        body.dark-theme .dashboard-title,
         body.dark-theme .stat-value {
             color: #f8fafc;
         }
 
-        body.dark-theme .dashboard-subtitle,
         body.dark-theme .stat-note,
         body.dark-theme .stat-label {
             color: #9ca3af;
-        }
-
-        body.dark-theme .dashboard-status {
-            background: rgba(163, 230, 53, 0.14);
-            color: #a3e635;
         }
 
         body.dark-theme .badge.bg-blue {
@@ -604,14 +558,6 @@
             </aside>
 
             <main class="col-lg-9" id="content">
-                <section class="dashboard-hero">
-                    <div>
-                        <h1 class="dashboard-title">Panel de administración</h1>
-                        <p class="dashboard-subtitle">Gestiona tu contenido, archivos y configuración del sistema desde una vista más limpia y rápida.</p>
-                    </div>
-                    <span class="dashboard-status"><i class="fas fa-circle-check"></i> Sistema activo</span>
-                </section>
-
                 <section class="stats-grid" aria-label="Resumen rápido">
                     <article class="stat-card">
                         <div class="stat-label">Páginas</div>
