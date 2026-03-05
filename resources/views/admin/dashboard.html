@@ -51,6 +51,111 @@
             padding: .75rem .75rem 0;
         }
 
+        .navbar-vue {
+            height: 64px;
+            background: rgba(255, 255, 255, 0.84) !important;
+            border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+        }
+
+        .navbar-container {
+            padding: 0 .9rem;
+            gap: .8rem;
+        }
+
+        .navbar-content {
+            margin-left: .5rem;
+            gap: .75rem;
+        }
+
+        .navbar-left {
+            gap: .55rem !important;
+        }
+
+        .nav-context-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .35rem .7rem;
+            border-radius: 999px;
+            background: rgba(59, 130, 246, 0.1);
+            color: #1d4ed8;
+            font-size: .8rem;
+            font-weight: 600;
+            border: 1px solid rgba(59, 130, 246, 0.18);
+        }
+
+        .quick-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .42rem .7rem;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #0f172a;
+            font-size: .82rem;
+            font-weight: 600;
+            border: 1px solid #dbe2ef;
+            background: #ffffff;
+            transition: all .2s ease;
+        }
+
+        .quick-action-btn:hover {
+            color: #1d4ed8;
+            border-color: #bfd2ff;
+            background: #eff6ff;
+        }
+
+        .icon-button {
+            border: 1px solid transparent;
+            border-radius: 10px;
+        }
+
+        .icon-button:hover {
+            border-color: #dbe2ef;
+            transform: translateY(-1px);
+        }
+
+        .user-button {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: .2rem .35rem .2rem .55rem;
+            background: #ffffff;
+            transition: all .2s ease;
+        }
+
+        .user-button:hover {
+            border-color: #c9d5ea;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+        }
+
+        body.dark-theme .navbar-vue {
+            background: rgba(10, 10, 12, 0.84) !important;
+            border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        body.dark-theme .nav-context-pill {
+            background: rgba(163, 230, 53, 0.12);
+            border-color: rgba(163, 230, 53, 0.35);
+            color: #bef264;
+        }
+
+        body.dark-theme .quick-action-btn,
+        body.dark-theme .user-button {
+            background: #16161a;
+            border-color: #2c2c2e;
+            color: #f3f4f6;
+        }
+
+        body.dark-theme .quick-action-btn:hover {
+            background: #1f2937;
+            border-color: #3b82f6;
+            color: #bfdbfe;
+        }
+
         #sidebar {
             background: var(--surface-1);
             border: 1px solid var(--border);
@@ -281,6 +386,11 @@
                 padding-left: .75rem;
                 padding-right: .75rem;
             }
+
+            .nav-context-pill,
+            .quick-action-btn {
+                display: none;
+            }
         }
     </style>
 
@@ -304,7 +414,16 @@
             </button>
 
             <div class="navbar-content" :class="{ 'mobile-open': mobileMenuOpen }">
-                <div class="navbar-left"></div>
+                <div class="navbar-left">
+                    <div class="nav-context-pill">
+                        <i class="fas fa-gauge-high"></i>
+                        <span>{mod_name}</span>
+                    </div>
+                    <a class="quick-action-btn" href="./admin/pages">
+                        <i class="fas fa-plus"></i>
+                        <span>Nueva página</span>
+                    </a>
+                </div>
 
                 <div class="navbar-right">
                     <div class="nav-dropdown" @click.stop>
