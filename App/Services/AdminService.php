@@ -43,6 +43,7 @@ class AdminService
             'virtual_pages' => $this->model->getVirtualPages(),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
         ];
 
         return $this->viewModel->getSettingsParams(
@@ -71,6 +72,7 @@ class AdminService
         return $this->viewModel->getPagesParams([
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
             'next_sort_order' => $this->getNextPageSortOrder(),
         ]);
     }
@@ -81,6 +83,7 @@ class AdminService
             'pages' => $this->model->getVirtualPages(),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
         ]);
     }
 
@@ -102,6 +105,7 @@ class AdminService
             'page' => $this->model->getPageById($id),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
         ]);
     }
 
@@ -121,6 +125,7 @@ class AdminService
             'blocks' => $this->model->getBlocks(),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
         ]);
     }
 
@@ -137,6 +142,7 @@ class AdminService
             'next_sort_order' => $this->getNextBlockSortOrder(),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
         ]);
     }
 
@@ -151,6 +157,7 @@ class AdminService
             'block' => $this->model->getBlockById($id),
             'pages_count' => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count' => $this->getMediaCount(),
         ]);
     }
 
@@ -170,6 +177,7 @@ class AdminService
 
         $updateInfo['pages_count'] = $this->model->getPagesCount();
         $updateInfo['blocks_count'] = $this->model->getBlocksCount();
+        $updateInfo['media_count'] = $this->getMediaCount();
 
         return $this->viewModel->getUpdateParams($updateInfo);
     }
@@ -190,12 +198,20 @@ class AdminService
         return $this->updateService->performUpdate();
     }
 
+    private function getMediaCount(): int
+    {
+        return count($this->uploaderService->getAllMedia());
+    }
+
     public function getMediaViewParams(): array
     {
+        $mediaItems = $this->uploaderService->getAllMedia();
+
         $params = [
             'pages_count'  => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
-            'media_items'  => $this->uploaderService->getAllMedia(),
+            'media_count'  => count($mediaItems),
+            'media_items'  => $mediaItems,
         ];
 
         return $this->viewModel->getMediaParams($params);
@@ -205,6 +221,7 @@ class AdminService
         $params = [
             'pages_count'  => $this->model->getPagesCount(),
             'blocks_count' => $this->model->getBlocksCount(),
+            'media_count'  => $this->getMediaCount(),
         ];
 
         return $this->viewModel->getThemesParams($params);
