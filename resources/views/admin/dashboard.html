@@ -131,7 +131,6 @@
 
         .icon-button:hover {
             border-color: #dbe2ef;
-            transform: translateY(-1px);
         }
 
         .user-button {
@@ -180,29 +179,26 @@
         }
 
         .user-popup {
-            min-width: 260px;
-            padding: .55rem;
+            min-width: 280px;
+            padding: .6rem;
             border-radius: 14px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
         }
 
         .user-popup-header {
-            padding: .45rem;
-        }
-
-        .user-popup-label {
-            display: inline-flex;
-            align-items: center;
-            font-size: .68rem;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-            color: #64748b;
-            margin-bottom: .35rem;
+            padding: .55rem;
+            border-radius: 10px;
+            background: linear-gradient(180deg, #f8fbff 0%, #f2f6ff 100%);
+            border: 1px solid #e5ecfa;
+            margin-bottom: .5rem;
         }
 
         .user-popup-meta .username {
-            font-size: .9rem;
-            font-weight: 700;
+            font-size: .92rem;
+            font-weight: 800;
             line-height: 1.2;
+            color: #0f172a;
         }
 
         .user-popup-meta .email {
@@ -210,6 +206,59 @@
             color: #64748b;
             line-height: 1.25;
             margin-top: .12rem;
+        }
+
+        .user-popup-actions {
+            display: flex;
+        }
+
+        .logout-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            text-decoration: none;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #0f172a;
+            border-radius: 10px;
+            padding: .6rem;
+            transition: all .2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #eef2f7;
+            border-color: #cbd5e1;
+            color: #020617;
+        }
+
+        .logout-btn-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e2e8f0;
+            color: #334155;
+            font-size: .85rem;
+            flex-shrink: 0;
+        }
+
+        .logout-btn-copy {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+
+        .logout-btn-copy strong {
+            font-size: .84rem;
+        }
+
+        .logout-btn-copy small {
+            font-size: .7rem;
+            opacity: .8;
+            margin-top: .15rem;
         }
 
         body.dark-theme .navbar-vue {
@@ -237,8 +286,14 @@
             color: #bfdbfe;
         }
 
-        body.dark-theme .user-popup-label {
-            color: #9ca3af;
+        body.dark-theme .user-popup {
+            border-color: #2c2c2e;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+        }
+
+        body.dark-theme .user-popup-header {
+            background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+            border-color: #374151;
         }
 
         body.dark-theme .user-popup-meta .username {
@@ -247,6 +302,23 @@
 
         body.dark-theme .user-popup-meta .email {
             color: #9ca3af;
+        }
+
+        body.dark-theme .logout-btn {
+            background: #18181b;
+            border-color: #2c2c2e;
+            color: #e5e7eb;
+        }
+
+        body.dark-theme .logout-btn:hover {
+            background: #22222a;
+            border-color: #3a3a45;
+            color: #ffffff;
+        }
+
+        body.dark-theme .logout-btn-icon {
+            background: #23232b;
+            color: #cbd5e1;
         }
 
         body.dark-theme .quick-action-lang select {
@@ -533,16 +605,20 @@
                         </button>
                         <div class="dropdown-menu dropdown-menu-right user-popup" v-show="userMenuOpen">
                             <div class="user-popup-header">
-                                <div class="user-popup-label">Cuenta activa</div>
                                 <div class="user-popup-meta">
                                     <div class="username">{username}</div>
                                     <div class="email">{email}</div>
                                 </div>
                             </div>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="./login/logout" @click="userMenuOpen = false">
-                                <i class="fas fa-sign-out-alt me-2"></i>{admin.logout}
-                            </a>
+                            <div class="user-popup-actions">
+                                <a class="logout-btn" href="./login/logout" @click="userMenuOpen = false">
+                                    <span class="logout-btn-icon"><i class="fas fa-sign-out-alt"></i></span>
+                                    <span class="logout-btn-copy">
+                                        <strong>{admin.logout}</strong>
+                                        <small>Cerrar sesión segura</small>
+                                    </span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

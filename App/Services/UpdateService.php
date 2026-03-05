@@ -13,16 +13,25 @@ class UpdateService
 
     public function getCurrentVersion(): string
     {
-        if (!defined('_CORE_VERSION')) {
-            $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
-            if (file_exists($path)) {
-                include_once $path;
-            }
-            if (!defined('_CORE_VERSION')) {
-                return 'Unknown';
-            }
+        if (defined('_CORE_VERSION')) {
+            return _CORE_VERSION;
         }
-        return _CORE_VERSION;
+
+        $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+        if (!file_exists($path)) {
+            return 'Unknown';
+        }
+
+        $content = file_get_contents($path);
+        if ($content === false) {
+            return 'Unknown';
+        }
+
+        if (preg_match('/_CORE_VERSION\s*=\s*["\']([^"\']+)["\']/', $content, $matches)) {
+            return $matches[1];
+        }
+
+        return 'Unknown';
     }
 
     public function getRemoteVersion(): ?string
