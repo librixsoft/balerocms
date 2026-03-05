@@ -144,7 +144,7 @@ class View
 
     private function getDefaultParams(array $params = []): array
     {
-        $baseUrl = rtrim($this->configSettings->url, '/');
+        $baseUrl = rtrim((string) ($this->configSettings->url ?? ''), '/');
         $currentUrl = $baseUrl . '/';
 
         // Si detectamos que hay un objeto o array 'page', construimos la URL interna

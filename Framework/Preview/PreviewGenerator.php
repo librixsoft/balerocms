@@ -41,7 +41,7 @@ class PreviewGenerator
     /**
      * Procesa y sirve la imagen OG al navegador.
      */
-    public function render(string $title = null): void
+    public function render(?string $title = null): void
     {
         if (empty($title)) {
             $this->serveStaticFallback();

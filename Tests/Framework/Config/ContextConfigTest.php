@@ -33,7 +33,7 @@ final class ContextConfigTest extends TestCase
                     $this->equalTo(\Framework\Core\ErrorConsole::class),
                     $this->equalTo(\Framework\Utils\Redirect::class)
                 ),
-                $this->isType('callable')
+                $this->isCallable()
             );
 
         $container->method('get')
