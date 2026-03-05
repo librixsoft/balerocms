@@ -7,7 +7,7 @@ services:
   phpunit:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.phpunit
     container_name: phpunit-app
     network_mode: "service:mysql" # Comparte red para usar localhost
     volumes:
