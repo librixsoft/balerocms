@@ -136,37 +136,47 @@
 
         .user-button {
             border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: .2rem .35rem;
+            border-radius: 999px;
+            padding: .2rem .5rem .2rem .2rem;
             background: #ffffff;
             transition: all .2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
         }
 
-        .user-icon-only {
-            border-radius: 999px 12px 12px 999px;
-            padding: .2rem .35rem .2rem .2rem;
-            min-width: 48px;
-            min-height: 42px;
+        .user-chip-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            background: #eef2ff;
+            color: #1d4ed8;
+            border: 1px solid #dbe2ef;
+            font-size: .86rem;
+        }
+
+        .user-chip-name {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #0f172a;
+            max-width: 88px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-chip-caret {
+            font-size: .68rem;
+            color: #64748b;
+            margin-left: .1rem;
         }
 
         .user-button:hover {
             border-color: #c9d5ea;
             box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
-        }
-
-        .user-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent !important;
-            color: #0f172a;
-            border: 1px solid #dbe2ef;
         }
 
         .user-popup {
@@ -246,9 +256,18 @@
             color: #f3f4f6;
         }
 
-        body.dark-theme .user-avatar {
-            color: #f3f4f6;
+        body.dark-theme .user-chip-avatar {
+            background: rgba(59, 130, 246, 0.2);
+            color: #bfdbfe;
             border-color: #3a3a3f;
+        }
+
+        body.dark-theme .user-chip-name {
+            color: #f3f4f6;
+        }
+
+        body.dark-theme .user-chip-caret {
+            color: #9ca3af;
         }
 
         body.dark-theme .quick-action-lang select option {
@@ -507,13 +526,13 @@
 
                     <div class="nav-dropdown user-dropdown" @click.stop>
                         <button
-                                class="user-button user-icon-only"
+                                class="user-button user-chip"
                                 @click="userMenuOpen = !userMenuOpen"
                                 title="Cuenta"
                         >
-                            <div class="user-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
+                            <span class="user-chip-avatar"><i class="fas fa-user"></i></span>
+                            <span class="user-chip-name">{username}</span>
+                            <span class="user-chip-caret"><i class="fas fa-chevron-down"></i></span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-right user-popup" v-show="userMenuOpen">
                             <div class="user-popup-header">
