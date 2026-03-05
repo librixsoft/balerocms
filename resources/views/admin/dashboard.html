@@ -137,14 +137,59 @@
         .user-button {
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: .2rem .35rem .2rem .55rem;
+            padding: .2rem .35rem;
             background: #ffffff;
             transition: all .2s ease;
+        }
+
+        .user-icon-only {
+            border-radius: 999px;
+            padding: .2rem;
+            min-width: 42px;
+            min-height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .user-button:hover {
             border-color: #c9d5ea;
             box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+        }
+
+        .user-popup {
+            min-width: 260px;
+            padding: .5rem;
+        }
+
+        .user-popup-header {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+            padding: .4rem;
+        }
+
+        .user-popup-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e0edff;
+            color: #1d4ed8;
+        }
+
+        .user-popup-meta .username {
+            font-size: .86rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .user-popup-meta .email {
+            font-size: .76rem;
+            color: #64748b;
+            line-height: 1.2;
         }
 
         body.dark-theme .navbar-vue {
@@ -170,6 +215,19 @@
             background: #1f2937;
             border-color: #3b82f6;
             color: #bfdbfe;
+        }
+
+        body.dark-theme .user-popup-avatar {
+            background: rgba(59, 130, 246, 0.18);
+            color: #93c5fd;
+        }
+
+        body.dark-theme .user-popup-meta .username {
+            color: #f8fafc;
+        }
+
+        body.dark-theme .user-popup-meta .email {
+            color: #9ca3af;
         }
 
         body.dark-theme .quick-action-lang select {
@@ -478,19 +536,23 @@
 
                     <div class="nav-dropdown user-dropdown" @click.stop>
                         <button
-                                class="user-button"
+                                class="user-button user-icon-only"
                                 @click="userMenuOpen = !userMenuOpen"
+                                title="Cuenta"
                         >
-                            <div class="user-info">
-                                <span class="username">{username}</span>
-                                <span class="email">{email}</span>
-                            </div>
-
                             <div class="user-avatar">
                                 <i class="fas fa-user"></i>
                             </div>
                         </button>
-                        <div class="dropdown-menu dropdown-menu-right" v-show="userMenuOpen">
+                        <div class="dropdown-menu dropdown-menu-right user-popup" v-show="userMenuOpen">
+                            <div class="user-popup-header">
+                                <div class="user-popup-avatar"><i class="fas fa-user"></i></div>
+                                <div class="user-popup-meta">
+                                    <div class="username">{username}</div>
+                                    <div class="email">{email}</div>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="./login/logout" @click="userMenuOpen = false">
                                 <i class="fas fa-sign-out-alt me-2"></i>{admin.logout}
                             </a>
