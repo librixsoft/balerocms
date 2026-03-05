@@ -108,6 +108,22 @@
             background: #eff6ff;
         }
 
+        .quick-action-lang {
+            margin: 0;
+            padding-right: .45rem;
+        }
+
+        .quick-action-lang select {
+            border: 0;
+            background: transparent;
+            font-size: .8rem;
+            font-weight: 700;
+            color: inherit;
+            outline: none;
+            cursor: pointer;
+            min-width: 44px;
+        }
+
         .icon-button {
             border: 1px solid transparent;
             border-radius: 10px;
@@ -154,6 +170,15 @@
             background: #1f2937;
             border-color: #3b82f6;
             color: #bfdbfe;
+        }
+
+        body.dark-theme .quick-action-lang select {
+            color: #f3f4f6;
+        }
+
+        body.dark-theme .quick-action-lang select option {
+            background: #16161a;
+            color: #f3f4f6;
         }
 
         #sidebar {
@@ -423,47 +448,20 @@
                         <i class="fas fa-plus"></i>
                         <span>Nueva página</span>
                     </a>
+                    <a class="quick-action-btn" href="./" target="_blank">
+                        <i class="fas fa-eye"></i>
+                        <span>Preview</span>
+                    </a>
+                    <form class="quick-action-btn quick-action-lang" action="" method="get">
+                        <i class="fas fa-globe"></i>
+                        <select id="lang" name="lang" @change="$event.target.form.submit()">
+                            <option value="en" {lang_selected_en}>EN</option>
+                            <option value="es" {lang_selected_es}>ES</option>
+                        </select>
+                    </form>
                 </div>
 
                 <div class="navbar-right">
-                    <div class="nav-dropdown" @click.stop>
-                        <button
-                                class="icon-button"
-                                @click="previewOpen = !previewOpen"
-                                title="Preview"
-                        >
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-compact" v-show="previewOpen">
-                            <a class="dropdown-item" href="./" target="_blank" @click="previewOpen = false">
-                                <i class="fas fa-external-link-alt me-2"></i>Front-End
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="nav-dropdown lang-dropdown" @click.stop>
-                        <button
-                                class="icon-button"
-                                @click="langOpen = !langOpen"
-                                title="Cambiar idioma"
-                        >
-                            <i class="fas fa-globe"></i>
-                        </button>
-                        <div class="dropdown-menu dropdown-menu-compact" v-show="langOpen">
-                            <form class="lang-form-dropdown">
-                                <select
-                                        class="form-select-dropdown"
-                                        id="lang"
-                                        name="lang"
-                                        @change="$event.target.form.submit()"
-                                >
-                                    <option value="en" {lang_selected_en}>English</option>
-                                    <option value="es" {lang_selected_es}>Español</option>
-                                </select>
-                            </form>
-                        </div>
-                    </div>
-
                     <button
                             @click="toggleTheme"
                             class="icon-button"
