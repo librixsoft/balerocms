@@ -181,29 +181,26 @@
 
         .user-popup {
             min-width: 260px;
-            padding: .5rem;
+            padding: .55rem;
+            border-radius: 14px;
         }
 
         .user-popup-header {
-            display: flex;
-            align-items: center;
-            gap: .65rem;
-            padding: .4rem;
+            padding: .45rem;
         }
 
-        .user-popup-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 999px;
+        .user-popup-label {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            background: #e0edff;
-            color: #1d4ed8;
+            font-size: .68rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: .35rem;
         }
 
         .user-popup-meta .username {
-            font-size: .86rem;
+            font-size: .9rem;
             font-weight: 700;
             line-height: 1.2;
         }
@@ -211,7 +208,8 @@
         .user-popup-meta .email {
             font-size: .76rem;
             color: #64748b;
-            line-height: 1.2;
+            line-height: 1.25;
+            margin-top: .12rem;
         }
 
         body.dark-theme .navbar-vue {
@@ -239,9 +237,8 @@
             color: #bfdbfe;
         }
 
-        body.dark-theme .user-popup-avatar {
-            background: rgba(59, 130, 246, 0.18);
-            color: #93c5fd;
+        body.dark-theme .user-popup-label {
+            color: #9ca3af;
         }
 
         body.dark-theme .user-popup-meta .username {
@@ -536,7 +533,7 @@
                         </button>
                         <div class="dropdown-menu dropdown-menu-right user-popup" v-show="userMenuOpen">
                             <div class="user-popup-header">
-                                <div class="user-popup-avatar"><i class="fas fa-user"></i></div>
+                                <div class="user-popup-label">Cuenta activa</div>
                                 <div class="user-popup-meta">
                                     <div class="username">{username}</div>
                                     <div class="email">{email}</div>
