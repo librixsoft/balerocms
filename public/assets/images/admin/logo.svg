@@ -1,21 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80">
-  <!-- Icono </> -->
-  <g id="icon">
-    <text x="10" y="52"
-          font-family="'Courier New', 'Consolas', monospace"
-          font-size="40"
-          font-weight="700"
-          fill="#10B981"
-          letter-spacing="-2">&lt;/&gt;</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" role="img" aria-label="BaleroCMS logo">
+  <defs>
+    <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34D399"/>
+      <stop offset="55%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+
+    <linearGradient id="wordGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <linearGradient id="cmsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#10B981"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Futuristic diamond icon -->
+  <g transform="translate(12,26)" filter="url(#softGlow)">
+    <path d="M26 0 L42 16 L26 32 L10 16 Z" fill="url(#diamondGradient)"/>
+    <path d="M26 0 L32 16 L26 32 L20 16 Z" fill="rgba(255,255,255,0.26)"/>
+    <path d="M10 16 L42 16" stroke="rgba(255,255,255,0.5)" stroke-width="1.6"/>
+    <path d="M26 0 L10 16 L26 32 L42 16 Z" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.4"/>
   </g>
 
-  <!-- Texto BaleroCMS -->
-  <text x="85" y="52"
-        font-family="'Helvetica Neue', 'Arial', sans-serif"
-        font-size="32"
-        font-weight="300"
-        fill="#4B5563"
-        letter-spacing="1">
-    Balero<tspan fill="#10B981" font-weight="300">CMS</tspan>
+  <!-- Wordmark -->
+  <text x="66" y="51"
+        font-family="'Orbitron', 'Exo 2', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-size="30"
+        font-weight="400"
+        letter-spacing="1"
+        fill="url(#wordGradient)"
+        stroke="rgba(15,23,42,0.18)"
+        stroke-width="0.4"
+        paint-order="stroke fill">
+    Balero<tspan fill="url(#cmsGradient)" font-family="'Exo 2', 'Orbitron', 'Segoe UI', Arial, sans-serif" font-weight="600">CMS</tspan>
   </text>
+
+  <!-- Futuristic accents -->
+  <g opacity="0.85">
+    <rect x="66" y="56" width="58" height="1.8" rx="1" fill="#94A3B8"/>
+    <rect x="128" y="56" width="44" height="1.8" rx="1" fill="url(#cmsGradient)"/>
+    <rect x="176" y="56" width="12" height="1.8" rx="1" fill="#38BDF8"/>
+  </g>
 </svg>
