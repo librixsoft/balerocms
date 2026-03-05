@@ -29,6 +29,7 @@ class AdminTheme {
                     updateSuccess: false,
                     updateMessage: '',
                     updateBackupFile: '',
+                    quickMenuOpen: false,
                 }
             },
             methods: {
@@ -58,6 +59,7 @@ class AdminTheme {
                         this.previewOpen = false;
                         this.userMenuOpen = false;
                         this.langOpen = false; // Agregué el langOpen
+                        this.quickMenuOpen = false;
                     }
                 },
                 handleSlugInput(event) {

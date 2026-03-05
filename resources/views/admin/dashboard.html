@@ -113,6 +113,19 @@
             padding-right: .45rem;
         }
 
+        .mobile-quick-menu-btn {
+            display: none;
+        }
+
+        .quick-actions-group {
+            display: flex;
+            gap: .55rem;
+        }
+
+        .navbar-left.nav-dropdown {
+            position: relative;
+        }
+
         .quick-action-lang select {
             border: 0;
             background: transparent;
@@ -321,8 +334,28 @@
             color: #cbd5e1;
         }
 
+        body.dark-theme .quick-actions-group {
+            background: #18181b;
+            border-color: #2c2c2e;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-theme .quick-actions-group .quick-action-btn {
+            background: transparent;
+        }
+
+        body.dark-theme .quick-actions-group .quick-action-btn:hover {
+            background: #22222a;
+        }
+
         body.dark-theme .quick-action-lang select {
             color: #f3f4f6;
+        }
+
+        @media (max-width: 992px) {
+            body.dark-theme .navbar-right {
+                border-top-color: rgba(255, 255, 255, 0.1);
+            }
         }
 
         body.dark-theme .user-chip-avatar {
@@ -517,6 +550,46 @@
                 height: auto;
                 position: static;
             }
+
+            .nav-context-pill {
+                display: none;
+            }
+
+            .mobile-quick-menu-btn {
+                display: inline-flex;
+            }
+
+            .quick-actions-group {
+                display: none;
+                flex-direction: column;
+                position: relative; /* Cambiado a relativo para que empuje el contenido */
+                width: 100%;
+                margin-top: 0.5rem;
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                padding: 0.5rem;
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08); /* Sombra más suave para relativo */
+                z-index: 1000;
+                gap: 0.25rem;
+            }
+
+            .quick-actions-group.show {
+                display: flex;
+                margin-bottom: 1rem; /* Espacio extra cuando está abierto */
+            }
+
+            .navbar-right {
+                border-top: 1px solid var(--border);
+                padding-top: 1rem;
+                margin-top: 0.5rem;
+            }
+
+            .quick-actions-group .quick-action-btn {
+                width: 100%;
+                justify-content: flex-start;
+                border: 1px solid transparent;
+            }
         }
 
         @media (max-width: 640px) {
@@ -527,11 +600,6 @@
             .dashboard-shell {
                 padding-left: .75rem;
                 padding-right: .75rem;
-            }
-
-            .nav-context-pill,
-            .quick-action-btn {
-                display: none;
             }
         }
     </style>
@@ -556,30 +624,38 @@
             </button>
 
             <div class="navbar-content" :class="{ 'mobile-open': mobileMenuOpen }">
-                <div class="navbar-left">
+                <div class="navbar-left nav-dropdown" @click.stop>
                     <div class="nav-context-pill">
                         <i class="fas fa-gauge-high"></i>
                         <span>{mod_name}</span>
                     </div>
-                    <a class="quick-action-btn" href="./admin/pages/new">
-                        <i class="fas fa-file-circle-plus"></i>
-                        <span>Nueva página</span>
-                    </a>
-                    <a class="quick-action-btn" href="./admin/blocks/new">
-                        <i class="fas fa-cubes"></i>
-                        <span>Nuevo bloque</span>
-                    </a>
-                    <a class="quick-action-btn" href="./" target="_blank">
-                        <i class="fas fa-eye"></i>
-                        <span>Preview</span>
-                    </a>
-                    <form class="quick-action-btn quick-action-lang" action="" method="get">
-                        <i class="fas fa-globe"></i>
-                        <select id="lang" name="lang" @change="$event.target.form.submit()">
-                            <option value="en" {lang_selected_en}>EN</option>
-                            <option value="es" {lang_selected_es}>ES</option>
-                        </select>
-                    </form>
+
+                    <button type="button" class="quick-action-btn mobile-quick-menu-btn" @click.prevent="quickMenuOpen = !quickMenuOpen">
+                        <i class="fas fa-ellipsis-v"></i>
+                        <span>Acciones</span>
+                    </button>
+
+                    <div class="quick-actions-group" :class="{ 'show': quickMenuOpen }">
+                        <a class="quick-action-btn" href="./admin/pages/new">
+                            <i class="fas fa-file-circle-plus"></i>
+                            <span>Nueva página</span>
+                        </a>
+                        <a class="quick-action-btn" href="./admin/blocks/new">
+                            <i class="fas fa-cubes"></i>
+                            <span>Nuevo bloque</span>
+                        </a>
+                        <a class="quick-action-btn" href="./" target="_blank">
+                            <i class="fas fa-eye"></i>
+                            <span>Preview</span>
+                        </a>
+                        <form class="quick-action-btn quick-action-lang" action="" method="get">
+                            <i class="fas fa-globe"></i>
+                            <select id="lang" name="lang" @change="$event.target.form.submit()">
+                                <option value="en" {lang_selected_en}>EN</option>
+                                <option value="es" {lang_selected_es}>ES</option>
+                            </select>
+                        </form>
+                    </div>
                 </div>
 
                 <div class="navbar-right">
