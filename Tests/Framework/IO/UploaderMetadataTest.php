@@ -53,4 +53,44 @@ final class UploaderMetadataTest extends TestCase
 
         @rmdir($dir);
     }
+
+    public function testDeleteMediaThrowsWhenInUseOrMetadataMissing(): void
+    {
+        $dir = sys_get_temp_dir() . '/uploads-exc-' . uniqid();
+        @mkdir($dir, 0777, true);
+        $hash = 'inuse';
+        file_put_contents($dir.'/'.$hash.'.jpg', 'img');
+        file_put_contents($dir.'/'.$hash.'.json', json_encode([
+            'filename'=>$hash.'.jpg','extension'=>'jpg','size_bytes'=>1024,'uploaded_at'=>'2026-03-05T00:00:00+00:00','records'=>[['id'=>1,'type'=>'page']]
+        ]));
+
+        $u = $this->makeUploader($dir);
+
+        $this->expectException(\Framework\Exceptions\UploaderException::class);
+        $u->deleteMedia($hash);
+    }
+
+    public function testGetAllMediaMetadataSortsByNewestAndFormatsMb(): void
+    {
+        $dir = sys_get_temp_dir() . '/uploads-sort-' . uniqid();
+        @mkdir($dir, 0777, true);
+
+        file_put_contents($dir.'/old.json', json_encode([
+            'filename'=>'old.jpg','extension'=>'jpg','size_bytes'=>2048,'uploaded_at'=>'2026-03-01T00:00:00+00:00','records'=>[]
+        ]));
+        file_put_contents($dir.'/new.json', json_encode([
+            'filename'=>'new.jpg','extension'=>'jpg','size_bytes'=>2*1024*1024,'uploaded_at'=>'2026-03-06T00:00:00+00:00','records'=>[]
+        ]));
+
+        $u = $this->makeUploader($dir);
+        $all = $u->getAllMediaMetadata();
+
+        $this->assertSame('new.jpg', $all[0]['filename']);
+        $this->assertSame('2 MB', $all[0]['size_formatted']);
+        $this->assertSame('Not linked', $all[0]['records_summary']);
+
+        @unlink($dir.'/old.json');
+        @unlink($dir.'/new.json');
+        @rmdir($dir);
+    }
 }

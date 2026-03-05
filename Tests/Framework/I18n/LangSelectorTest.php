@@ -44,4 +44,55 @@ final class LangSelectorTest extends TestCase
         @rmdir($tmp . '/es');
         @rmdir($tmp);
     }
+
+    public function testGetLanguageParamsFallsBackToSessionAndSupportedLanguage(): void
+    {
+        $_SESSION = ['lang' => 'es'];
+
+        $tmp = sys_get_temp_dir() . '/lang-selector-session-' . uniqid();
+        @mkdir($tmp . '/es', 0777, true);
+        file_put_contents($tmp . '/es/messages.php', "<?php return ['hello' => 'hola'];");
+
+        $lm = new LangManager();
+        $rh = $this->createMock(RequestHelper::class);
+        $rh->method('hasGet')->with('lang')->willReturn(false);
+
+        $selector = new LangSelector($lm, $rh);
+        $selector->setLangPath($tmp);
+
+        $result = $selector->getLanguageParams();
+
+        $this->assertSame('es', $_SESSION['lang']);
+        $this->assertSame('hola', $result['messages.hello']);
+
+        @unlink($tmp . '/es/messages.php');
+        @rmdir($tmp . '/es');
+        @rmdir($tmp);
+    }
+
+    public function testUnsupportedLanguageFallsBackToEnglish(): void
+    {
+        $_SESSION = [];
+        $_SERVER['HTTP_ACCEPT_LANGUAGE'] = 'de-DE';
+
+        $tmp = sys_get_temp_dir() . '/lang-selector-en-' . uniqid();
+        @mkdir($tmp . '/en', 0777, true);
+        file_put_contents($tmp . '/en/messages.php', "<?php return ['x' => 'y'];");
+
+        $lm = new LangManager();
+        $rh = $this->createMock(RequestHelper::class);
+        $rh->method('hasGet')->with('lang')->willReturn(false);
+
+        $selector = new LangSelector($lm, $rh);
+        $selector->setLangPath($tmp);
+
+        $result = $selector->getLanguageParams();
+
+        $this->assertSame('en', $_SESSION['lang']);
+        $this->assertSame('y', $result['messages.x']);
+
+        @unlink($tmp . '/en/messages.php');
+        @rmdir($tmp . '/en');
+        @rmdir($tmp);
+    }
 }

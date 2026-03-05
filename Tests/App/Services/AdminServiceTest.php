@@ -14,6 +14,37 @@ use PHPUnit\Framework\TestCase;
 
 final class AdminServiceTest extends TestCase
 {
+    private function makeService(
+        ?AdminModel $model = null,
+        ?AdminViewModel $vm = null,
+        ?UpdateService $update = null,
+        ?UploaderService $uploader = null,
+        ?ConfigSettings $configSettings = null,
+        ?\Framework\Utils\Validator $validator = null,
+        ?\App\Mapper\AdminSettingsMapper $mapper = null,
+    ): AdminService {
+        $svc = new AdminService();
+        $r = new \ReflectionClass($svc);
+
+        $deps = [
+            'model' => $model ?? $this->createMock(AdminModel::class),
+            'viewModel' => $vm ?? $this->createMock(AdminViewModel::class),
+            'updateService' => $update ?? $this->createMock(UpdateService::class),
+            'uploaderService' => $uploader ?? $this->createMock(UploaderService::class),
+            'configSettings' => $configSettings ?? $this->createMock(ConfigSettings::class),
+            'validator' => $validator ?? $this->createMock(\Framework\Utils\Validator::class),
+            'adminSettingsMapper' => $mapper ?? $this->createMock(\App\Mapper\AdminSettingsMapper::class),
+        ];
+
+        foreach ($deps as $prop => $val) {
+            $p = $r->getProperty($prop);
+            $p->setAccessible(true);
+            $p->setValue($svc, $val);
+        }
+
+        return $svc;
+    }
+
     public function testBasicViewParamsAndSortHelpers(): void
     {
         $model = $this->createMock(AdminModel::class);
@@ -42,14 +73,7 @@ final class AdminServiceTest extends TestCase
         $uploader = $this->createMock(UploaderService::class);
         $uploader->method('getAllMedia')->willReturn([['hash' => 'x']]);
 
-        $svc = new AdminService();
-        $r = new \ReflectionClass($svc);
-        foreach ([
-            'model'=>$model,'viewModel'=>$vm,'updateService'=>$update,'uploaderService'=>$uploader,
-            'configSettings'=>$this->createMock(ConfigSettings::class),
-            'validator'=>$this->createMock(\Framework\Utils\Validator::class),
-            'adminSettingsMapper'=>$this->createMock(\App\Mapper\AdminSettingsMapper::class),
-        ] as $prop=>$val){$p=$r->getProperty($prop);$p->setAccessible(true);$p->setValue($svc,$val);}        
+        $svc = $this->makeService($model, $vm, $update, $uploader);
 
         $this->assertSame(6, $svc->getNextPageSortOrder());
         $this->assertSame(8, $svc->getNextBlockSortOrder());
@@ -63,5 +87,50 @@ final class AdminServiceTest extends TestCase
         $this->assertArrayHasKey('update_available', $svc->getUpdateViewParams());
         $this->assertArrayHasKey('media_items', $svc->getMediaViewParams());
         $this->assertArrayHasKey('media_count', $svc->getThemesViewParams());
+    }
+
+    public function testCrudDelegatesToModelAndUpdateService(): void
+    {
+        $model = $this->createMock(AdminModel::class);
+        $model->expects($this->once())->method('createPage')->with(['title' => 'x'])->willReturn(11);
+        $model->expects($this->once())->method('updatePage')->with(11, ['title' => 'y']);
+        $model->expects($this->once())->method('deletePage')->with(11);
+        $model->expects($this->once())->method('createBlock')->with(['title' => 'b'])->willReturn(22);
+        $model->expects($this->once())->method('updateBlock')->with(22, ['title' => 'c']);
+        $model->expects($this->once())->method('deleteBlock')->with(22);
+
+        $update = $this->createMock(UpdateService::class);
+        $update->expects($this->once())->method('selfUpdate')->willReturn(['success' => true]);
+        $update->expects($this->once())->method('performUpdate')->willReturn(['success' => true]);
+
+        $svc = $this->makeService($model, null, $update);
+
+        $this->assertSame(11, $svc->createPage(['title' => 'x']));
+        $svc->updatePage(11, ['title' => 'y']);
+        $svc->deletePage(11);
+        $this->assertSame(22, $svc->createBlock(['title' => 'b']));
+        $svc->updateBlock(22, ['title' => 'c']);
+        $svc->deleteBlock(22);
+        $this->assertTrue($svc->selfUpdateService()['success']);
+        $this->assertTrue($svc->performUpdate()['success']);
+    }
+
+    public function testValidationAndMappingDelegation(): void
+    {
+        $validator = $this->createMock(\Framework\Utils\Validator::class);
+        $validator->expects($this->once())->method('validate');
+        $validator->method('fails')->willReturn(false);
+        $validator->expects($this->once())->method('errors')->willReturn(['a' => 'b']);
+
+        $mapper = $this->createMock(\App\Mapper\AdminSettingsMapper::class);
+        $mapper->expects($this->once())->method('mapAndSaveSettings');
+
+        $settings = $this->createMock(\App\DTO\SettingsDTO::class);
+
+        $svc = $this->makeService(null, null, null, null, $this->createMock(ConfigSettings::class), $validator, $mapper);
+
+        $this->assertTrue($svc->validateSettings($settings));
+        $svc->mapAndSaveSettings($settings);
+        $this->assertSame(['a' => 'b'], $svc->getValidationErrors());
     }
 }

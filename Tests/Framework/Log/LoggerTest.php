@@ -22,4 +22,5 @@ final class LoggerTest extends TestCase
         $logger = new Logger($view, $errorConsole);
         $logger->error(new \RuntimeException('x'));
     }
+
 }

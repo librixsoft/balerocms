@@ -37,4 +37,21 @@ final class LangManagerTest extends TestCase
         $this->assertSame('es', $lm->current());
         $this->assertSame('fallback', $lm->get('missing.key', 'fallback'));
     }
+
+    public function testLoadWithMissingDirectoryLeavesEmptyTranslations(): void
+    {
+        $lm = new LangManager();
+        $lm->load('fr', $this->tmp);
+
+        $this->assertSame('fr', $lm->current());
+        $this->assertSame('default', $lm->get('messages.hello', 'default'));
+    }
+
+    public function testGetSupportsRootKeyWithoutDot(): void
+    {
+        $lm = new LangManager();
+        $lm->translations['flat'] = 'value';
+
+        $this->assertSame('value', $lm->get('flat', 'fallback'));
+    }
 }
