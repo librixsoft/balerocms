@@ -18,63 +18,169 @@
 
     <script src="assets/js/vendor/vue.global.prod.js"></script>
 
+    <style>
+        :root {
+            --login-bg: #f8fafc;
+            --login-surface: #ffffff;
+            --login-border: #e2e8f0;
+            --login-text: #334155;
+            --login-muted: #64748b;
+            --login-primary-a: #f77092;
+            --login-primary-b: #a17ecb;
+            --login-focus: rgba(167, 139, 250, 0.25);
+        }
+
+        body.login-page {
+            min-height: 100vh;
+            margin: 0;
+            background:
+                    radial-gradient(circle at 12% 10%, rgba(247, 112, 146, 0.15), transparent 35%),
+                    radial-gradient(circle at 88% 85%, rgba(161, 126, 203, 0.16), transparent 38%),
+                    var(--login-bg);
+            color: var(--login-text);
+        }
+
+        .login-shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .login-card {
+            width: min(92vw, 364px);
+            min-height: 364px;
+            max-width: 364px;
+            background: var(--login-surface);
+            border: 1px solid var(--login-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .login-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-header {
+            padding: 1.4rem 1.5rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .login-logo {
+            max-height: 72px;
+            width: auto;
+        }
+
+        .login-body {
+            padding: 1.35rem 1.5rem 1.1rem;
+        }
+
+        .form-control.login-input {
+            border-radius: 14px;
+            border-color: #dbe4ef;
+            background: #fbfdff;
+            padding: 0.74rem 0.9rem;
+            color: var(--login-text);
+        }
+
+        .form-control.login-input:focus {
+            border-color: #c4b5fd;
+            box-shadow: 0 0 0 0.2rem var(--login-focus);
+            background: #fff;
+        }
+
+        .btn-login {
+            border: 0;
+            border-radius: 14px;
+            padding: 0.72rem 1rem;
+            color: #fff;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--login-primary-a), var(--login-primary-b));
+            box-shadow: 0 12px 24px rgba(167, 126, 203, 0.24);
+            transition: transform .16s ease, box-shadow .16s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 28px rgba(167, 126, 203, 0.28);
+            color: #fff;
+        }
+
+        .login-footer {
+            text-align: center;
+            padding: 0.95rem 1.25rem 1.1rem;
+            border-top: 1px solid #eef2f7;
+            font-size: 0.88rem;
+        }
+
+        .login-footer a {
+            color: var(--login-muted);
+            text-decoration: none;
+        }
+
+        .login-footer a:hover {
+            color: var(--login-text);
+        }
+
+        .login-meta {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+    </style>
 </head>
-<body class="bg-light" style="min-height:100vh; padding-top:50px;">
+<body class="login-page">
 
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-4">
-
-            <div class="card shadow-sm">
-                <div class="card-header text-center">
-                    <img class="logo img-fluid" src="assets/images/admin/logo.svg" style="max-height:80px;">
-                </div>
-                <div class="card-body">
-
-                    <%-- @if login_error -->
-                    <div class="vue-alert vue-alert-danger" role="alert">
-                        <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div class="vue-alert-content">{login_error}</div>
-                        <button class="vue-alert-close" aria-label="Close" onclick="this.parentElement.remove();">
-                            ×
-                        </button>
-                    </div>
-                    <%-- @endif-->
-
-                    <form action="./login" method="POST">
-                        <div class="mb-3">
-                            <input class="form-control" id="username" name="usr" placeholder="{login.username}"
-                                   type="text">
-                        </div>
-
-                        <div class="mb-3">
-                            <input class="form-control" id="password" name="pwd" placeholder="{login.password}"
-                                   type="password">
-                        </div>
-
-                        <div class="d-grid">
-                            <button class="btn btn-primary" name="login" type="submit">
-                                <i class="fas fa-sign-in-alt"></i> {login.submit}
-                            </button>
-                        </div>
-                    </form>
-
-                </div>
-
-                <div class="card-footer text-center small">
-                    <a href="./">{login.back}</a>
-                </div>
-
+<div class="login-shell">
+    <div>
+        <div class="login-card">
+            <div class="login-header">
+                <img class="login-logo img-fluid" src="assets/images/admin/logo.svg" alt="BaleroCMS Logo">
             </div>
 
+            <div class="login-body">
+                <%-- @if login_error -->
+                <div class="vue-alert vue-alert-danger" role="alert">
+                    <div class="vue-alert-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="vue-alert-content">{login_error}</div>
+                    <button class="vue-alert-close" aria-label="Close" onclick="this.parentElement.remove();">×</button>
+                </div>
+                <%-- @endif-->
+
+                <form action="./login" method="POST">
+                    <div class="mb-3">
+                        <input class="form-control login-input" id="username" name="usr" placeholder="{login.username}" type="text">
+                    </div>
+
+                    <div class="mb-3">
+                        <input class="form-control login-input" id="password" name="pwd" placeholder="{login.password}" type="password">
+                    </div>
+
+                    <div class="d-grid">
+                        <button class="btn btn-login" name="login" type="submit">
+                            <i class="fas fa-sign-in-alt"></i> {login.submit}
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="login-footer">
+                <a href="./">{login.back}</a>
+            </div>
         </div>
+
+        <div class="login-meta">Built with BaleroCMS {core_version}</div>
     </div>
 </div>
-
-<!-- Footer -->
-<footer class="text-center mt-4">
-    <p class="text-muted fs-6 opacity-50">Built with BaleroCMS {core_version}</p>
-</footer>
 
 <!-- Módulos independientes -->
 <script type="module" src="assets/js/notification.js"></script>

@@ -1,55 +1,55 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" role="img" aria-label="BaleroCMS logo">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 90" role="img" aria-label="BaleroCMS logo">
   <defs>
-    <linearGradient id="diamondGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34D399"/>
-      <stop offset="55%" stop-color="#06B6D4"/>
-      <stop offset="100%" stop-color="#3B82F6"/>
+    <linearGradient id="txtGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f77092"/>
+      <stop offset="100%" stop-color="#a17ecb"/>
     </linearGradient>
-
-    <linearGradient id="wordGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#334155"/>
-      <stop offset="100%" stop-color="#475569"/>
+    <linearGradient id="cmsGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#efc183"/>
+      <stop offset="100%" stop-color="#f5eee3"/>
     </linearGradient>
-
-    <linearGradient id="cmsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#22D3EE"/>
-      <stop offset="100%" stop-color="#10B981"/>
-    </linearGradient>
-
-    <filter id="softGlow" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.2" result="blur"/>
-      <feMerge>
-        <feMergeNode in="blur"/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
   </defs>
 
-  <!-- Futuristic diamond icon -->
-  <g transform="translate(12,26)" filter="url(#softGlow)">
-    <path d="M26 0 L42 16 L26 32 L10 16 Z" fill="url(#diamondGradient)"/>
-    <path d="M26 0 L32 16 L26 32 L20 16 Z" fill="rgba(255,255,255,0.26)"/>
-    <path d="M10 16 L42 16" stroke="rgba(255,255,255,0.5)" stroke-width="1.6"/>
-    <path d="M26 0 L10 16 L26 32 L42 16 Z" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.4"/>
+  <!-- Lollipop icon (SVG recreation of reference) -->
+  <g transform="translate(64,25) scale(0.36)">
+    <!-- outer handle ring -->
+    <path d="M44 18 C76 6, 124 14, 138 42 C146 58, 142 73, 125 84"
+          fill="none" stroke="#000" stroke-width="6" stroke-linecap="round"/>
+    <path d="M48 20 C78 10, 118 18, 131 43 C138 56, 136 68, 120 79"
+          fill="none" stroke="#efe5d6" stroke-width="4.6" stroke-linecap="round"/>
+
+    <!-- candy body -->
+    <rect x="22" y="15" rx="18" ry="18" width="76" height="58"
+          fill="#f77092" stroke="#000" stroke-width="6"/>
+
+    <!-- stripes -->
+    <rect x="23" y="31" width="74" height="7" fill="#f5eee3"/>
+    <rect x="23" y="49" width="74" height="7" fill="#a17ecb"/>
+    <rect x="23" y="57" width="74" height="6" fill="#f5eee3"/>
+
+    <!-- face -->
+    <rect x="43" y="42" width="2.6" height="4" rx="1.3" fill="#000"/>
+    <rect x="66" y="42" width="2.6" height="4" rx="1.3" fill="#000"/>
+    <path d="M54 49 q6 5 12 0" fill="none" stroke="#000" stroke-width="2.4" stroke-linecap="round"/>
+
+    <!-- stick -->
+    <rect x="50" y="71" width="16" height="24" rx="8" fill="#efc183" stroke="#000" stroke-width="6"/>
   </g>
 
   <!-- Wordmark -->
-  <text x="66" y="51"
-        font-family="'Orbitron', 'Exo 2', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
-        font-size="30"
-        font-weight="400"
-        letter-spacing="1"
-        fill="url(#wordGradient)"
-        stroke="rgba(15,23,42,0.18)"
-        stroke-width="0.4"
-        paint-order="stroke fill">
-    Balero<tspan fill="url(#cmsGradient)" font-family="'Exo 2', 'Orbitron', 'Segoe UI', Arial, sans-serif" font-weight="600">CMS</tspan>
-  </text>
+  <text x="119" y="55"
+        font-family="'Baloo 2', 'Nunito', 'Poppins', 'Segoe UI', Arial, sans-serif"
+        font-size="32"
+        font-weight="700"
+        letter-spacing="0.3"
+        fill="url(#txtGrad)"
+        stroke="rgba(15,23,42,0.10)"
+        stroke-width="0.25"
+        paint-order="stroke fill">Balero<tspan fill="url(#cmsGrad)" font-weight="800">CMS</tspan></text>
 
-  <!-- Futuristic accents -->
-  <g opacity="0.85">
-    <rect x="66" y="56" width="58" height="1.8" rx="1" fill="#94A3B8"/>
-    <rect x="128" y="56" width="44" height="1.8" rx="1" fill="url(#cmsGradient)"/>
-    <rect x="176" y="56" width="12" height="1.8" rx="1" fill="#38BDF8"/>
+  <g opacity="0.95">
+    <rect x="120" y="60" width="74" height="2.2" rx="1.1" fill="#94A3B8"/>
+    <rect x="194" y="60" width="52" height="2.2" rx="1.1" fill="url(#cmsGrad)"/>
+    <circle cx="251" cy="61" r="2.1" fill="#22D3EE"/>
   </g>
 </svg>
