@@ -5,6 +5,8 @@ return [
     'settings'       => 'Settings',
     'pages'          => 'Pages',
     'blocks'         => 'Blocks',
+    'media'          => 'Media',
+    'themes'         => 'Themes',
     'language'       => 'System Language',
     'theme'          => 'Theme',
     'dashboard'      => 'Dashboard',

@@ -5,6 +5,8 @@ return [
     'settings'       => 'Configuración',
     'pages'          => 'Páginas',
     'blocks'         => 'Bloques',
+    'media'          => 'Media',
+    'themes'         => 'Temas',
     'language'       => 'Idioma del sistema',
     'theme'          => 'Tema',
     'dashboard'      => 'Panel de control',
