@@ -580,9 +580,18 @@
             }
 
             .navbar-right {
-                border-top: 1px solid var(--border);
+                flex-direction: row;
+                justify-content: flex-end;
+                align-items: center;
+                gap: 0.85rem;
                 padding-top: 1rem;
                 margin-top: 0.5rem;
+                border-top: 1px solid var(--border);
+                width: 100%;
+            }
+
+            .navbar-right .navbar-separator {
+                display: none; /* Ocultamos el separador vertical en móvil ya que usamos gap */
             }
 
             .quick-actions-group .quick-action-btn {
