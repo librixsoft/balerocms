@@ -153,7 +153,7 @@ class Boot
             return;
         }
 
-        $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
+        $dtoCacheFile = $this->getDtoCachePath();
 
         if (!file_exists($dtoCacheFile)) {
             throw new DTOCacheException(
@@ -174,7 +174,7 @@ class Boot
             return;
         }
 
-        $dtoCacheFile = BASE_PATH . '/cache/dtos.cache.php';
+        $dtoCacheFile = $this->getDtoCachePath();
 
         if (!file_exists($dtoCacheFile)) {
             throw new DTOCacheException(
@@ -197,6 +197,34 @@ class Boot
     public function isTestingMode(): bool
     {
         return $this->testingMode;
+    }
+
+    /**
+     * Retorna true si el caché de DTOs ya fue cargado
+     * (útil para tests)
+     */
+    public function isDtoCacheLoaded(): bool
+    {
+        return $this->dtoCacheLoaded;
+    }
+
+    /**
+     * Inyecta la lista de DTOs mejorados directamente
+     * Solo debe usarse en tests para evitar depender del archivo de caché
+     */
+    public function setEnhancedDTOs(array $dtos): void
+    {
+        $this->enhancedDTOs = $dtos;
+        $this->dtoCacheLoaded = true;
+    }
+
+    /**
+     * Retorna la ruta del archivo de caché de DTOs
+     * Sobreescribible en subclases para tests
+     */
+    protected function getDtoCachePath(): string
+    {
+        return BASE_PATH . '/cache/dtos.cache.php';
     }
 
     /**
