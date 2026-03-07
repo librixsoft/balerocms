@@ -57,7 +57,7 @@ class Boot
      * Registra un manejador de errores básico ANTES de inicializar el container
      * Este handler captura errores tempranos antes de que ErrorConsole completo esté disponible
      */
-    private function registerEarlyErrorHandler(): void
+    protected function registerEarlyErrorHandler(): void
     {
         if (!ob_get_level()) {
             ob_start();
@@ -88,9 +88,57 @@ class Boot
     /**
      * Renderiza un error temprano (antes de que ErrorConsole completo esté disponible)
      */
-    private function renderEarlyError(Throwable $e): void
+    protected function renderEarlyError(Throwable $e): void
     {
         $this->earlyErrorConsole->render($e);
+    }
+
+    /**
+     * Crea e inicializa el Context (DI container).
+     * Extraido como método protected para poder sobreescribirse en tests.
+     *
+     * @throws ContainerInitializationException
+     */
+    protected function createContext(): void
+    {
+        try {
+            $this->context = new Context();
+
+            if ($this->context === null) {
+                throw new BootException("Context initialization failed unexpectedly.");
+            }
+
+            // ⚡ UPGRADE: Reemplazar el handler temporal con el ErrorConsole completo
+            $this->errorConsole = $this->context->get(ErrorConsole::class);
+            $this->errorConsole->register();
+
+        } catch (Throwable $e) {
+            throw new ContainerInitializationException(
+                "Failed to initialize container context or ErrorConsole: " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
+    }
+
+    /**
+     * Inicializa y despacha el Router.
+     * Extraido como método protected para poder sobreescribirse en tests.
+     *
+     * @throws RouterInitializationException
+     */
+    protected function dispatchRouter(): void
+    {
+        try {
+            $router = $this->context->get(Router::class);
+            $router->initBalero();
+        } catch (Throwable $e) {
+            throw new RouterInitializationException(
+                "Failed to initialize router: " . $e->getMessage(),
+                0,
+                $e
+            );
+        }
     }
 
     /**
@@ -106,40 +154,13 @@ class Boot
             return;
         }
 
-        try {
-            // Context ahora crea su propio Container internamente
-            $this->context = new Context();
-
-            if ($this->context === null) {
-                throw new BootException("Context initialization failed unexpectedly.");
-            }
-
-            // ⚡ UPGRADE: Reemplazar el handler temporal con el ErrorConsole completo
-            $this->errorConsole = $this->context->get(ErrorConsole::class);
-            $this->errorConsole->register(); // Esto re-registra los handlers con la versión completa
-
-        } catch (Throwable $e) {
-            throw new ContainerInitializationException(
-                "Failed to initialize container context or ErrorConsole: " . $e->getMessage(),
-                0,
-                $e
-            );
-        }
+        $this->createContext();
 
         // Cargar caché de DTOs mejorados (para logging, ya está cargado desde constructor)
         $this->loadDTOCache();
 
         if ($loadRouter) {
-            try {
-                $router = $this->context->get(Router::class);
-                $router->initBalero();
-            } catch (Throwable $e) {
-                throw new RouterInitializationException(
-                    "Failed to initialize router: " . $e->getMessage(),
-                    0,
-                    $e
-                );
-            }
+            $this->dispatchRouter();
         }
     }
 
@@ -225,6 +246,30 @@ class Boot
     protected function getDtoCachePath(): string
     {
         return BASE_PATH . '/cache/dtos.cache.php';
+    }
+
+    /**
+     * Expone getDtoCachePath() públicamente para tests
+     */
+    public function getTestDtoCachePath(): string
+    {
+        return $this->getDtoCachePath();
+    }
+
+    /**
+     * Ejecuta loadDTOCacheEarly() desde tests (solo usa en testing)
+     */
+    public function callLoadDTOCacheEarly(): void
+    {
+        $this->loadDTOCacheEarly();
+    }
+
+    /**
+     * Ejecuta loadDTOCache() desde tests (solo usa en testing)
+     */
+    public function callLoadDTOCache(): void
+    {
+        $this->loadDTOCache();
     }
 
     /**
