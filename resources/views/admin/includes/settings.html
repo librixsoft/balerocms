@@ -1,4 +1,28 @@
+<section class="stats-grid" aria-label="Resumen rápido">
+    <article class="stat-card">
+        <div class="stat-label">Páginas</div>
+        <div class="stat-value">{pages_count}</div>
+        <div class="stat-note">Contenido publicado y borradores</div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-label">Bloques</div>
+        <div class="stat-value">{blocks_count}</div>
+        <div class="stat-note">Secciones reutilizables del sitio</div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-label">Media</div>
+        <div class="stat-value">{media_count}</div>
+        <div class="stat-note">Imágenes y archivos cargados</div>
+    </article>
+    <article class="stat-card">
+        <div class="stat-label">Themes</div>
+        <div class="stat-value">{themes_count}</div>
+        <div class="stat-note">Temas instalados y disponibles</div>
+    </article>
+</section>
+
 <form action="./admin/settings" method="POST">
+
     <fieldset>
         <legend>{admin.settings}</legend>
 
