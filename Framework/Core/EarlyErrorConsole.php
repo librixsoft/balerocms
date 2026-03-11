@@ -19,21 +19,29 @@ class EarlyErrorConsole
             ob_clean();
         }
 
-        $message = "Early Bootstrap Error: " . get_class($e);
-        $detail = "Message: " . htmlspecialchars($e->getMessage());
+        $message  = "Early Bootstrap Error: " . get_class($e);
+        $detail   = "Message: " . htmlspecialchars($e->getMessage());
         $location = "File: " . htmlspecialchars($e->getFile()) . " (Line: " . $e->getLine() . ")";
 
         $this->getHtmlTemplate($message, $detail, $location, $e);
+        $this->haltExecution();
+    }
+
+    /**
+     * Detiene la ejecución. Extraído para permitir testing sin exit real.
+     */
+    protected function haltExecution(): void
+    {
         exit;
     }
 
     /**
      * Genera el HTML completo para la consola de errores tempranos
      */
-    private function getHtmlTemplate(string $message, string $detail, string $location, Throwable $e): void
+    protected function getHtmlTemplate(string $message, string $detail, string $location, Throwable $e): void
     {
-        $traceHtml = $this->generateTraceHtml($e);
-        $css = $this->getCss();
+        $traceHtml = $this->generateTraceHtml($e->getTrace());
+        $css       = $this->getCss();
 
         echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Balero CMS Early Error</title>';
         echo '<style>' . $css . '</style>';
@@ -54,15 +62,17 @@ class EarlyErrorConsole
 
     /**
      * Genera el HTML del stack trace
+     *
+     * @param array<int, array<string, mixed>> $trace  Resultado de Throwable::getTrace()
      */
-    private function generateTraceHtml(Throwable $e): string
+    protected function generateTraceHtml(array $trace): string
     {
         $html = '<div class="trace">';
 
-        foreach ($e->getTrace() as $i => $trace) {
-            $file = htmlspecialchars($trace['file'] ?? '[internal]');
-            $line = $trace['line'] ?? '?';
-            $func = htmlspecialchars($trace['function'] ?? '???');
+        foreach ($trace as $i => $item) {
+            $file = htmlspecialchars($item['file'] ?? '[internal]');
+            $line = $item['line'] ?? '?';
+            $func = htmlspecialchars($item['function'] ?? '???');
 
             $html .= "<div class=\"trace-item\">";
             $html .= "#$i <code>{$func}()</code> in <code>{$file}</code> on line <code>{$line}</code>";
@@ -76,7 +86,7 @@ class EarlyErrorConsole
     /**
      * Retorna el CSS de la consola de errores tempranos
      */
-    private function getCss(): string
+    protected function getCss(): string
     {
         return 'html, body { margin: 0; padding: 0; width: 100vw; height: 100vh; background: #1a1a1a; color: #ff3333; font-family: "Menlo", Monaco, Consolas, "Courier New", monospace; overflow: hidden; }' .
             'body { display: flex; flex-direction: column; align-items: center; justify-content: center; }' .
