@@ -159,7 +159,7 @@ class Boot
     // Autoloader PSR-4 con soporte para DTOs mejorados
     // ─────────────────────────────────────────────
 
-    public function autoloadClass(string $class): void
+    private function shouldSkipAutoload(string $class): bool
     {
         if ($this->testingMode) {
             if (!class_exists($class, false)) {
@@ -167,18 +167,21 @@ class Boot
                 $className = substr($class, strrpos($class, '\\') + 1);
                 eval("namespace $namespace; class $className {}");
             }
-            return;
+            return true;
         }
 
         // ── GUARD: si la clase ya está en memoria no hacer nada ──────────────
         // Evita "Cannot redeclare class" cuando Composer y nuestro autoloader
         // resuelven el mismo archivo desde rutas físicas distintas
         // (symlinks, paths con/sin trailing slash, etc.)
-        if (
-            class_exists($class, false)
+        return class_exists($class, false)
             || interface_exists($class, false)
-            || trait_exists($class, false)
-        ) {
+            || trait_exists($class, false);
+    }
+
+    public function autoloadClass(string $class): void
+    {
+        if ($this->shouldSkipAutoload($class)) {
             return;
         }
 
