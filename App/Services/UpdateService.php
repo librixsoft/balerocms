@@ -7,9 +7,27 @@ use Framework\Attributes\Service;
 #[Service]
 class UpdateService
 {
-    private const REPO_URL = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/public/version.php';
-    private const GITHUB_REPO = 'https://github.com/librixsoft/balerocms/tree/development';
-    private const SERVICE_URL = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/App/Services/UpdateService.php';
+    private const REPO_URL        = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/public/version.php';
+    private const GITHUB_REPO     = 'https://github.com/librixsoft/balerocms/tree/development';
+    private const SERVICE_URL     = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/App/Services/UpdateService.php';
+    private const ZIP_URL         = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip';
+    private const EXTRACTED_NAME  = 'balerocms-development';
+
+    /** @var string[] Directories copied during install */
+    protected array $dirsToUpdate = ['App', 'Framework', 'public', 'resources'];
+
+    /** @var string[] Relative paths that must never be overwritten */
+    protected array $protectedPaths = [
+        '/resources/config/balero.config.json',
+        '/assets/images/uploads/',
+        '/resources/views/themes/',
+        '/resources/config/',
+        '/favicon.ico',
+    ];
+
+    // -------------------------------------------------------------------------
+    //  Version helpers
+    // -------------------------------------------------------------------------
 
     public function getCurrentVersion(): string
     {
@@ -17,8 +35,9 @@ class UpdateService
             return _CORE_VERSION;
         }
 
-        $path = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
-        if (!file_exists($path)) {
+        $path = $this->getVersionFilePath();
+
+        if (!is_file($path) || !is_readable($path)) {
             return 'Unknown';
         }
 
@@ -27,152 +46,142 @@ class UpdateService
             return 'Unknown';
         }
 
-        if (preg_match('/_CORE_VERSION\s*=\s*["\']([^"\']+)["\']/', $content, $matches)) {
-            return $matches[1];
-        }
-
-        return 'Unknown';
+        $version = $this->parseVersionFromContent($content);
+        return $version ?? 'Unknown';
     }
 
-    public function getRemoteVersion(): ?string
+    /** Extracts _CORE_VERSION from a file body, or null if not present. */
+    protected function parseVersionFromContent(string $content): ?string
     {
-        if (!function_exists('curl_init')) {
+        if ($content === '') {
             return null;
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::REPO_URL);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-
-        $content = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($content === false || $httpCode !== 200) {
-            return null;
-        }
-
-        if (preg_match('/const _CORE_VERSION = "(.*?)";/', $content, $matches)) {
+        if (preg_match('/_CORE_VERSION\s*=\s*["\']([^"\']+)["\']/', $content, $matches)) {
             return $matches[1];
         }
 
         return null;
     }
 
+    /** Overridable so tests can inject a custom path. */
+    protected function getVersionFilePath(): string
+    {
+        return $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+    }
+
+    /** Overridable so tests can return a fixed base path. */
+    protected function getRootPath(): string
+    {
+        return defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
+    }
+
+    /** Overridable so tests can return a fixed temp dir. */
+    protected function getTempDir(): string
+    {
+        return sys_get_temp_dir();
+    }
+
+    public function getRemoteVersion(): ?string
+    {
+        $content = $this->fetchUrl(self::REPO_URL);
+        if ($content === null) {
+            return null;
+        }
+
+        return $this->parseVersionFromContent($content);
+    }
+
     public function isUpdateAvailable(): array
     {
         $current = $this->getCurrentVersion();
-        $remote = $this->getRemoteVersion();
-        $updateAvailable = false;
+        $remote  = $this->getRemoteVersion();
 
-        if ($remote && version_compare($remote, $current, '>')) {
-            $updateAvailable = true;
-        }
+        $updateAvailable = $remote !== null
+            && $current !== 'Unknown'
+            && version_compare($remote, $current, '>');
 
         return [
-            'current_version' => $current,
-            'remote_version' => $remote ?? 'Unknown',
+            'current_version'  => $current,
+            'remote_version'   => $remote ?? 'Unknown',
             'update_available' => $updateAvailable,
-            'repo_url' => self::GITHUB_REPO
+            'repo_url'         => self::GITHUB_REPO,
         ];
     }
 
-    /**
-     * Self-update UpdateService.php from repo
-     */
+    // -------------------------------------------------------------------------
+    //  Self-update
+    // -------------------------------------------------------------------------
+
     public function selfUpdate(): array
     {
-        if (!function_exists('curl_init')) {
-            return ['success' => false, 'message' => 'cURL is not available'];
-        }
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, self::SERVICE_URL);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-
-        $content = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($content === false || $httpCode !== 200) {
+        $content = $this->fetchUrl(self::SERVICE_URL, 15);
+        if ($content === null) {
             return ['success' => false, 'message' => 'Failed to download UpdateService.php from repo'];
         }
 
-        if (file_put_contents(__FILE__, $content) === false) {
+        $selfPath = $this->getSelfFilePath();
+        $selfDir  = dirname($selfPath);
+        if (!is_dir($selfDir) || !is_writable($selfDir)) {
+            return ['success' => false, 'message' => 'Failed to write UpdateService.php'];
+        }
+
+        if (@file_put_contents($selfPath, $content) === false) {
             return ['success' => false, 'message' => 'Failed to write UpdateService.php'];
         }
 
         return ['success' => true, 'message' => 'UpdateService.php self-updated successfully'];
     }
 
-    /**
-     * Download the update ZIP from GitHub
-     */
+    /** Overridable so tests can redirect writes away from the real file. */
+    protected function getSelfFilePath(): string
+    {
+        return __FILE__;
+    }
+
+    // -------------------------------------------------------------------------
+    //  Download
+    // -------------------------------------------------------------------------
+
     public function downloadUpdate(): array
     {
-        $zipUrl = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip';
-        $tempDir = sys_get_temp_dir();
+        $tempDir = $this->getTempDir();
         $zipFile = $tempDir . '/balerocms-update.zip';
+        $content = $this->fetchUrl(self::ZIP_URL, 300);
 
-        if (!function_exists('curl_init')) {
-            return ['success' => false, 'message' => 'cURL is not available'];
-        }
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $zipUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
-        curl_setopt($ch, CURLOPT_TIMEOUT, 300);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-
-        $content = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($content === false || $httpCode !== 200) {
+        if ($content === null) {
             return ['success' => false, 'message' => 'Failed to download update'];
         }
 
-        if (file_put_contents($zipFile, $content) === false) {
+        if (!is_dir($tempDir) || !is_writable($tempDir)) {
+            return ['success' => false, 'message' => 'Failed to save update file'];
+        }
+
+        if (@file_put_contents($zipFile, $content) === false) {
             return ['success' => false, 'message' => 'Failed to save update file'];
         }
 
         return ['success' => true, 'zip_file' => $zipFile];
     }
 
-    /**
-     * Extract the downloaded ZIP
-     */
+    // -------------------------------------------------------------------------
+    //  Extract
+    // -------------------------------------------------------------------------
+
     public function extractUpdate(string $zipFile): array
     {
-        if (!class_exists('ZipArchive')) {
+        if (!$this->isZipAvailable()) {
             return ['success' => false, 'message' => 'ZipArchive extension is not available'];
         }
 
-        $tempDir = sys_get_temp_dir() . '/balerocms-update-' . time();
+        $tempDir = $this->getTempDir() . '/balerocms-update-' . time();
+        $result  = $this->openAndExtractZip($zipFile, $tempDir);
 
-        $zip = new \ZipArchive();
-        if ($zip->open($zipFile) !== true) {
-            return ['success' => false, 'message' => 'Failed to open ZIP file'];
+        if (!$result['success']) {
+            return $result;
         }
 
-        if (!$zip->extractTo($tempDir)) {
-            $zip->close();
-            return ['success' => false, 'message' => 'Failed to extract ZIP file'];
-        }
-
-        $zip->close();
-
-        $extractedFolder = $tempDir . '/balerocms-development';
+        $extractedFolder = $tempDir . '/' . self::EXTRACTED_NAME;
 
         if (!is_dir($extractedFolder)) {
             return ['success' => false, 'message' => 'Extracted folder not found'];
@@ -181,23 +190,44 @@ class UpdateService
         return ['success' => true, 'extracted_folder' => $extractedFolder];
     }
 
-    /**
-     * Install the update
-     */
+    /** Thin wrapper so tests can stub ZipArchive availability. */
+    protected function isZipAvailable(): bool
+    {
+        return class_exists('ZipArchive');
+    }
+
+    /** Thin wrapper so tests can stub the actual ZIP open/extract. */
+    protected function openAndExtractZip(string $zipFile, string $destDir): array
+    {
+        $zip = new \ZipArchive();
+
+        if ($zip->open($zipFile) !== true) {
+            return ['success' => false, 'message' => 'Failed to open ZIP file'];
+        }
+
+        if (!$zip->extractTo($destDir)) {
+            $zip->close();
+            return ['success' => false, 'message' => 'Failed to extract ZIP file'];
+        }
+
+        $zip->close();
+        return ['success' => true];
+    }
+
+    // -------------------------------------------------------------------------
+    //  Install
+    // -------------------------------------------------------------------------
+
     public function installUpdate(string $extractedFolder): array
     {
-        $rootPath = defined('BASE_PATH') ? BASE_PATH : dirname(__DIR__, 2);
+        $rootPath = $this->getRootPath();
 
-        $dirsToUpdate = ['App', 'Framework', 'public', 'resources'];
-
-        foreach ($dirsToUpdate as $dir) {
+        foreach ($this->dirsToUpdate as $dir) {
             $source = $extractedFolder . '/' . $dir;
 
-            if ($dir === 'public') {
-                $destination = $_SERVER['DOCUMENT_ROOT'];
-            } else {
-                $destination = $rootPath . '/' . $dir;
-            }
+            $destination = ($dir === 'public')
+                ? $_SERVER['DOCUMENT_ROOT']
+                : $rootPath . '/' . $dir;
 
             if (!is_dir($source)) {
                 continue;
@@ -208,8 +238,9 @@ class UpdateService
             }
         }
 
+        // Always refresh version.php
         $versionSource = $extractedFolder . '/public/version.php';
-        $versionDest = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
+        $versionDest   = $_SERVER['DOCUMENT_ROOT'] . '/version.php';
         if (file_exists($versionSource)) {
             copy($versionSource, $versionDest);
         }
@@ -217,48 +248,10 @@ class UpdateService
         return ['success' => true, 'message' => 'Update installed successfully'];
     }
 
-    /**
-     * Recursively copy directory (helper method)
-     */
-    private function copyDirectory(string $source, string $destination): bool
-    {
-        if (!is_dir($destination)) {
-            if (!mkdir($destination, 0755, true)) {
-                return false;
-            }
-        }
+    // -------------------------------------------------------------------------
+    //  Full pipeline
+    // -------------------------------------------------------------------------
 
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        foreach ($files as $file) {
-            $targetPath = $destination . '/' . substr($file->getPathname(), strlen($source) + 1);
-
-            if ($file->isDir()) {
-                if (!is_dir($targetPath)) {
-                    mkdir($targetPath, 0755, true);
-                }
-            } else {
-                if (strpos($targetPath, '/resources/config/balero.config.json') !== false ||
-                    strpos($targetPath, '/assets/images/uploads/') !== false ||
-                    strpos($targetPath, '/resources/views/themes/') !== false ||
-                    strpos($targetPath, '/resources/config/') !== false ||
-                    strpos($targetPath, '/favicon.ico') !== false) {
-                    continue;
-                }
-
-                copy($file->getPathname(), $targetPath);
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Perform complete update process
-     */
     public function performUpdate(): array
     {
         // Step 1: Download
@@ -277,17 +270,74 @@ class UpdateService
         // Step 3: Install
         $installResult = $this->installUpdate($extractResult['extracted_folder']);
 
-        // Cleanup
+        // Cleanup (always)
         @unlink($downloadResult['zip_file']);
         $this->removeDirectory($extractResult['extracted_folder']);
 
         return $installResult;
     }
 
-    /**
-     * Remove directory recursively (helper method)
-     */
-    private function removeDirectory(string $dir): void
+    // -------------------------------------------------------------------------
+    //  Filesystem helpers
+    // -------------------------------------------------------------------------
+
+    public function copyDirectory(string $source, string $destination): bool
+    {
+        if (file_exists($destination) && !is_dir($destination)) {
+            return false;
+        }
+
+        if (!is_dir($destination)) {
+            if (!mkdir($destination, 0755, true) && !is_dir($destination)) {
+                return false;
+            }
+        }
+
+        $files = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($files as $file) {
+            $targetPath = $destination . '/' . substr($file->getPathname(), strlen($source) + 1);
+
+            if ($file->isDir()) {
+                if (file_exists($targetPath) && !is_dir($targetPath)) {
+                    return false;
+                }
+                if (!is_dir($targetPath)) {
+                    if (!mkdir($targetPath, 0755, true) && !is_dir($targetPath)) {
+                        return false;
+                    }
+                }
+            } else {
+                if ($this->isProtectedPath($targetPath)) {
+                    continue;
+                }
+                if (is_dir($targetPath)) {
+                    return false;
+                }
+                if (!copy($file->getPathname(), $targetPath)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /** Returns true when $path matches any protected-path rule. */
+    public function isProtectedPath(string $path): bool
+    {
+        foreach ($this->protectedPaths as $protected) {
+            if (str_contains($path, $protected)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function removeDirectory(string $dir): void
     {
         if (!is_dir($dir)) {
             return;
@@ -307,5 +357,38 @@ class UpdateService
         }
 
         rmdir($dir);
+    }
+
+    // -------------------------------------------------------------------------
+    //  HTTP helper (single curl entry-point — easy to stub in tests)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Fetch a URL via cURL and return the body, or null on failure.
+     * Extracted as its own method so subclasses / tests can override it.
+     */
+    protected function fetchUrl(string $url, int $timeout = 10): ?string
+    {
+        if (!function_exists('curl_init')) {
+            return null;
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'BaleroCMS-Updater');
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
+        $content  = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($content === false || $httpCode !== 200) {
+            return null;
+        }
+
+        return $content;
     }
 }
