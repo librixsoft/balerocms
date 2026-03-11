@@ -10,6 +10,7 @@ use Framework\Exceptions\DTOCacheException;
 use Framework\Exceptions\RouterInitializationException;
 use Framework\Exceptions\ContainerInitializationException;
 use Framework\DI\Context;
+use Framework\Bootstrap\Router;   // ← FIX: import que faltaba y causaba el fatal error
 use Throwable;
 
 class Boot
@@ -29,11 +30,11 @@ class Boot
             // ⚡ CRÍTICO: Crear instancia de EarlyErrorConsole
             $this->earlyErrorConsole = new EarlyErrorConsole();
 
-            // ⚡ CRÍTICO: Registrar ErrorConsole básico INMEDIATAMENTE
+            // ⚡ CRÍTICO: Registrar manejador de errores básico INMEDIATAMENTE
             $this->registerEarlyErrorHandler();
 
             // CRÍTICO: Cargar el caché de DTOs ANTES de registrar el autoloader
-            $this->loadDTOCacheEarly();
+            $this->loadDTOCache();
 
             // Obtener todos los autoloaders actuales (probablemente Composer)
             $existingAutoloaders = spl_autoload_functions();
@@ -44,7 +45,7 @@ class Boot
             }
 
             // Registrar NUESTRO autoloader PRIMERO
-            spl_autoload_register([$this, "autoloadClass"], true, false);
+            spl_autoload_register([$this, 'autoloadClass'], true, false);
 
             // Re-registrar los autoloaders existentes DESPUÉS del nuestro
             foreach ($existingAutoloaders as $autoloader) {
@@ -53,9 +54,13 @@ class Boot
         }
     }
 
+    // ─────────────────────────────────────────────
+    // Handlers de error tempranos
+    // ─────────────────────────────────────────────
+
     /**
-     * Registra un manejador de errores básico ANTES de inicializar el container
-     * Este handler captura errores tempranos antes de que ErrorConsole completo esté disponible
+     * Registra un manejador de errores básico ANTES de inicializar el container.
+     * Captura errores tempranos antes de que ErrorConsole completo esté disponible.
      */
     protected function registerEarlyErrorHandler(): void
     {
@@ -66,16 +71,16 @@ class Boot
         ini_set('display_errors', '1');
         error_reporting(E_ALL);
 
-        // Handler temporal que usa solo la consola básica
-        set_exception_handler(function(Throwable $e) {
+        set_exception_handler(function (Throwable $e): void {
             $this->renderEarlyError($e);
         });
 
-        set_error_handler(function($errno, $errstr, $errfile, $errline) {
+        set_error_handler(function (int $errno, string $errstr, string $errfile, int $errline): bool {
             $this->renderEarlyError(new \ErrorException($errstr, 0, $errno, $errfile, $errline));
+            return true;
         });
 
-        register_shutdown_function(function() {
+        register_shutdown_function(function (): void {
             $error = error_get_last();
             if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
                 $this->renderEarlyError(
@@ -86,16 +91,41 @@ class Boot
     }
 
     /**
-     * Renderiza un error temprano (antes de que ErrorConsole completo esté disponible)
+     * Renderiza un error temprano (antes de que ErrorConsole completo esté disponible).
      */
     protected function renderEarlyError(Throwable $e): void
     {
         $this->earlyErrorConsole->render($e);
     }
 
+    // ─────────────────────────────────────────────
+    // Inicialización principal
+    // ─────────────────────────────────────────────
+
+    /**
+     * Inicializa Boot: container, caché de DTOs y opcionalmente el Router.
+     *
+     * @throws ContainerInitializationException
+     * @throws RouterInitializationException
+     * @throws DTOCacheException
+     */
+    public function init(bool $loadRouter = true): void
+    {
+        if ($this->testingMode) {
+            return;
+        }
+
+        $this->createContext();
+        $this->loadDTOCache();
+
+        if ($loadRouter) {
+            $this->dispatchRouter();
+        }
+    }
+
     /**
      * Crea e inicializa el Context (DI container).
-     * Extraido como método protected para poder sobreescribirse en tests.
+     * Sobreescribible en tests.
      *
      * @throws ContainerInitializationException
      */
@@ -104,17 +134,13 @@ class Boot
         try {
             $this->context = new Context();
 
-            if ($this->context === null) {
-                throw new BootException("Context initialization failed unexpectedly.");
-            }
-
             // ⚡ UPGRADE: Reemplazar el handler temporal con el ErrorConsole completo
             $this->errorConsole = $this->context->get(ErrorConsole::class);
             $this->errorConsole->register();
 
         } catch (Throwable $e) {
             throw new ContainerInitializationException(
-                "Failed to initialize container context or ErrorConsole: " . $e->getMessage(),
+                'Failed to initialize container context or ErrorConsole: ' . $e->getMessage(),
                 0,
                 $e
             );
@@ -123,7 +149,7 @@ class Boot
 
     /**
      * Inicializa y despacha el Router.
-     * Extraido como método protected para poder sobreescribirse en tests.
+     * Sobreescribible en tests.
      *
      * @throws RouterInitializationException
      */
@@ -134,60 +160,23 @@ class Boot
             $router->initBalero();
         } catch (Throwable $e) {
             throw new RouterInitializationException(
-                "Failed to initialize router: " . $e->getMessage(),
+                'Failed to initialize router: ' . $e->getMessage(),
                 0,
                 $e
             );
         }
     }
 
+    // ─────────────────────────────────────────────
+    // Caché de DTOs
+    // ─────────────────────────────────────────────
+
     /**
-     * Inicializa Boot
+     * Carga el caché de DTOs mejorados.
+     * Sirve tanto para la carga temprana (constructor) como para la carga tardía (init).
+     * Es idempotente: si ya fue cargado, retorna sin hacer nada.
      *
-     * @param bool $loadRouter Indica si se debe inicializar Router
-     * @throws BootException
-     */
-    public function init(bool $loadRouter = true): void
-    {
-        // En modo testing, no hacer nada
-        if ($this->testingMode) {
-            return;
-        }
-
-        $this->createContext();
-
-        // Cargar caché de DTOs mejorados (para logging, ya está cargado desde constructor)
-        $this->loadDTOCache();
-
-        if ($loadRouter) {
-            $this->dispatchRouter();
-        }
-    }
-
-    /**
-     * Carga el caché de DTOs mejorados ANTES de inicializar el container
-     * (no puede usar ErrorConsole porque no está disponible aún)
-     */
-    private function loadDTOCacheEarly(): void
-    {
-        if ($this->dtoCacheLoaded || $this->testingMode) {
-            return;
-        }
-
-        $dtoCacheFile = $this->getDtoCachePath();
-
-        if (!file_exists($dtoCacheFile)) {
-            throw new DTOCacheException(
-                "DTOs cache file not found at: $dtoCacheFile. Please run the cache generation script."
-            );
-        }
-
-        $this->enhancedDTOs = require $dtoCacheFile;
-        $this->dtoCacheLoaded = true;
-    }
-
-    /**
-     * Carga el caché de DTOs mejorados (versión para usar en init)
+     * @throws DTOCacheException si el archivo no existe
      */
     private function loadDTOCache(): void
     {
@@ -208,77 +197,27 @@ class Boot
     }
 
     /**
-     * Activa/desactiva modo testing
-     */
-    public function enableTestingMode(bool $enable = true): void
-    {
-        $this->testingMode = $enable;
-    }
-
-    public function isTestingMode(): bool
-    {
-        return $this->testingMode;
-    }
-
-    /**
-     * Retorna true si el caché de DTOs ya fue cargado
-     * (útil para tests)
-     */
-    public function isDtoCacheLoaded(): bool
-    {
-        return $this->dtoCacheLoaded;
-    }
-
-    /**
-     * Inyecta la lista de DTOs mejorados directamente
-     * Solo debe usarse en tests para evitar depender del archivo de caché
-     */
-    public function setEnhancedDTOs(array $dtos): void
-    {
-        $this->enhancedDTOs = $dtos;
-        $this->dtoCacheLoaded = true;
-    }
-
-    /**
-     * Retorna la ruta del archivo de caché de DTOs
-     * Sobreescribible en subclases para tests
+     * Retorna la ruta del archivo de caché de DTOs.
+     * Sobreescribible en subclases para tests.
      */
     protected function getDtoCachePath(): string
     {
         return BASE_PATH . '/cache/dtos.cache.php';
     }
 
-    /**
-     * Expone getDtoCachePath() públicamente para tests
-     */
-    public function getTestDtoCachePath(): string
-    {
-        return $this->getDtoCachePath();
-    }
+    // ─────────────────────────────────────────────
+    // Autoloader PSR-4 con soporte para DTOs mejorados
+    // ─────────────────────────────────────────────
 
     /**
-     * Ejecuta loadDTOCacheEarly() desde tests (solo usa en testing)
-     */
-    public function callLoadDTOCacheEarly(): void
-    {
-        $this->loadDTOCacheEarly();
-    }
-
-    /**
-     * Ejecuta loadDTOCache() desde tests (solo usa en testing)
-     */
-    public function callLoadDTOCache(): void
-    {
-        $this->loadDTOCache();
-    }
-
-    /**
-     * Autoload de clases PSR-4 con soporte para DTOs mejorados
+     * Autoload de clases PSR-4 con soporte para DTOs mejorados.
+     *
+     * @throws AutoloadException
+     * @throws DTOCacheException
      */
     public function autoloadClass(string $class): void
     {
         if ($this->testingMode) {
-            // Crear clase vacía en memoria para tests
             if (!class_exists($class, false)) {
                 $namespace = substr($class, 0, strrpos($class, '\\'));
                 $className = substr($class, strrpos($class, '\\') + 1);
@@ -287,32 +226,27 @@ class Boot
             return;
         }
 
-        // 1. PRIMERO: Verificar si es un DTO mejorado y cargarlo desde caché
+        // 1. Intentar cargar como DTO mejorado desde caché
         if ($this->loadEnhancedDTO($class)) {
-            return; // Salir inmediatamente si se cargó desde caché
+            return;
         }
 
         // 2. Autoload PSR-4 normal (solo si NO es un DTO mejorado)
-        $baseDirs = [BASE_PATH . '/'];
-        $relativeClass = ltrim($class, '\\');
-        $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
+        $relativePath = str_replace('\\', '/', ltrim($class, '\\')) . '.php';
+        $file = BASE_PATH . '/' . $relativePath;
 
-        foreach ($baseDirs as $baseDir) {
-            $file = $baseDir . $relativePath;
+        // Bloquear carga directa de App/DTO/ si el DTO está marcado como mejorado
+        if ($this->isEnhancedDTO($class) && strpos($file, '/App/DTO/') !== false) {
+            throw new DTOCacheException(
+                "DTO <code>$class</code> is marked as enhanced but cache file not found.<br>" .
+                'Expected cache at: ' . BASE_PATH . '/cache/dtos/' . basename($relativePath) . '<br>' .
+                'Run cache generation script to create enhanced DTOs.'
+            );
+        }
 
-            // BLOQUEAR: NO cargar archivos de App/DTO si es un DTO mejorado
-            if ($this->isEnhancedDTO($class) && strpos($file, '/App/DTO/') !== false) {
-                throw new DTOCacheException(
-                    "DTO <code>$class</code> is marked as enhanced but cache file not found.<br>" .
-                    "Expected cache at: " . BASE_PATH . '/cache/dtos/' . basename($class) . '.php<br>' .
-                    "Run cache generation script to create enhanced DTOs."
-                );
-            }
-
-            if (file_exists($file)) {
-                require_once $file;
-                return;
-            }
+        if (file_exists($file)) {
+            require_once $file;
+            return;
         }
 
         throw new AutoloadException(
@@ -321,7 +255,7 @@ class Boot
     }
 
     /**
-     * Verifica si una clase es un DTO mejorado
+     * Verifica si una clase está registrada como DTO mejorado.
      */
     private function isEnhancedDTO(string $class): bool
     {
@@ -329,40 +263,94 @@ class Boot
     }
 
     /**
-     * Intenta cargar un DTO mejorado desde el caché
+     * Intenta cargar un DTO mejorado desde el directorio de caché.
      *
-     * @return bool True si se cargó un DTO mejorado, false si no
+     * @return bool true si se cargó (o ya estaba cargado), false si no es un DTO mejorado
+     * @throws DTOCacheException si el archivo existe pero no define la clase esperada
      */
     private function loadEnhancedDTO(string $class): bool
     {
-        // Si no está en la lista de DTOs mejorados, retornar false
         if (!$this->isEnhancedDTO($class)) {
             return false;
         }
 
-        // Si la clase ya fue cargada, no hacer nada más
         if (class_exists($class, false)) {
             return true;
         }
 
-        // Extraer el nombre corto de la clase
-        $parts = explode('\\', $class);
-        $shortClassName = end($parts);
-
-        $enhancedFile = BASE_PATH . '/cache/dtos/' . $shortClassName . '.php';
+        $shortClassName = substr($class, strrpos($class, '\\') + 1);
+        $enhancedFile   = BASE_PATH . '/cache/dtos/' . $shortClassName . '.php';
 
         if (!file_exists($enhancedFile)) {
             return false;
         }
 
-        // Cargar la versión mejorada del caché
         require_once $enhancedFile;
 
-        // Verificar que la clase se cargó correctamente
         if (!class_exists($class, false)) {
             throw new DTOCacheException("Failed to load enhanced DTO: $class from $enhancedFile");
         }
 
         return true;
+    }
+
+    // ─────────────────────────────────────────────
+    // API pública de soporte / testing
+    // ─────────────────────────────────────────────
+
+    /** Activa o desactiva el modo testing. */
+    public function enableTestingMode(bool $enable = true): void
+    {
+        $this->testingMode = $enable;
+    }
+
+    /** Retorna true si el modo testing está activo. */
+    public function isTestingMode(): bool
+    {
+        return $this->testingMode;
+    }
+
+    /** Retorna true si el caché de DTOs ya fue cargado. */
+    public function isDtoCacheLoaded(): bool
+    {
+        return $this->dtoCacheLoaded;
+    }
+
+    /**
+     * Inyecta la lista de DTOs mejorados directamente.
+     * Usar solo en tests para evitar depender del archivo de caché.
+     */
+    public function setEnhancedDTOs(array $dtos): void
+    {
+        $this->enhancedDTOs  = $dtos;
+        $this->dtoCacheLoaded = true;
+    }
+
+    /**
+     * Expone getDtoCachePath() públicamente para inspección en tests.
+     */
+    public function getTestDtoCachePath(): string
+    {
+        return $this->getDtoCachePath();
+    }
+
+    /**
+     * Ejecuta loadDTOCache() externamente (para tests que necesitan probar la carga directa).
+     *
+     * @throws DTOCacheException
+     */
+    public function callLoadDTOCacheEarly(): void
+    {
+        $this->loadDTOCache();
+    }
+
+    /**
+     * Alias de callLoadDTOCacheEarly() para tests que prueban la carga tardía.
+     *
+     * @throws DTOCacheException
+     */
+    public function callLoadDTOCache(): void
+    {
+        $this->loadDTOCache();
     }
 }

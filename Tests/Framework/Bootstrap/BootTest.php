@@ -6,6 +6,8 @@ use Framework\Bootstrap\Boot;
 use Framework\Exceptions\AutoloadException;
 use Framework\Exceptions\DTOCacheException;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +17,10 @@ use PHPUnit\Framework\TestCase;
  * NOTA: Boot en modo normal (testingMode = false) manipula autoloaders del sistema
  * (spl_autoload_unregister / register), por lo que TODOS los tests de lógica de negocio
  * usan testingMode = true o una subclase anónima para aislar el comportamiento.
+ *
+ * NOTA 2: Los tests que ejecutan código real de producción que registra handlers globales
+ * (set_exception_handler, set_error_handler) se marcan con #[RunInSeparateProcess] para
+ * evitar contaminación entre tests.
  */
 class BootTest extends TestCase
 {
@@ -42,10 +48,9 @@ class BootTest extends TestCase
     }
 
     /**
-     * Crea una subclase anónima de Boot (constructor seguro con testingMode=true)
-     * que sobreescribe getDtoCachePath() y deshabilita testingMode inmediatamente
-     * después, de modo que loadDTOCacheEarly() y loadDTOCache() no hagan cortocircuito
-     * por el guard `$this->testingMode`.
+     * Crea una subclase anónima de Boot con testingMode=true en el constructor
+     * (seguro), luego desactiva testingMode para que loadDTOCache() no haga
+     * cortocircuito por el guard `$this->testingMode`.
      */
     private function bootNormalWithDtoCache(string $cachePath): Boot
     {
@@ -61,8 +66,8 @@ class BootTest extends TestCase
             }
         };
 
-        // Desactivar testingMode DESPUÉS del constructor para que los métodos
-        // privados (loadDTOCacheEarly, loadDTOCache) no hagan cortocircuito.
+        // Desactivar testingMode DESPUÉS del constructor seguro para que los métodos
+        // privados (loadDTOCache) no hagan cortocircuito.
         $boot->enableTestingMode(false);
 
         return $boot;
@@ -74,7 +79,7 @@ class BootTest extends TestCase
      */
     private function createTempDtoCache(array $dtos): string
     {
-        $path = sys_get_temp_dir() . '/dto_cache_' . uniqid() . '.php';
+        $path   = sys_get_temp_dir() . '/dto_cache_' . uniqid() . '.php';
         $export = var_export($dtos, true);
         file_put_contents($path, "<?php\nreturn {$export};\n");
         return $path;
@@ -96,11 +101,9 @@ class BootTest extends TestCase
     #[Test]
     public function el_modo_testing_es_false_por_defecto_en_la_firma(): void
     {
-        // Verificamos la firma del constructor:  __construct(bool $testingMode = false)
-        // Instanciar sin argumentos equivale a modo producción; simplemente comprobamos
-        // que la clase acepta el parámetro con valor por defecto.
-        $boot = new Boot(testingMode: true); // safe variant
+        $boot = new Boot(testingMode: true);
         $boot->enableTestingMode(false);
+
         $this->assertFalse($boot->isTestingMode());
     }
 
@@ -205,7 +208,6 @@ class BootTest extends TestCase
     {
         $boot = new Boot(testingMode: true);
 
-        // Llamar init() varias veces no debería tirar nada
         for ($i = 0; $i < 3; $i++) {
             $boot->init();
         }
@@ -236,7 +238,6 @@ class BootTest extends TestCase
         $boot = new Boot(testingMode: true);
         $fqcn = 'BootTestDummy\\AlreadyExistsClass' . uniqid();
 
-        // Primera llamada: crea la clase
         $boot->autoloadClass($fqcn);
         $this->assertTrue(class_exists($fqcn, false));
 
@@ -263,20 +264,18 @@ class BootTest extends TestCase
     }
 
     // ─────────────────────────────────────────────
-    // 5. autoloadClass() en modo normal (sin DTOs, archivo real)
+    // 5. autoloadClass() resolución de FQCN en testing
     // ─────────────────────────────────────────────
 
     #[Test]
     public function autoload_class_en_testing_resuelve_cualquier_fqcn_en_memoria(): void
     {
-        // Verifica que en testing mode el autoloader acepta cualquier FQCN
-        // y lo crea como clase vacía, funcionando como sustituto del PSR-4 real.
         $boot = new Boot(testingMode: true);
 
         $cases = [
-            'TmpAutoloadNs\\TmpAutoloadClass' . uniqid(),
-            'Deep\\Nested\\Namespace\\SomeClass' . uniqid(),
-            'Another\\Ns\\YetAnotherClass' . uniqid(),
+            'TmpAutoloadNs\\TmpAutoloadClass'       . uniqid(),
+            'Deep\\Nested\\Namespace\\SomeClass'    . uniqid(),
+            'Another\\Ns\\YetAnotherClass'          . uniqid(),
         ];
 
         foreach ($cases as $fqcn) {
@@ -289,17 +288,11 @@ class BootTest extends TestCase
     #[Test]
     public function autoload_class_en_modo_normal_lanza_autoload_exception_si_falta_archivo(): void
     {
-        // Usamos una subclase que solo sobreescribe lo mínimo para ir al PSR-4 sin
-        // depender del sistema de autoloaders de PHP (que ya registró Composer).
-        // Verificamos directamente que la lógica interna lanzaría AutoloadException
-        // inspeccionando que la clase no existe en BASE_PATH.
-        $boot = new Boot(testingMode: true);
-
-        // En modo testing, autoloadClass crea la clase vacía → confirmamos que no tira excepción
+        // En testing mode la clase se crea vacía en memoria (comportamiento esperado)
+        $boot  = new Boot(testingMode: true);
         $class = 'Nonexistent\\ClaseQueJamasExistira' . uniqid();
         $boot->autoloadClass($class);
 
-        // En testing mode la clase se crea en memoria (comportamiento conocido)
         $this->assertTrue(class_exists($class, false));
     }
 
@@ -345,27 +338,20 @@ class BootTest extends TestCase
     public function autoload_no_intenta_cargar_enhanced_dto_si_no_esta_en_la_lista(): void
     {
         $boot = new Boot(testingMode: true);
-
-        // Inyectamos solo 'App\\DTO\\RealDTO' como enhanced DTO
         $boot->setEnhancedDTOs(['App\\DTO\\RealDTO']);
 
-        // 'App\\DTO\\OtraClase' NO está en la lista → autoload en testing mode la crea vacía
         $otherClass = 'App\\DTO\\OtraClase' . uniqid();
         $boot->autoloadClass($otherClass);
 
-        // En testing mode siempre se crea la clase vacía (no tira excepción)
         $this->assertTrue(class_exists($otherClass, false));
     }
 
     #[Test]
     public function autoload_enhanced_dto_ya_cargado_en_clase_retorna_true_sin_recargar(): void
     {
-        // Creemos un DTO "enhanced" que ya esté en memoria
-        $namespace = 'App\\DTO';
         $className = 'FakeEnhancedDTO' . uniqid();
-        $fqcn      = $namespace . '\\' . $className;
+        $fqcn      = 'App\\DTO\\' . $className;
 
-        // Crear la clase en memoria primero
         eval("namespace App\\DTO; class {$className} {}");
         $this->assertTrue(class_exists($fqcn, false));
 
@@ -373,7 +359,7 @@ class BootTest extends TestCase
         $boot->enableTestingMode(false);
         $boot->setEnhancedDTOs([$fqcn]);
 
-        // Al llamar autoloadClass, detecta que ya existe → retorna sin error
+        // La clase ya existe → retorna sin error
         $boot->autoloadClass($fqcn);
 
         $this->assertTrue(class_exists($fqcn, false));
@@ -382,19 +368,13 @@ class BootTest extends TestCase
     #[Test]
     public function autoload_enhanced_dto_lanza_dto_cache_exception_si_falta_archivo_cache(): void
     {
-        $namespace = 'App\\DTO';
         $className = 'MissingCacheDTO' . uniqid();
-        $fqcn      = $namespace . '\\' . $className;
+        $fqcn      = 'App\\DTO\\' . $className;
 
         $boot = new Boot(testingMode: true);
         $boot->enableTestingMode(false);
         $boot->setEnhancedDTOs([$fqcn]);
 
-        // El archivo de caché no existe → DTOCacheException (loadEnhancedDTO retorna false)
-        // y luego el PSR-4 normal ve que es enhanced pero el archivo de cache/ no existe.
-        // Depende de si el archivo PSR-4 tampoco existe → AutoloadException o DTOCacheException
-        // Para un DTO en App/DTO/ que no tiene archivo en cache/dtos/, cae en AutoloadException
-        // porque el enhanced file tampoco existe y loadEnhancedDTO retorna false.
         $this->expectException(\Throwable::class);
 
         $boot->autoloadClass($fqcn);
@@ -407,13 +387,11 @@ class BootTest extends TestCase
     #[Test]
     public function dto_cache_se_carga_desde_archivo_temporal(): void
     {
-        $dtos = ['App\\DTO\\FooDTO', 'App\\DTO\\BarDTO'];
+        $dtos      = ['App\\DTO\\FooDTO', 'App\\DTO\\BarDTO'];
         $cachePath = $this->createTempDtoCache($dtos);
 
-        // Boot en modo testing no carga caché en constructor → lo activamos al pedir estado
         $boot = $this->bootWithDtoCache($cachePath, testingMode: true);
 
-        // En testing mode el caché NO se carga solo, usamos setEnhancedDTOs como alternativa
         $boot->setEnhancedDTOs($dtos);
         $this->assertTrue($boot->isDtoCacheLoaded());
 
@@ -424,12 +402,10 @@ class BootTest extends TestCase
     public function dto_cache_path_puede_sobreescribirse_via_subclase(): void
     {
         $customPath = sys_get_temp_dir() . '/custom_dto_cache_' . uniqid() . '.php';
-        $dtos = ['App\\DTO\\CustomDTO'];
+        $dtos       = ['App\\DTO\\CustomDTO'];
         file_put_contents($customPath, "<?php\nreturn " . var_export($dtos, true) . ";\n");
 
         $boot = $this->bootWithDtoCache($customPath, testingMode: true);
-
-        // En testing mode, setEnhancedDTOs simula la carga
         $boot->setEnhancedDTOs($dtos);
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -444,8 +420,8 @@ class BootTest extends TestCase
     public static function provideInitParams(): array
     {
         return [
-            'testing=true, loadRouter=true'  => [true,  true],
-            'testing=true, loadRouter=false' => [true,  false],
+            'testing=true, loadRouter=true'  => [true, true],
+            'testing=true, loadRouter=false' => [true, false],
         ];
     }
 
@@ -461,7 +437,7 @@ class BootTest extends TestCase
     }
 
     // ─────────────────────────────────────────────
-    // 10. Comportamiento de testing_mode impide inicialización del container
+    // 10. testing_mode impide inicialización real
     // ─────────────────────────────────────────────
 
     #[Test]
@@ -469,8 +445,6 @@ class BootTest extends TestCase
     {
         $boot = new Boot(testingMode: true);
 
-        // En testing mode, init() no debe llegar a crear Context ni ErrorConsole
-        // Si llegara, lanzaría excepciones de dependencias.
         $boot->init();
 
         $this->assertTrue($boot->isTestingMode());
@@ -481,9 +455,8 @@ class BootTest extends TestCase
     {
         $autoloadersBefore = count(spl_autoload_functions());
 
-        // Instanciar en testing mode NO debe agregar autoloaders
         $boot = new Boot(testingMode: true);
-        unset($boot); // evitar que quede referencia
+        unset($boot);
 
         $autoloadersAfter = count(spl_autoload_functions());
 
@@ -505,7 +478,6 @@ class BootTest extends TestCase
 
         $path = $boot->getTestDtoCachePath();
 
-        // BASE_PATH = './' según phpunit.xml → debe terminar en dtos.cache.php
         $this->assertStringEndsWith('dtos.cache.php', $path);
     }
 
@@ -513,26 +485,25 @@ class BootTest extends TestCase
     public function get_test_dto_cache_path_retorna_ruta_sobreescrita_en_subclase(): void
     {
         $customPath = '/tmp/custom_path_' . uniqid() . '.php';
-        $boot = $this->bootWithDtoCache($customPath, testingMode: true);
+        $boot       = $this->bootWithDtoCache($customPath, testingMode: true);
 
         $this->assertSame($customPath, $boot->getTestDtoCachePath());
     }
 
     // ─────────────────────────────────────────────
-    // 12. loadDTOCacheEarly() via callLoadDTOCacheEarly()
+    // 12. callLoadDTOCacheEarly()
     // ─────────────────────────────────────────────
 
     #[Test]
     public function load_dto_cache_early_carga_array_desde_archivo_real(): void
     {
-        $dtos = ['App\\DTO\\EarlyDTO1', 'App\\DTO\\EarlyDTO2'];
+        $dtos      = ['App\\DTO\\EarlyDTO1', 'App\\DTO\\EarlyDTO2'];
         $cachePath = $this->createTempDtoCache($dtos);
 
         $boot = $this->bootNormalWithDtoCache($cachePath);
 
         $this->assertFalse($boot->isDtoCacheLoaded());
 
-        // Llamar directamente al método privado vía el helper público
         $boot->callLoadDTOCacheEarly();
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -543,17 +514,16 @@ class BootTest extends TestCase
     #[Test]
     public function load_dto_cache_early_no_recarga_si_ya_fue_cargado(): void
     {
-        $dtos = ['App\\DTO\\AlreadyLoadedDTO'];
+        $dtos      = ['App\\DTO\\AlreadyLoadedDTO'];
         $cachePath = $this->createTempDtoCache($dtos);
 
         $boot = $this->bootNormalWithDtoCache($cachePath);
-        $boot->callLoadDTOCacheEarly(); // primera carga
+        $boot->callLoadDTOCacheEarly();
         $this->assertTrue($boot->isDtoCacheLoaded());
 
-        // Eliminar el archivo para probar que no intenta leerlo de nuevo
         unlink($cachePath);
 
-        // Segunda llamada: dtoCacheLoaded=true → retorna sin leer el archivo eliminado
+        // Segunda llamada: dtoCacheLoaded=true → no intenta leer el archivo eliminado
         $boot->callLoadDTOCacheEarly();
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -574,25 +544,23 @@ class BootTest extends TestCase
     #[Test]
     public function load_dto_cache_early_es_noop_en_testing_mode(): void
     {
-        // Construir en testingMode=true (constructor seguro), sin deshabilitar
-        // testingMode → el guard `$this->testingMode` cortocircuita y retorna.
         $nonExistentPath = '/tmp/nope_' . uniqid() . '.php';
-        $boot = $this->bootWithDtoCache($nonExistentPath, testingMode: true);
+        $boot            = $this->bootWithDtoCache($nonExistentPath, testingMode: true);
 
-        // testingMode sigue true → callLoadDTOCacheEarly no lanza excepción aunque el archivo no exista
+        // testingMode=true → no lanza excepción aunque el archivo no exista
         $boot->callLoadDTOCacheEarly();
 
         $this->assertFalse($boot->isDtoCacheLoaded());
     }
 
     // ─────────────────────────────────────────────
-    // 13. loadDTOCache() via callLoadDTOCache()
+    // 13. callLoadDTOCache()
     // ─────────────────────────────────────────────
 
     #[Test]
     public function load_dto_cache_carga_array_desde_archivo_real(): void
     {
-        $dtos = ['App\\DTO\\LateDTO1', 'App\\DTO\\LateDTO2'];
+        $dtos      = ['App\\DTO\\LateDTO1', 'App\\DTO\\LateDTO2'];
         $cachePath = $this->createTempDtoCache($dtos);
 
         $boot = $this->bootNormalWithDtoCache($cachePath);
@@ -609,16 +577,15 @@ class BootTest extends TestCase
     #[Test]
     public function load_dto_cache_no_recarga_si_ya_fue_cargado(): void
     {
-        $dtos = ['App\\DTO\\LateDTOAlreadyLoaded'];
+        $dtos      = ['App\\DTO\\LateDTOAlreadyLoaded'];
         $cachePath = $this->createTempDtoCache($dtos);
 
         $boot = $this->bootNormalWithDtoCache($cachePath);
-        $boot->callLoadDTOCache(); // primera carga
+        $boot->callLoadDTOCache();
         $this->assertTrue($boot->isDtoCacheLoaded());
 
         unlink($cachePath);
 
-        // Segunda llamada: dtoCacheLoaded=true → retorna sin leer el archivo eliminado
         $boot->callLoadDTOCache();
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -639,18 +606,16 @@ class BootTest extends TestCase
     #[Test]
     public function load_dto_cache_es_noop_en_testing_mode(): void
     {
-        // Construir con testingMode=true (constructor seguro), sin deshabilitar → guard activo
         $nonExistentPath = '/tmp/late_nope_' . uniqid() . '.php';
-        $boot = $this->bootWithDtoCache($nonExistentPath, testingMode: true);
+        $boot            = $this->bootWithDtoCache($nonExistentPath, testingMode: true);
 
-        // testingMode=true → callLoadDTOCache retorna sin excepción ni carga
         $boot->callLoadDTOCache();
 
         $this->assertFalse($boot->isDtoCacheLoaded());
     }
 
     // ─────────────────────────────────────────────
-    // 14. autoloadClass modo normal – PSR-4 con archivo real
+    // 14. autoloadClass modo normal – PSR-4
     // ─────────────────────────────────────────────
 
     #[Test]
@@ -658,7 +623,6 @@ class BootTest extends TestCase
     {
         $boot = new Boot(testingMode: true);
         $boot->enableTestingMode(false);
-        // No enhanced DTOs → irá al PSR-4 y no encontrará el archivo
         $boot->setEnhancedDTOs([]);
 
         $this->expectException(AutoloadException::class);
@@ -669,18 +633,15 @@ class BootTest extends TestCase
     #[Test]
     public function autoload_class_normal_carga_archivo_psr4_existente(): void
     {
-        // Crear un archivo PHP temporal que defina una clase con namespace válido
         $uniqueId  = uniqid('Psr4Class');
         $namespace = 'TmpPsr4Ns';
-        $className = $uniqueId;
-        $fqcn      = $namespace . '\\' . $className;
+        $fqcn      = $namespace . '\\' . $uniqueId;
 
-        // BASE_PATH = './' (relativo al CWD del proceso PHPUnit, que es la raíz del proyecto)
-        $dir  = rtrim(BASE_PATH, '/') . '/' . str_replace('\\', '/', $namespace);
-        $file = $dir . '/' . $className . '.php';
+        $dir  = rtrim(BASE_PATH, '/') . '/' . $namespace;
+        $file = $dir . '/' . $uniqueId . '.php';
 
         @mkdir($dir, 0777, true);
-        file_put_contents($file, "<?php\nnamespace {$namespace};\nclass {$className} {}\n");
+        file_put_contents($file, "<?php\nnamespace {$namespace};\nclass {$uniqueId} {}\n");
 
         try {
             $boot = new Boot(testingMode: true);
@@ -705,18 +666,14 @@ class BootTest extends TestCase
     #[Test]
     public function autoload_enhanced_dto_carga_clase_desde_cache_dtos_existente(): void
     {
-        // Simular un DTO enhanced que SÍ tenga su archivo en cache/dtos/
         $uniqueId  = uniqid('EnhancedReal');
-        $namespace = 'App\\DTO';
-        $shortName = $uniqueId;
-        $fqcn      = $namespace . '\\' . $shortName;
+        $fqcn      = 'App\\DTO\\' . $uniqueId;
 
-        // Construir la ruta esperada por loadEnhancedDTO: BASE_PATH/cache/dtos/<ShortName>.php
         $cacheDir  = rtrim(BASE_PATH, '/') . '/cache/dtos';
-        $cacheFile = $cacheDir . '/' . $shortName . '.php';
+        $cacheFile = $cacheDir . '/' . $uniqueId . '.php';
 
         @mkdir($cacheDir, 0777, true);
-        file_put_contents($cacheFile, "<?php\nnamespace App\\DTO;\nclass {$shortName} {}\n");
+        file_put_contents($cacheFile, "<?php\nnamespace App\\DTO;\nclass {$uniqueId} {}\n");
 
         try {
             $boot = new Boot(testingMode: true);
@@ -725,10 +682,33 @@ class BootTest extends TestCase
 
             $this->assertFalse(class_exists($fqcn, false));
 
-            // autoloadClass → loadEnhancedDTO → require cache/dtos/ShortName.php
             $boot->autoloadClass($fqcn);
 
             $this->assertTrue(class_exists($fqcn, false));
+        } finally {
+            @unlink($cacheFile);
+        }
+    }
+
+    #[Test]
+    public function autoload_enhanced_dto_lanza_dto_cache_exception_si_archivo_no_define_la_clase(): void
+    {
+        $uniqueId  = uniqid('EnhancedBroken');
+        $fqcn      = 'App\\DTO\\' . $uniqueId;
+
+        $cacheDir  = rtrim(BASE_PATH, '/') . '/cache/dtos';
+        $cacheFile = $cacheDir . '/' . $uniqueId . '.php';
+
+        @mkdir($cacheDir, 0777, true);
+        file_put_contents($cacheFile, "<?php\nnamespace App\\DTO;\nclass OtraClaseQueNoCoincide{$uniqueId} {}\n");
+
+        try {
+            $boot = new Boot(testingMode: true);
+            $boot->enableTestingMode(false);
+            $boot->setEnhancedDTOs([$fqcn]);
+
+            $this->expectException(DTOCacheException::class);
+            $boot->autoloadClass($fqcn);
         } finally {
             @unlink($cacheFile);
         }
@@ -741,19 +721,16 @@ class BootTest extends TestCase
     #[Test]
     public function set_enhanced_dtos_y_load_dto_cache_early_son_independientes(): void
     {
-        $dtos = ['App\\DTO\\IndepDTO'];
+        $dtos      = ['App\\DTO\\IndepDTO'];
         $cachePath = $this->createTempDtoCache($dtos);
 
         $boot = $this->bootNormalWithDtoCache($cachePath);
-
-        // Usar setEnhancedDTOs → dtoCacheLoaded = true → callLoadDTOCacheEarly no hará nada
         $boot->setEnhancedDTOs($dtos);
         $this->assertTrue($boot->isDtoCacheLoaded());
 
-        // Eliminar el archivo → si callLoadDTOCacheEarly intentara leer, explotaría
         unlink($cachePath);
 
-        // No debe explotar porque dtoCacheLoaded = true
+        // dtoCacheLoaded=true → no explota aunque el archivo no exista
         $boot->callLoadDTOCacheEarly();
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -762,14 +739,12 @@ class BootTest extends TestCase
     #[Test]
     public function load_dto_cache_early_y_late_producen_mismo_resultado(): void
     {
-        $dtos = ['App\\DTO\\SameDTO'];
+        $dtos      = ['App\\DTO\\SameDTO'];
         $cachePath = $this->createTempDtoCache($dtos);
 
-        // Boot A: carga con callLoadDTOCacheEarly
         $bootA = $this->bootNormalWithDtoCache($cachePath);
         $bootA->callLoadDTOCacheEarly();
 
-        // Boot B: carga con callLoadDTOCache
         $bootB = $this->bootNormalWithDtoCache($cachePath);
         $bootB->callLoadDTOCache();
 
@@ -780,43 +755,16 @@ class BootTest extends TestCase
     }
 
     // ─────────────────────────────────────────────
-    // 17. Constructor modo normal – subclase que neutraliza EarlyErrorConsole
+    // 17. Constructor modo normal
     // ─────────────────────────────────────────────
-
-    /**
-     * Subclase anónima que permite ejecutar el constructor en modo normal
-     * sin dependencias reales: sobreescribe registerEarlyErrorHandler (no-op)
-     * y carga el caché de DTOs desde un archivo temporal.
-     */
-    private function bootNormalModeWithoutSideEffects(string $dtoCachePath): Boot
-    {
-        return new class(false, $dtoCachePath) extends Boot {
-
-            public function __construct(bool $testingMode, private string $overridePath)
-            {
-                parent::__construct($testingMode);
-            }
-
-            protected function getDtoCachePath(): string
-            {
-                return $this->overridePath;
-            }
-
-            protected function registerEarlyErrorHandler(): void
-            {
-                // No-op: evitar set_exception_handler / set_error_handler reales en tests
-            }
-        };
-    }
 
     #[Test]
     public function constructor_en_modo_normal_ejecuta_registerEarlyErrorHandler(): void
     {
-        // Verificamos que registerEarlyErrorHandler se llama (via subclase que lleva el conteo).
-        $dtos = [];
+        $dtos      = [];
         $cachePath = $this->createTempDtoCache($dtos);
+        $called    = false;
 
-        $called = false;
         $boot = new class(false, $cachePath, $called) extends Boot {
             public function __construct(
                 bool $testingMode,
@@ -845,12 +793,26 @@ class BootTest extends TestCase
     #[Test]
     public function constructor_en_modo_normal_carga_dto_cache_early(): void
     {
-        $dtos = ['App\\DTO\\EarlyNormalDTO'];
+        $dtos      = ['App\\DTO\\EarlyNormalDTO'];
         $cachePath = $this->createTempDtoCache($dtos);
 
-        $boot = $this->bootNormalModeWithoutSideEffects($cachePath);
+        $boot = new class(false, $cachePath) extends Boot {
+            public function __construct(bool $testingMode, private string $overridePath)
+            {
+                parent::__construct($testingMode);
+            }
 
-        // El caché se cargó durante el constructor (loadDTOCacheEarly)
+            protected function getDtoCachePath(): string
+            {
+                return $this->overridePath;
+            }
+
+            protected function registerEarlyErrorHandler(): void
+            {
+                // No-op: evitar handlers globales en tests
+            }
+        };
+
         $this->assertTrue($boot->isDtoCacheLoaded());
 
         @unlink($cachePath);
@@ -888,11 +850,9 @@ class BootTest extends TestCase
     #[Test]
     public function register_early_error_handler_registra_handler_de_excepcion(): void
     {
-        $dtos = [];
+        $dtos      = [];
         $cachePath = $this->createTempDtoCache($dtos);
 
-        // Usar subclase pero SIN sobreescribir registerEarlyErrorHandler
-        // para que el método real sea ejecutado y cubierto por Xdebug.
         $boot = new class(false, $cachePath) extends Boot {
             public function __construct(bool $testingMode, private string $overridePath)
             {
@@ -905,10 +865,8 @@ class BootTest extends TestCase
             }
         };
 
-        // Si llegamos aquí sin excepción, el handler se registró correctamente
         $this->assertTrue($boot->isDtoCacheLoaded());
 
-        // Restaurar handlers por defecto para no afectar otros tests
         restore_exception_handler();
         restore_error_handler();
 
@@ -916,16 +874,13 @@ class BootTest extends TestCase
     }
 
     // ─────────────────────────────────────────────
-    // 19. renderEarlyError – delegación a EarlyErrorConsole
+    // 19. renderEarlyError
     // ─────────────────────────────────────────────
 
     #[Test]
     public function render_early_error_delega_a_early_error_console(): void
     {
-        // Creamos una subclase que expone renderEarlyError públicamente
-        // e inyecta un EarlyErrorConsole mockeado.
         $boot = new class(true) extends Boot {
-
             public bool $renderCalled = false;
 
             public function __construct(bool $testingMode)
@@ -947,6 +902,39 @@ class BootTest extends TestCase
         $boot->callRenderEarlyError(new \RuntimeException('test error'));
 
         $this->assertTrue($boot->renderCalled);
+    }
+
+    #[Test]
+    public function render_early_error_real_delega_en_early_error_console_inyectada(): void
+    {
+        $boot = new class(true) extends Boot {
+            public function __construct(bool $testingMode)
+            {
+                parent::__construct($testingMode);
+            }
+
+            public function callParentRenderEarlyError(\Throwable $e): void
+            {
+                parent::renderEarlyError($e);
+            }
+        };
+
+        $fakeEarlyConsole = new class extends \Framework\Core\EarlyErrorConsole {
+            public int $calls = 0;
+
+            public function render(\Throwable $e): void
+            {
+                $this->calls++;
+            }
+        };
+
+        $ref = new \ReflectionProperty(Boot::class, 'earlyErrorConsole');
+        $ref->setAccessible(true);
+        $ref->setValue($boot, $fakeEarlyConsole);
+
+        $boot->callParentRenderEarlyError(new \RuntimeException('delegation test'));
+
+        $this->assertSame(1, $fakeEarlyConsole->calls);
     }
 
     // ─────────────────────────────────────────────
@@ -986,12 +974,7 @@ class BootTest extends TestCase
 
             protected function createContext(): void
             {
-                // No hace nada, context queda null pero luego sobreescribimos dispatchRouter
-            }
-
-            protected function loadDTOCacheForTest(): void
-            {
-                // skip
+                // stub: no hace nada
             }
 
             protected function dispatchRouter(): void
@@ -1000,7 +983,6 @@ class BootTest extends TestCase
             }
         };
 
-        // Necesitamos marcar dtoCacheLoaded para que loadDTOCache no truene
         $boot->setEnhancedDTOs([]);
         $boot->enableTestingMode(false);
 
@@ -1016,9 +998,8 @@ class BootTest extends TestCase
     #[Test]
     public function init_en_modo_normal_sin_router_llama_create_context_y_load_cache(): void
     {
-        $dtos = ['App\\DTO\\NormalModeDTO'];
-        $cachePath = $this->createTempDtoCache($dtos);
-
+        $dtos          = ['App\\DTO\\NormalModeDTO'];
+        $cachePath     = $this->createTempDtoCache($dtos);
         $contextCalled = false;
         $routerCalled  = false;
 
@@ -1061,9 +1042,8 @@ class BootTest extends TestCase
     #[Test]
     public function init_en_modo_normal_con_router_llama_dispatch_router(): void
     {
-        $dtos = [];
-        $cachePath = $this->createTempDtoCache($dtos);
-
+        $dtos         = [];
+        $cachePath    = $this->createTempDtoCache($dtos);
         $routerCalled = false;
 
         $boot = new class(true, $cachePath, $routerCalled) extends Boot {
@@ -1099,6 +1079,10 @@ class BootTest extends TestCase
         @unlink($cachePath);
     }
 
+    // ─────────────────────────────────────────────
+    // 22. registerEarlyErrorHandler – callbacks reales
+    // ─────────────────────────────────────────────
+
     #[Test]
     public function register_early_error_handler_ejecuta_callbacks_de_exception_y_error(): void
     {
@@ -1127,17 +1111,14 @@ class BootTest extends TestCase
 
         $boot->callRegisterEarlyErrorHandler();
 
-        $previousExceptionHandler = set_exception_handler(static function (): void {
-        });
+        $previousExceptionHandler = set_exception_handler(static function (): void {});
         restore_exception_handler();
 
         if (is_callable($previousExceptionHandler)) {
             $previousExceptionHandler(new \RuntimeException('forced exception'));
         }
 
-        $previousErrorHandler = set_error_handler(static function (): bool {
-            return true;
-        });
+        $previousErrorHandler = set_error_handler(static function (): bool { return true; });
         restore_error_handler();
 
         if (is_callable($previousErrorHandler)) {
@@ -1149,6 +1130,10 @@ class BootTest extends TestCase
 
         $this->assertGreaterThanOrEqual(2, $boot->renderCalls);
     }
+
+    // ─────────────────────────────────────────────
+    // 23. dispatchRouter() real – sin contexto
+    // ─────────────────────────────────────────────
 
     #[Test]
     public function dispatch_router_real_lanza_router_initialization_exception_cuando_no_hay_contexto(): void
@@ -1171,29 +1156,9 @@ class BootTest extends TestCase
         $boot->callRealDispatchRouter();
     }
 
-    #[Test]
-    public function autoload_enhanced_dto_lanza_dto_cache_exception_si_archivo_no_define_la_clase(): void
-    {
-        $uniqueId = uniqid('EnhancedBroken');
-        $fqcn = 'App\\DTO\\' . $uniqueId;
-
-        $cacheDir  = rtrim(BASE_PATH, '/') . '/cache/dtos';
-        $cacheFile = $cacheDir . '/' . $uniqueId . '.php';
-
-        @mkdir($cacheDir, 0777, true);
-        file_put_contents($cacheFile, "<?php\nnamespace App\\DTO;\nclass OtraClaseQueNoCoincide {}\n");
-
-        try {
-            $boot = new Boot(testingMode: true);
-            $boot->enableTestingMode(false);
-            $boot->setEnhancedDTOs([$fqcn]);
-
-            $this->expectException(DTOCacheException::class);
-            $boot->autoloadClass($fqcn);
-        } finally {
-            @unlink($cacheFile);
-        }
-    }
+    // ─────────────────────────────────────────────
+    // 24. createContext() real
+    // ─────────────────────────────────────────────
 
     #[Test]
     public function create_context_real_ejecuta_flujo_de_inicializacion(): void
@@ -1219,7 +1184,15 @@ class BootTest extends TestCase
         $this->assertFalse($boot->isTestingMode());
     }
 
+    // ─────────────────────────────────────────────
+    // 25. dispatchRouter() real – después de createContext()
+    //     Aislado en proceso separado porque createContext() registra
+    //     handlers globales que contaminan el proceso de PHPUnit.
+    // ─────────────────────────────────────────────
+
     #[Test]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function dispatch_router_real_falla_despues_de_create_context_y_envuelve_excepcion(): void
     {
         $boot = new class(true) extends Boot {
@@ -1243,45 +1216,7 @@ class BootTest extends TestCase
         $boot->setEnhancedDTOs([]);
         $boot->callRealCreateContext();
 
-        try {
-            $this->expectException(\Framework\Exceptions\RouterInitializationException::class);
-            $boot->callRealDispatchRouter();
-        } finally {
-            restore_exception_handler();
-            restore_error_handler();
-        }
-    }
-
-    #[Test]
-    public function render_early_error_real_delega_en_early_error_console_inyectada(): void
-    {
-        $boot = new class(true) extends Boot {
-            public function __construct(bool $testingMode)
-            {
-                parent::__construct($testingMode);
-            }
-
-            public function callParentRenderEarlyError(\Throwable $e): void
-            {
-                parent::renderEarlyError($e);
-            }
-        };
-
-        $fakeEarlyConsole = new class extends \Framework\Core\EarlyErrorConsole {
-            public int $calls = 0;
-
-            public function render(\Throwable $e): void
-            {
-                $this->calls++;
-            }
-        };
-
-        $ref = new \ReflectionProperty(Boot::class, 'earlyErrorConsole');
-        $ref->setAccessible(true);
-        $ref->setValue($boot, $fakeEarlyConsole);
-
-        $boot->callParentRenderEarlyError(new \RuntimeException('delegation test'));
-
-        $this->assertSame(1, $fakeEarlyConsole->calls);
+        $this->expectException(\Framework\Exceptions\RouterInitializationException::class);
+        $boot->callRealDispatchRouter();
     }
 }
