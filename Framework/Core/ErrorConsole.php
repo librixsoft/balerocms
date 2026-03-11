@@ -7,22 +7,65 @@ use Framework\DI\Container;
 use Throwable;
 
 /**
- * Class ErrorConsole Se usa cuando la carga fue un exito y ya podemos hacer switch entre modo dev (console) y modo prod (view template)
- * @package Framework\Core
+ * Class ErrorConsole
+ *
+ * Changes for testability:
+ *  - $exitCallback   : callable invoked instead of exit(); default calls exit()
+ *  - $outputCallback : callable invoked instead of echo; default echoes normally
+ *  - $logCallback    : callable invoked instead of error_log(); injectable for spying
+ *  - isRendered()    : public accessor for $rendered (assertions in tests)
+ *  - reset()         : resets $rendered so a single instance can be reused across tests
  */
 class ErrorConsole
 {
     private bool $rendered = false;
+
     private ConfigSettings $configSettings;
     private Container $container;
 
-    public function __construct(ConfigSettings $configSettings, Container $container)
-    {
-        $this->configSettings = $configSettings;
-        $this->container = $container;
+    /** @var callable */
+    private $exitCallback;
+
+    /** @var callable */
+    private $outputCallback;
+
+    /** @var callable */
+    private $logCallback;
+
+    public function __construct(
+        ConfigSettings $configSettings,
+        Container $container,
+        ?callable $exitCallback   = null,
+        ?callable $outputCallback = null,
+        ?callable $logCallback    = null
+    ) {
+        $this->configSettings   = $configSettings;
+        $this->container        = $container;
+        $this->exitCallback     = $exitCallback   ?? static function (): void { exit; };
+        $this->outputCallback   = $outputCallback ?? static function (string $html): void { echo $html; };
+        $this->logCallback      = $logCallback    ?? static function (string $msg): void { error_log($msg); };
     }
 
-    private function isProduction(): bool
+    // -------------------------------------------------------------------------
+    // Public test-helpers
+    // -------------------------------------------------------------------------
+
+    public function isRendered(): bool
+    {
+        return $this->rendered;
+    }
+
+    /** Allow reuse of one instance across multiple test cases. */
+    public function reset(): void
+    {
+        $this->rendered = false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Core API
+    // -------------------------------------------------------------------------
+
+    public function isProduction(): bool          // made public for direct assertions
     {
         return $this->configSettings->debug === 'prod';
     }
@@ -41,12 +84,12 @@ class ErrorConsole
         register_shutdown_function([$this, 'handleShutdown']);
     }
 
-    public function handleError($errno, $errstr, $errfile, $errline): void
+    public function handleError(int $errno, string $errstr, string $errfile, int $errline): void
     {
         $this->cleanOutput();
 
-        $message = "Error [$errno]";
-        $detail = htmlspecialchars($errstr);
+        $message  = "Error [$errno]";
+        $detail   = htmlspecialchars($errstr);
         $location = htmlspecialchars($errfile) . " (Line: $errline)";
 
         $this->renderOutput($message, $detail, $location);
@@ -56,8 +99,8 @@ class ErrorConsole
     {
         $this->cleanOutput();
 
-        $message = "Exception: " . get_class($e);
-        $detail = htmlspecialchars($e->getMessage());
+        $message  = "Exception: " . get_class($e);
+        $detail   = htmlspecialchars($e->getMessage());
         $location = htmlspecialchars($e->getFile()) . " (Line: " . $e->getLine() . ")";
 
         $this->renderOutput($message, $detail, $location, $e);
@@ -69,13 +112,17 @@ class ErrorConsole
         if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
             $this->cleanOutput();
 
-            $message = "Fatal Error";
-            $detail = htmlspecialchars($error['message']);
+            $message  = "Fatal Error";
+            $detail   = htmlspecialchars($error['message']);
             $location = htmlspecialchars($error['file']) . " (Line: {$error['line']})";
 
             $this->renderOutput($message, $detail, $location);
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Internal rendering
+    // -------------------------------------------------------------------------
 
     private function renderOutput(string $message, string $detail, string $location, ?Throwable $e = null): void
     {
@@ -84,19 +131,20 @@ class ErrorConsole
         }
         $this->rendered = true;
 
-        // ⚡ Caso: app instalada y en producción → renderizar plantilla
+        // Production + installed → delegate to ErrorController
         if ($this->configSettings->installed === 'yes' && $this->configSettings->debug === 'prod') {
-            // Guardar log detallado en el servidor
             $this->logError($message . ": " . $detail . " in " . $location, $e);
 
             try {
                 $errorController = $this->container->get(ErrorController::class);
-                echo $errorController->index();
+                ($this->outputCallback)($errorController->index());
             } catch (Throwable $controllerError) {
-                // Si falla el controller, usar la consola básica como fallback
                 $this->renderConsole($message, $detail, $location, $e);
+                return;                                    // exitCallback already called inside
             }
-            exit;
+
+            ($this->exitCallback)();
+            return;
         }
 
         $this->renderConsole($message, $detail, $location, $e);
@@ -109,34 +157,40 @@ class ErrorConsole
         }
     }
 
+    /**
+     * Builds the HTML console string and hands it to the output/exit callbacks
+     * so tests can intercept both without terminating the process.
+     */
     private function renderConsole(string $message, string $detail, string $location, ?Throwable $e = null): void
     {
-        echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Balero CMS Error Console</title>';
-        echo '<style>' . $this->getCss() . '</style>';
-        echo '</head><body>';
-        echo '<div class="console">';
-        echo '<div class="console-header">';
-        echo '<div class="console-icon">&gt;_</div>';
-        echo '<div class="console-title">Balero CMS Error Console</div>';
-        echo '</div>';
-        echo '<div class="console-body">';
-        echo '<h2>' . $message . '</h2>';
-        echo '<div class="detail">Message: ' . $detail . '</div>';
-        echo '<div class="location">Location: ' . $location . '</div>';
+        $html  = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Balero CMS Error Console</title>';
+        $html .= '<style>' . $this->getCss() . '</style>';
+        $html .= '</head><body>';
+        $html .= '<div class="console">';
+        $html .= '<div class="console-header">';
+        $html .= '<div class="console-icon">&gt;_</div>';
+        $html .= '<div class="console-title">Balero CMS Error Console</div>';
+        $html .= '</div>';
+        $html .= '<div class="console-body">';
+        $html .= '<h2>' . $message . '</h2>';
+        $html .= '<div class="detail">Message: ' . $detail . '</div>';
+        $html .= '<div class="location">Location: ' . $location . '</div>';
 
         if ($e) {
-            echo '<div class="trace">';
+            $html .= '<div class="trace">';
             foreach ($e->getTrace() as $i => $trace) {
-                $file = htmlspecialchars($trace['file'] ?? '[internal]');
-                $line = $trace['line'] ?? '?';
-                $func = htmlspecialchars($trace['function'] ?? '???');
-                echo "<div class=\"trace-item\">#$i <code>$func()</code> in <code>$file</code> on line <code>$line</code></div>";
+                $file  = htmlspecialchars($trace['file'] ?? '[internal]');
+                $line  = $trace['line'] ?? '?';
+                $func  = htmlspecialchars($trace['function'] ?? '???');
+                $html .= "<div class=\"trace-item\">#$i <code>$func()</code> in <code>$file</code> on line <code>$line</code></div>";
             }
-            echo '</div>';
+            $html .= '</div>';
         }
 
-        echo '</div></div></body></html>';
-        exit;
+        $html .= '</div></div></body></html>';
+
+        ($this->outputCallback)($html);
+        ($this->exitCallback)();
     }
 
     private function getCss(): string
@@ -166,7 +220,6 @@ class ErrorConsole
             $logMessage .= " | BaleroCMS ::: File: " . $e->getFile() . ":" . $e->getLine();
         }
 
-        // Guardar en el log del sistema (error_log de PHP o syslog)
-        error_log($logMessage);
+        ($this->logCallback)($logMessage);
     }
 }

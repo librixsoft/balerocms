@@ -25,13 +25,71 @@ use PHPUnit\Framework\TestCase;
 class BootTest extends TestCase
 {
     // ─────────────────────────────────────────────
+    // setUp / tearDown — limpieza global entre tests
+    //
+    // PHPUnit 12 installs its own error/exception handlers before each test.
+    // We must only restore handlers added by THIS test, not PHPUnit's own.
+    // ─────────────────────────────────────────────
+
+    private int $errorHandlerDepth     = 0;
+    private int $exceptionHandlerDepth = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->errorHandlerDepth     = $this->measureHandlerDepth('error');
+        $this->exceptionHandlerDepth = $this->measureHandlerDepth('exception');
+    }
+
+    protected function tearDown(): void
+    {
+        $this->restoreToDepth('error',     $this->errorHandlerDepth);
+        $this->restoreToDepth('exception', $this->exceptionHandlerDepth);
+        parent::tearDown();
+    }
+
+    private function measureHandlerDepth(string $type): int
+    {
+        $handlers = [];
+        if ($type === 'error') {
+            while (true) {
+                $h = set_error_handler(static function (): bool { return false; });
+                restore_error_handler();
+                if ($h === null) { break; }
+                $handlers[] = $h;
+                restore_error_handler();
+            }
+            foreach (array_reverse($handlers) as $h) { set_error_handler($h); }
+        } else {
+            while (true) {
+                $h = set_exception_handler(static function (\Throwable $e): void {});
+                restore_exception_handler();
+                if ($h === null) { break; }
+                $handlers[] = $h;
+                restore_exception_handler();
+            }
+            foreach (array_reverse($handlers) as $h) { set_exception_handler($h); }
+        }
+        return count($handlers);
+    }
+
+    private function restoreToDepth(string $type, int $targetDepth): void
+    {
+        $current  = $this->measureHandlerDepth($type);
+        $toRemove = $current - $targetDepth;
+        for ($i = 0; $i < $toRemove; $i++) {
+            if ($type === 'error') {
+                restore_error_handler();
+            } else {
+                restore_exception_handler();
+            }
+        }
+    }
+
+    // ─────────────────────────────────────────────
     // Helpers
     // ─────────────────────────────────────────────
 
-    /**
-     * Crea una subclase anónima de Boot que sobreescribe getDtoCachePath()
-     * para apuntar a un archivo temporal de caché dado.
-     */
     private function bootWithDtoCache(string $cachePath, bool $testingMode = true): Boot
     {
         return new class($testingMode, $cachePath) extends Boot {
@@ -47,11 +105,6 @@ class BootTest extends TestCase
         };
     }
 
-    /**
-     * Crea una subclase anónima de Boot con testingMode=true en el constructor
-     * (seguro), luego desactiva testingMode para que loadDTOCache() no haga
-     * cortocircuito por el guard `$this->testingMode`.
-     */
     private function bootNormalWithDtoCache(string $cachePath): Boot
     {
         $boot = new class(true, $cachePath) extends Boot {
@@ -66,17 +119,11 @@ class BootTest extends TestCase
             }
         };
 
-        // Desactivar testingMode DESPUÉS del constructor seguro para que los métodos
-        // privados (loadDTOCache) no hagan cortocircuito.
         $boot->enableTestingMode(false);
 
         return $boot;
     }
 
-    /**
-     * Crea un archivo temporal de caché de DTOs con el array dado.
-     * Devuelve la ruta al archivo.
-     */
     private function createTempDtoCache(array $dtos): string
     {
         $path   = sys_get_temp_dir() . '/dto_cache_' . uniqid() . '.php';
@@ -164,7 +211,7 @@ class BootTest extends TestCase
         $boot = new Boot(testingMode: true);
         $boot->enableTestingMode(false);
 
-        $boot->enableTestingMode(); // sin argumento → true por defecto
+        $boot->enableTestingMode();
 
         $this->assertTrue($boot->isTestingMode());
     }
@@ -198,7 +245,7 @@ class BootTest extends TestCase
     {
         $boot = new Boot(testingMode: true);
 
-        $boot->init(); // loadRouter = true por defecto
+        $boot->init();
 
         $this->assertTrue($boot->isTestingMode());
     }
@@ -241,7 +288,6 @@ class BootTest extends TestCase
         $boot->autoloadClass($fqcn);
         $this->assertTrue(class_exists($fqcn, false));
 
-        // Segunda llamada: la clase ya existe → no debe explotar
         $boot->autoloadClass($fqcn);
         $this->assertTrue(class_exists($fqcn, false));
     }
@@ -273,9 +319,9 @@ class BootTest extends TestCase
         $boot = new Boot(testingMode: true);
 
         $cases = [
-            'TmpAutoloadNs\\TmpAutoloadClass'       . uniqid(),
-            'Deep\\Nested\\Namespace\\SomeClass'    . uniqid(),
-            'Another\\Ns\\YetAnotherClass'          . uniqid(),
+            'TmpAutoloadNs\\TmpAutoloadClass'    . uniqid(),
+            'Deep\\Nested\\Namespace\\SomeClass' . uniqid(),
+            'Another\\Ns\\YetAnotherClass'       . uniqid(),
         ];
 
         foreach ($cases as $fqcn) {
@@ -286,11 +332,11 @@ class BootTest extends TestCase
     }
 
     #[Test]
-    public function autoload_class_en_modo_normal_lanza_autoload_exception_si_falta_archivo(): void
+    public function autoload_class_en_modo_testing_crea_clase_vacia_aunque_no_exista_en_disco(): void
     {
-        // En testing mode la clase se crea vacía en memoria (comportamiento esperado)
         $boot  = new Boot(testingMode: true);
         $class = 'Nonexistent\\ClaseQueJamasExistira' . uniqid();
+
         $boot->autoloadClass($class);
 
         $this->assertTrue(class_exists($class, false));
@@ -359,14 +405,14 @@ class BootTest extends TestCase
         $boot->enableTestingMode(false);
         $boot->setEnhancedDTOs([$fqcn]);
 
-        // La clase ya existe → retorna sin error
+        // La clase ya existe → el guard class_exists la cortocircuita sin error
         $boot->autoloadClass($fqcn);
 
         $this->assertTrue(class_exists($fqcn, false));
     }
 
     #[Test]
-    public function autoload_enhanced_dto_lanza_dto_cache_exception_si_falta_archivo_cache(): void
+    public function autoload_enhanced_dto_lanza_excepcion_si_falta_archivo_cache(): void
     {
         $className = 'MissingCacheDTO' . uniqid();
         $fqcn      = 'App\\DTO\\' . $className;
@@ -391,8 +437,8 @@ class BootTest extends TestCase
         $cachePath = $this->createTempDtoCache($dtos);
 
         $boot = $this->bootWithDtoCache($cachePath, testingMode: true);
-
         $boot->setEnhancedDTOs($dtos);
+
         $this->assertTrue($boot->isDtoCacheLoaded());
 
         @unlink($cachePath);
@@ -523,7 +569,6 @@ class BootTest extends TestCase
 
         unlink($cachePath);
 
-        // Segunda llamada: dtoCacheLoaded=true → no intenta leer el archivo eliminado
         $boot->callLoadDTOCacheEarly();
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -547,7 +592,6 @@ class BootTest extends TestCase
         $nonExistentPath = '/tmp/nope_' . uniqid() . '.php';
         $boot            = $this->bootWithDtoCache($nonExistentPath, testingMode: true);
 
-        // testingMode=true → no lanza excepción aunque el archivo no exista
         $boot->callLoadDTOCacheEarly();
 
         $this->assertFalse($boot->isDtoCacheLoaded());
@@ -730,7 +774,6 @@ class BootTest extends TestCase
 
         unlink($cachePath);
 
-        // dtoCacheLoaded=true → no explota aunque el archivo no exista
         $boot->callLoadDTOCacheEarly();
 
         $this->assertTrue($boot->isDtoCacheLoaded());
@@ -865,10 +908,8 @@ class BootTest extends TestCase
             }
         };
 
+        // Si llegamos aquí sin excepción, el handler se registró correctamente
         $this->assertTrue($boot->isDtoCacheLoaded());
-
-        restore_exception_handler();
-        restore_error_handler();
 
         @unlink($cachePath);
     }
@@ -974,7 +1015,7 @@ class BootTest extends TestCase
 
             protected function createContext(): void
             {
-                // stub: no hace nada
+                // stub
             }
 
             protected function dispatchRouter(): void
@@ -1086,9 +1127,8 @@ class BootTest extends TestCase
     #[Test]
     public function register_early_error_handler_ejecuta_callbacks_de_exception_y_error(): void
     {
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        // Do NOT drain PHPUnit's own output buffers — record baseline instead
+        $obBaseline = ob_get_level();
 
         $boot = new class(true) extends Boot {
             public int $renderCalls = 0;
@@ -1125,9 +1165,6 @@ class BootTest extends TestCase
             $previousErrorHandler(E_USER_WARNING, 'forced warning', __FILE__, __LINE__);
         }
 
-        restore_exception_handler();
-        restore_error_handler();
-
         $this->assertGreaterThanOrEqual(2, $boot->renderCalls);
     }
 
@@ -1158,9 +1195,13 @@ class BootTest extends TestCase
 
     // ─────────────────────────────────────────────
     // 24. createContext() real
+    // Aislado en proceso separado: registra handlers globales y llama a Context
+    // real (DI container completo), lo que contaminaría el proceso de PHPUnit.
     // ─────────────────────────────────────────────
 
     #[Test]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function create_context_real_ejecuta_flujo_de_inicializacion(): void
     {
         $boot = new class(true) extends Boot {
@@ -1178,16 +1219,11 @@ class BootTest extends TestCase
         $boot->enableTestingMode(false);
         $boot->callRealCreateContext();
 
-        restore_exception_handler();
-        restore_error_handler();
-
         $this->assertFalse($boot->isTestingMode());
     }
 
     // ─────────────────────────────────────────────
     // 25. dispatchRouter() real – después de createContext()
-    //     Aislado en proceso separado porque createContext() registra
-    //     handlers globales que contaminan el proceso de PHPUnit.
     // ─────────────────────────────────────────────
 
     #[Test]
