@@ -68,6 +68,20 @@ final class UpdateServiceTest extends TestCase
         ]);
     }
 
+    /** @param array<string,string> $entries */
+    private function createZip(array $entries): string
+    {
+        $zipPath = tempnam(sys_get_temp_dir(), 'upd-zip-');
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::OVERWRITE);
+        foreach ($entries as $name => $content) {
+            $zip->addFromString($name, $content);
+        }
+        $zip->close();
+
+        return $zipPath;
+    }
+
     // =========================================================================
     //  getCurrentVersion()
     // =========================================================================
@@ -377,6 +391,132 @@ final class UpdateServiceTest extends TestCase
     // =========================================================================
     //  extractUpdate()
     // =========================================================================
+
+    public function testValidateZipContentsRejectsUnsafeEntryName(): void
+    {
+        $zipPath = $this->createZip(['../evil.txt' => 'x']);
+
+        $svc = new class extends UpdateService {
+            public function validate(\ZipArchive $zip): array
+            {
+                return $this->validateZipContents($zip);
+            }
+        };
+
+        $zip = new \ZipArchive();
+        $zip->open($zipPath);
+        $result = $svc->validate($zip);
+        $zip->close();
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('unsafe', $result['message']);
+
+        @unlink($zipPath);
+    }
+
+    public function testValidateZipContentsRejectsTooManyFiles(): void
+    {
+        $zipPath = tempnam(sys_get_temp_dir(), 'upd-zip-many-');
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::OVERWRITE);
+        for ($i = 0; $i < 5001; $i++) {
+            $zip->addFromString('file-' . $i . '.txt', 'x');
+        }
+        $zip->close();
+
+        $svc = new class extends UpdateService {
+            public function validate(\ZipArchive $zip): array
+            {
+                return $this->validateZipContents($zip);
+            }
+        };
+
+        $zip = new \ZipArchive();
+        $zip->open($zipPath);
+        $result = $svc->validate($zip);
+        $zip->close();
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('too many files', $result['message']);
+
+        @unlink($zipPath);
+    }
+
+    public function testValidateZipContentsRejectsOversizedZip(): void
+    {
+        $largeFile = tempnam(sys_get_temp_dir(), 'upd-large-');
+        $handle = fopen($largeFile, 'wb');
+        ftruncate($handle, 201 * 1024 * 1024);
+        fclose($handle);
+
+        $zipPath = tempnam(sys_get_temp_dir(), 'upd-zip-large-');
+        $zip = new \ZipArchive();
+        $zip->open($zipPath, \ZipArchive::OVERWRITE);
+        $zip->addFile($largeFile, 'large.bin');
+        $zip->close();
+
+        $svc = new class extends UpdateService {
+            public function validate(\ZipArchive $zip): array
+            {
+                return $this->validateZipContents($zip);
+            }
+        };
+
+        $zip = new \ZipArchive();
+        $zip->open($zipPath);
+        $result = $svc->validate($zip);
+        $zip->close();
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('maximum allowed size', $result['message']);
+
+        @unlink($zipPath);
+        @unlink($largeFile);
+    }
+
+    public function testOpenAndExtractZipRejectsUnsafeZip(): void
+    {
+        $zipPath = $this->createZip(['../evil.txt' => 'x']);
+        $dest = $this->makeTempRoot('zip-dest');
+
+        $svc = new class extends UpdateService {
+            public function openAndExtract(string $zipFile, string $destDir): array
+            {
+                return $this->openAndExtractZip($zipFile, $destDir);
+            }
+        };
+
+        $result = $svc->openAndExtract($zipPath, $dest);
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('unsafe', $result['message']);
+
+        @unlink($zipPath);
+        $this->makeFilesystem()->removeDirectory($dest);
+    }
+
+    public function testOpenAndExtractZipExtractsOnlyValidatedFiles(): void
+    {
+        $zipPath = $this->createZip([
+            'safe/a.txt' => 'a',
+            'safe/b.txt' => 'b',
+        ]);
+        $dest = $this->makeTempRoot('zip-ok');
+
+        $svc = new class extends UpdateService {
+            public function openAndExtract(string $zipFile, string $destDir): array
+            {
+                return $this->openAndExtractZip($zipFile, $destDir);
+            }
+        };
+
+        $result = $svc->openAndExtract($zipPath, $dest);
+        $this->assertTrue($result['success']);
+        $this->assertFileExists($dest . '/safe/a.txt');
+        $this->assertFileExists($dest . '/safe/b.txt');
+
+        @unlink($zipPath);
+        $this->makeFilesystem()->removeDirectory($dest);
+    }
 
     public function testExtractUpdateFailsWhenZipExtensionUnavailable(): void
     {
