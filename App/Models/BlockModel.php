@@ -23,7 +23,10 @@ class BlockModel
             $this->model->getDb()->query($sql);
             $this->model->getDb()->get();
 
-            return $this->model->getDb()->getRows() ?? [];
+            $rows = $this->model->getDb()->getRows() ?? [];
+            usort($rows, static fn($a, $b) => (int)($a['sort_order'] ?? 0) <=> (int)($b['sort_order'] ?? 0));
+
+            return $rows;
         } catch (Throwable $e) {
             throw new ModelException("Error fetching blocks: " . $e->getMessage(), previous: $e);
         }
