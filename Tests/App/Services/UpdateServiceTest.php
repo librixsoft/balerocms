@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\App\Services;
 
+use App\Services\UpdateFilesystem;
 use App\Services\UpdateService;
 use PHPUnit\Framework\TestCase;
 
@@ -54,6 +55,17 @@ final class UpdateServiceTest extends TestCase
                 return $this->map[$url] ?? null;
             }
         };
+    }
+
+    private function makeFilesystem(): UpdateFilesystem
+    {
+        return new UpdateFilesystem([
+            '/resources/config/balero.config.json',
+            '/assets/images/uploads/',
+            '/resources/views/themes/',
+            '/resources/config/',
+            '/favicon.ico',
+        ]);
     }
 
     // =========================================================================
@@ -545,7 +557,22 @@ final class UpdateServiceTest extends TestCase
 
         $svc = new class extends UpdateService {
             protected array $dirsToUpdate = ['App'];
-            public function copyDirectory(string $source, string $destination): bool { return false; }
+            protected function getFilesystem(): UpdateFilesystem
+            {
+                return new class extends UpdateFilesystem {
+                    public function __construct()
+                    {
+                        parent::__construct([
+                            '/resources/config/balero.config.json',
+                            '/assets/images/uploads/',
+                            '/resources/views/themes/',
+                            '/resources/config/',
+                            '/favicon.ico',
+                        ]);
+                    }
+                    public function copyDirectory(string $source, string $destination): bool { return false; }
+                };
+            }
         };
 
         $result = $svc->installUpdate($extracted);
@@ -640,15 +667,15 @@ final class UpdateServiceTest extends TestCase
         file_put_contents($src . '/a.txt', 'A');
         file_put_contents($src . '/sub/b.txt', 'B');
 
-        $svc = $this->stubFetch([]);
-        $result = $svc->copyDirectory($src, $dst);
+        $fs = $this->makeFilesystem();
+        $result = $fs->copyDirectory($src, $dst);
 
         $this->assertTrue($result);
         $this->assertFileExists($dst . '/a.txt');
         $this->assertFileExists($dst . '/sub/b.txt');
         $this->assertSame('A', file_get_contents($dst . '/a.txt'));
 
-        $svc->removeDirectory($dst);
+        $fs->removeDirectory($dst);
     }
 
     public function testCopyDirectorySkipsProtectedPaths(): void
@@ -659,13 +686,13 @@ final class UpdateServiceTest extends TestCase
         file_put_contents($src . '/resources/config/balero.config.json', '{"secret":1}');
         file_put_contents($src . '/normal.txt', 'ok');
 
-        $svc = $this->stubFetch([]);
-        $svc->copyDirectory($src, $dst);
+        $fs = $this->makeFilesystem();
+        $fs->copyDirectory($src, $dst);
 
         $this->assertFileDoesNotExist($dst . '/resources/config/balero.config.json');
         $this->assertFileExists($dst . '/normal.txt');
 
-        $svc->removeDirectory($dst);
+        $fs->removeDirectory($dst);
     }
 
     public function testCopyDirectoryCreatesDestinationIfMissing(): void
@@ -674,13 +701,13 @@ final class UpdateServiceTest extends TestCase
         file_put_contents($src . '/file.txt', 'hello');
         $dst = sys_get_temp_dir() . '/dst-new-' . uniqid(); // does NOT exist yet
 
-        $svc = $this->stubFetch([]);
-        $result = $svc->copyDirectory($src, $dst);
+        $fs = $this->makeFilesystem();
+        $result = $fs->copyDirectory($src, $dst);
 
         $this->assertTrue($result);
         $this->assertDirectoryExists($dst);
 
-        $svc->removeDirectory($dst);
+        $fs->removeDirectory($dst);
     }
 
     public function testCopyDirectoryReturnsFalseWhenDestinationMkdirFails(): void
@@ -690,8 +717,8 @@ final class UpdateServiceTest extends TestCase
 
         $dst = tempnam(sys_get_temp_dir(), 'dst-file-');
 
-        $svc = $this->stubFetch([]);
-        $result = $svc->copyDirectory($src, $dst);
+        $fs = $this->makeFilesystem();
+        $result = $fs->copyDirectory($src, $dst);
 
         $this->assertFalse($result);
 
@@ -706,12 +733,12 @@ final class UpdateServiceTest extends TestCase
         $dst = $this->makeTempRoot('dst-copy-fail');
         mkdir($dst . '/file.txt', 0777, true); // make target path a directory to force copy failure
 
-        $svc = $this->stubFetch([]);
-        $result = $svc->copyDirectory($src, $dst);
+        $fs = $this->makeFilesystem();
+        $result = $fs->copyDirectory($src, $dst);
 
         $this->assertFalse($result);
 
-        $svc->removeDirectory($dst);
+        $fs->removeDirectory($dst);
     }
 
     // =========================================================================
@@ -721,8 +748,8 @@ final class UpdateServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('protectedPathProvider')]
     public function testIsProtectedPathReturnsTrueForKnownProtectedPaths(string $path): void
     {
-        $svc = $this->stubFetch([]);
-        $this->assertTrue($svc->isProtectedPath($path));
+        $fs = $this->makeFilesystem();
+        $this->assertTrue($fs->isProtectedPath($path));
     }
 
     public static function protectedPathProvider(): array
@@ -738,9 +765,9 @@ final class UpdateServiceTest extends TestCase
 
     public function testIsProtectedPathReturnsFalseForNormalPaths(): void
     {
-        $svc = $this->stubFetch([]);
-        $this->assertFalse($svc->isProtectedPath('/var/www/App/Controllers/HomeController.php'));
-        $this->assertFalse($svc->isProtectedPath('/var/www/public/index.php'));
+        $fs = $this->makeFilesystem();
+        $this->assertFalse($fs->isProtectedPath('/var/www/App/Controllers/HomeController.php'));
+        $this->assertFalse($fs->isProtectedPath('/var/www/public/index.php'));
     }
 
     // =========================================================================
@@ -753,25 +780,25 @@ final class UpdateServiceTest extends TestCase
         mkdir($dir . '/sub/deep', 0777, true);
         file_put_contents($dir . '/sub/deep/file.txt', 'x');
 
-        $svc = $this->stubFetch([]);
-        $svc->removeDirectory($dir);
+        $fs = $this->makeFilesystem();
+        $fs->removeDirectory($dir);
 
         $this->assertDirectoryDoesNotExist($dir);
     }
 
     public function testRemoveDirectoryDoesNothingForNonExistentPath(): void
     {
-        $svc = $this->stubFetch([]);
+        $fs = $this->makeFilesystem();
         // Should not throw
-        $svc->removeDirectory('/this/does/not/exist-' . uniqid());
+        $fs->removeDirectory('/this/does/not/exist-' . uniqid());
         $this->assertTrue(true); // reached without exception
     }
 
     public function testRemoveDirectoryHandlesEmptyDirectory(): void
     {
         $dir = $this->makeTempRoot('rm-empty');
-        $svc = $this->stubFetch([]);
-        $svc->removeDirectory($dir);
+        $fs = $this->makeFilesystem();
+        $fs->removeDirectory($dir);
         $this->assertDirectoryDoesNotExist($dir);
     }
 

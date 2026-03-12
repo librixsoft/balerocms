@@ -12,6 +12,8 @@ class UpdateService
     private const SERVICE_URL     = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/App/Services/UpdateService.php';
     private const ZIP_URL         = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip';
     private const EXTRACTED_NAME  = 'balerocms-development';
+    private const MAX_ZIP_FILES   = 5000;
+    private const MAX_ZIP_BYTES   = 200 * 1024 * 1024; // 200MB
 
     /** @var string[] Directories copied during install */
     protected array $dirsToUpdate = ['App', 'Framework', 'public', 'resources'];
@@ -25,28 +27,29 @@ class UpdateService
         '/favicon.ico',
     ];
 
+    private ?UpdateFilesystem $filesystem = null;
+
     // -------------------------------------------------------------------------
     //  Version helpers
     // -------------------------------------------------------------------------
 
     public function getCurrentVersion(): string
     {
+        $version = null;
+
         if (defined('_CORE_VERSION')) {
-            return _CORE_VERSION;
+            $version = _CORE_VERSION;
+        } else {
+            $path = $this->getVersionFilePath();
+
+            if (is_file($path) && is_readable($path)) {
+                $content = file_get_contents($path);
+                if ($content !== false) {
+                    $version = $this->parseVersionFromContent($content);
+                }
+            }
         }
 
-        $path = $this->getVersionFilePath();
-
-        if (!is_file($path) || !is_readable($path)) {
-            return 'Unknown';
-        }
-
-        $content = file_get_contents($path);
-        if ($content === false) {
-            return 'Unknown';
-        }
-
-        $version = $this->parseVersionFromContent($content);
         return $version ?? 'Unknown';
     }
 
@@ -200,18 +203,79 @@ class UpdateService
     protected function openAndExtractZip(string $zipFile, string $destDir): array
     {
         $zip = new \ZipArchive();
+        $result = ['success' => true];
 
         if ($zip->open($zipFile) !== true) {
-            return ['success' => false, 'message' => 'Failed to open ZIP file'];
-        }
-
-        if (!$zip->extractTo($destDir)) {
-            $zip->close();
-            return ['success' => false, 'message' => 'Failed to extract ZIP file'];
+            $result = ['success' => false, 'message' => 'Failed to open ZIP file'];
+        } else {
+            $sizeCheck = $this->validateZipContents($zip);
+            if (!$sizeCheck['success']) {
+                $result = $sizeCheck;
+            } else {
+                // Sonar: validated file count, total size, and safe entry paths before extraction.
+                if (!$zip->extractTo($destDir, $sizeCheck['files'])) { // NOSONAR
+                    $result = ['success' => false, 'message' => 'Failed to extract ZIP file'];
+                }
+            }
         }
 
         $zip->close();
-        return ['success' => true];
+        return $result;
+    }
+
+    /**
+     * Validate ZIP contents to avoid zip-bomb style resource exhaustion and zip-slip paths.
+     *
+     * @return array{success: bool, message?: string, files?: string[]}
+     */
+    protected function validateZipContents(\ZipArchive $zip): array
+    {
+        $totalBytes = 0;
+        $fileCount  = $zip->numFiles ?? 0;
+        $result = ['success' => true, 'files' => []];
+
+        if ($fileCount > self::MAX_ZIP_FILES) {
+            $result = ['success' => false, 'message' => 'ZIP contains too many files'];
+        } else {
+            for ($i = 0; $i < $fileCount; $i++) {
+                $stat = $zip->statIndex($i);
+                if ($stat === false) {
+                    $result = ['success' => false, 'message' => 'Failed to read ZIP file entries'];
+                    break;
+                }
+
+                $name = (string) ($stat['name'] ?? '');
+                if (!$this->isSafeZipEntryName($name)) {
+                    $result = ['success' => false, 'message' => 'ZIP contains unsafe file paths'];
+                    break;
+                }
+
+                $entrySize = (int) ($stat['size'] ?? 0);
+                $totalBytes += $entrySize;
+
+                if ($totalBytes > self::MAX_ZIP_BYTES) {
+                    $result = ['success' => false, 'message' => 'ZIP exceeds maximum allowed size'];
+                    break;
+                }
+
+                $result['files'][] = $name;
+            }
+        }
+
+        return $result;
+    }
+
+    private function isSafeZipEntryName(string $name): bool
+    {
+        if ($name === '' || str_starts_with($name, '/')) {
+            return false;
+        }
+
+        if (str_contains($name, '\\')) {
+            return false;
+        }
+
+        return !preg_match('#(^|/)\.\.(?:/|$)#', $name);
     }
 
     // -------------------------------------------------------------------------
@@ -221,6 +285,7 @@ class UpdateService
     public function installUpdate(string $extractedFolder): array
     {
         $rootPath = $this->getRootPath();
+        $filesystem = $this->getFilesystem();
 
         foreach ($this->dirsToUpdate as $dir) {
             $source = $extractedFolder . '/' . $dir;
@@ -233,7 +298,7 @@ class UpdateService
                 continue;
             }
 
-            if (!$this->copyDirectory($source, $destination)) {
+            if (!$filesystem->copyDirectory($source, $destination)) {
                 return ['success' => false, 'message' => "Failed to copy $dir"];
             }
         }
@@ -272,7 +337,7 @@ class UpdateService
 
         // Cleanup (always)
         @unlink($downloadResult['zip_file']);
-        $this->removeDirectory($extractResult['extracted_folder']);
+        $this->getFilesystem()->removeDirectory($extractResult['extracted_folder']);
 
         return $installResult;
     }
@@ -281,82 +346,13 @@ class UpdateService
     //  Filesystem helpers
     // -------------------------------------------------------------------------
 
-    public function copyDirectory(string $source, string $destination): bool
+    protected function getFilesystem(): UpdateFilesystem
     {
-        if (file_exists($destination) && !is_dir($destination)) {
-            return false;
+        if ($this->filesystem === null) {
+            $this->filesystem = new UpdateFilesystem($this->protectedPaths);
         }
 
-        if (!is_dir($destination)) {
-            if (!mkdir($destination, 0755, true) && !is_dir($destination)) {
-                return false;
-            }
-        }
-
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::SELF_FIRST
-        );
-
-        foreach ($files as $file) {
-            $targetPath = $destination . '/' . substr($file->getPathname(), strlen($source) + 1);
-
-            if ($file->isDir()) {
-                if (file_exists($targetPath) && !is_dir($targetPath)) {
-                    return false;
-                }
-                if (!is_dir($targetPath)) {
-                    if (!mkdir($targetPath, 0755, true) && !is_dir($targetPath)) {
-                        return false;
-                    }
-                }
-            } else {
-                if ($this->isProtectedPath($targetPath)) {
-                    continue;
-                }
-                if (is_dir($targetPath)) {
-                    return false;
-                }
-                if (!copy($file->getPathname(), $targetPath)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /** Returns true when $path matches any protected-path rule. */
-    public function isProtectedPath(string $path): bool
-    {
-        foreach ($this->protectedPaths as $protected) {
-            if (str_contains($path, $protected)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public function removeDirectory(string $dir): void
-    {
-        if (!is_dir($dir)) {
-            return;
-        }
-
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                rmdir($file->getPathname());
-            } else {
-                unlink($file->getPathname());
-            }
-        }
-
-        rmdir($dir);
+        return $this->filesystem;
     }
 
     // -------------------------------------------------------------------------
