@@ -174,6 +174,14 @@ class View
             }
         }
 
+        $cssVersion = $coreVersion;
+        if (isset($_SERVER['DOCUMENT_ROOT'])) {
+            $themeCssPath = $_SERVER['DOCUMENT_ROOT'] . '/assets/themes/' . $this->configSettings->theme . '/style.css';
+            if (file_exists($themeCssPath)) {
+                $cssVersion = (string) filemtime($themeCssPath);
+            }
+        }
+
         $merged = array_merge([
             'title' => $this->configSettings->title,
             'url' => $currentUrl, // <--- Ahora es dinámica
@@ -184,6 +192,7 @@ class View
             'footer' => $this->configSettings->footer,
             'theme' => $this->configSettings->theme,
             'core_version' => $coreVersion,
+            'css_version' => $cssVersion,
         ], $params);
 
         // Calculate dynamic preview image
