@@ -10,6 +10,7 @@ class UpdateService
     private const REPO_URL        = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/public/version.php';
     private const GITHUB_REPO     = 'https://github.com/librixsoft/balerocms/tree/development';
     private const SERVICE_URL     = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/App/Services/UpdateService.php';
+    private const FILESYSTEM_URL  = 'https://raw.githubusercontent.com/librixsoft/balerocms/development/App/Services/UpdateFilesystem.php';
     private const ZIP_URL         = 'https://github.com/librixsoft/balerocms/archive/refs/heads/development.zip';
     private const EXTRACTED_NAME  = 'balerocms-development';
     private const MAX_ZIP_FILES   = 5000;
@@ -133,7 +134,33 @@ class UpdateService
             return ['success' => false, 'message' => 'Failed to write UpdateService.php'];
         }
 
+        $supportResult = $this->updateSupportFiles($selfDir);
+        if (!$supportResult['success']) {
+            return $supportResult;
+        }
+
         return ['success' => true, 'message' => 'UpdateService.php self-updated successfully'];
+    }
+
+    /**
+     * Ensure companion updater files exist locally (ex: UpdateFilesystem).
+     *
+     * @param string $servicesDir
+     * @return array{success: bool, message: string}
+     */
+    protected function updateSupportFiles(string $servicesDir): array
+    {
+        $filesystemContent = $this->fetchUrl(self::FILESYSTEM_URL, 15);
+        if ($filesystemContent === null) {
+            return ['success' => false, 'message' => 'Failed to download UpdateFilesystem.php from repo'];
+        }
+
+        $filesystemPath = $servicesDir . '/UpdateFilesystem.php';
+        if (@file_put_contents($filesystemPath, $filesystemContent) === false) {
+            return ['success' => false, 'message' => 'Failed to write UpdateFilesystem.php'];
+        }
+
+        return ['success' => true, 'message' => 'Support files updated successfully'];
     }
 
     /** Overridable so tests can redirect writes away from the real file. */

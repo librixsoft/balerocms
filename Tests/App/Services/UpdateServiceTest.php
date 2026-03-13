@@ -315,7 +315,12 @@ final class UpdateServiceTest extends TestCase
         $this->assertStringContainsString('self-updated', $result['message']);
         $this->assertSame('<?php // new version', file_get_contents($target));
 
+        $supportPath = dirname($target) . '/UpdateFilesystem.php';
+        $this->assertFileExists($supportPath);
+        $this->assertSame('<?php // new version', file_get_contents($supportPath));
+
         @unlink($target);
+        @unlink($supportPath);
     }
 
     public function testSelfUpdateFailsWhenFetchFails(): void
