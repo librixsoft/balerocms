@@ -48,50 +48,99 @@ class PreviewGenerator
             return;
         }
 
+        if (!$this->hasGdSupport()) {
+            $this->serveStaticFallback();
+            return;
+        }
+
         $width = 1200;
         $height = 627;
-        $image = imagecreatetruecolor($width, $height);
+        $image = $this->createImage($width, $height);
 
-        $bgColor = imagecolorallocate($image, 26, 26, 29);
-        $textColor = imagecolorallocate($image, 255, 255, 255);
-        imagefilledrectangle($image, 0, 0, $width, $height, $bgColor);
+        $bgColor = $this->allocateColor($image, 26, 26, 29);
+        $textColor = $this->allocateColor($image, 255, 255, 255);
+        $this->fillBackground($image, $width, $height, $bgColor);
 
         $fontPath = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/assets/fonts/Roboto-Bold.ttf';
 
-        if (file_exists($fontPath) && function_exists('imagettftext')) {
+        if ($this->hasTtfSupport($fontPath)) {
             $fontSize = 60;
-            $bbox = imagettfbbox($fontSize, 0, $fontPath, $title);
+            $bbox = $this->getTextBoundingBox($fontSize, $fontPath, $title);
             $textWidth = abs($bbox[4] - $bbox[0]);
             $textHeight = abs($bbox[5] - $bbox[1]);
             $x = (int) (($width - $textWidth) / 2);
             $y = (int) (($height + $textHeight) / 2);
-            imagettftext($image, $fontSize, 0, $x, $y, $textColor, $fontPath, $title);
+            $this->drawTtfText($image, $fontSize, $x, $y, $textColor, $fontPath, $title);
         } else {
             // Fallback simple si no hay fuentes TTF
-            imagestring($image, 5, ($width / 2) - (strlen($title) * 4), $height / 2, $title, $textColor);
+            $this->drawSimpleText($image, $width, $height, $title, $textColor);
         }
 
         $this->output($image);
     }
 
-    private function serveStaticFallback(): void
+    protected function hasGdSupport(): bool
+    {
+        return function_exists('imagecreatetruecolor')
+            && function_exists('imagecolorallocate')
+            && function_exists('imagefilledrectangle')
+            && function_exists('imagepng')
+            && function_exists('imagedestroy');
+    }
+
+    protected function createImage(int $width, int $height)
+    {
+        return \imagecreatetruecolor($width, $height);
+    }
+
+    protected function allocateColor($image, int $red, int $green, int $blue): int
+    {
+        return \imagecolorallocate($image, $red, $green, $blue);
+    }
+
+    protected function fillBackground($image, int $width, int $height, int $color): void
+    {
+        \imagefilledrectangle($image, 0, 0, $width, $height, $color);
+    }
+
+    protected function drawSimpleText($image, int $width, int $height, string $title, int $color): void
+    {
+        \imagestring($image, 5, ($width / 2) - (strlen($title) * 4), $height / 2, $title, $color);
+    }
+
+    protected function hasTtfSupport(string $fontPath): bool
+    {
+        return file_exists($fontPath)
+            && function_exists('imagettftext')
+            && function_exists('imagettfbbox');
+    }
+
+    protected function getTextBoundingBox(int $fontSize, string $fontPath, string $title): array
+    {
+        return \imagettfbbox($fontSize, 0, $fontPath, $title);
+    }
+
+    protected function drawTtfText($image, int $fontSize, int $x, int $y, int $color, string $fontPath, string $title): void
+    {
+        \imagettftext($image, $fontSize, 0, $x, $y, $color, $fontPath, $title);
+    }
+
+    protected function serveStaticFallback(): void
     {
         $path = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/assets/images/og-image.png';
         if (!file_exists($path)) {
             http_response_code(404);
-            exit;
+            return;
         }
         header('Content-Type: image/png');
         readfile($path);
-        exit;
     }
 
-    private function output($image): void
+    protected function output($image): void
     {
         header('Content-Type: image/png');
         header('Cache-Control: public, max-age=86400');
-        imagepng($image);
-        imagedestroy($image);
-        exit;
+        \imagepng($image);
+        \imagedestroy($image);
     }
 }
