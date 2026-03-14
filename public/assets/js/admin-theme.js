@@ -1,3 +1,4 @@
+// BaleroCMS core 1.4.22
 // admin-theme.js - Funcionalidad común del tema + Editor integrado (Summernote)
 
 console.log('admin-theme.js cargado');

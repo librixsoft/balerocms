@@ -176,9 +176,27 @@ class View
 
         $cssVersion = $coreVersion;
         if (isset($_SERVER['DOCUMENT_ROOT'])) {
-            $themeCssPath = $_SERVER['DOCUMENT_ROOT'] . '/assets/themes/' . $this->configSettings->theme . '/style.css';
-            if (file_exists($themeCssPath)) {
-                $cssVersion = (string) filemtime($themeCssPath);
+            $assetPaths = [
+                $_SERVER['DOCUMENT_ROOT'] . '/assets/themes/' . $this->configSettings->theme . '/style.css',
+                $_SERVER['DOCUMENT_ROOT'] . '/assets/css/dashboard.css',
+                $_SERVER['DOCUMENT_ROOT'] . '/assets/css/notification.css',
+                $_SERVER['DOCUMENT_ROOT'] . '/assets/css/login.css',
+                $_SERVER['DOCUMENT_ROOT'] . '/assets/js/notification.js',
+                $_SERVER['DOCUMENT_ROOT'] . '/assets/js/admin-theme.js',
+            ];
+
+            $latestMtime = 0;
+            foreach ($assetPaths as $path) {
+                if (file_exists($path)) {
+                    $mtime = filemtime($path);
+                    if ($mtime > $latestMtime) {
+                        $latestMtime = $mtime;
+                    }
+                }
+            }
+
+            if ($latestMtime > 0) {
+                $cssVersion = (string) $latestMtime;
             }
         }
 

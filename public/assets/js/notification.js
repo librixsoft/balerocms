@@ -1,3 +1,4 @@
+// BaleroCMS core 1.4.22
 // notification.js
 
 /**
