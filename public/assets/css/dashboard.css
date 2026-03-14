@@ -1424,3 +1424,139 @@ body.dark-theme .badge.bg-dark {
     color: #a1a1aa !important;
     border: 1px solid #3b3b3d !important;
 }
+
+
+/* -------------------------------------------------------------------------- */
+/* Dashboard merged theme (safe overrides)                                     */
+/* -------------------------------------------------------------------------- */
+:root {
+    --surface-1: #1b202b;
+    --surface-2: #222836;
+    --surface-3: #2a3140;
+    --text-1: #f1f5f9;
+    --text-2: #9aa4b2;
+    --primary: #8b5cf6;
+    --primary-strong: #7c3aed;
+    --border: #2f3746;
+    --ok: #8b5cf6;
+    --shadow-sm: 0 6px 18px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 18px 40px rgba(0, 0, 0, 0.45);
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+body {
+    background: #0f1116;
+    color: var(--text-1);
+}
+
+.navbar-vue {
+    height: 64px;
+    background: #111827 !important;
+    border-bottom: 1px solid #2f3746 !important;
+    color: #e5e7eb !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    z-index: 1100;
+}
+
+.navbar-vue a,
+.navbar-vue .icon-button,
+.navbar-vue .navbar-toggler {
+    color: #e5e7eb !important;
+}
+
+.navbar-vue .navbar-separator {
+    background: #2f3746 !important;
+}
+
+.nav-context-pill {
+    background: rgba(139, 92, 246, 0.18);
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+.quick-action-btn {
+    background: #1b202b;
+    border: 1px solid #2f3746;
+    color: #e2e8f0;
+}
+
+.quick-action-btn:hover {
+    background: #232a36;
+    border-color: #8b5cf6;
+    color: #c4b5fd;
+}
+
+.user-button {
+    background: #1b202b;
+    border: 1px solid #2f3746;
+}
+
+.user-chip-name { color: #f8fafc; }
+.user-chip-caret { color: #9aa4b2; }
+
+#sidebar {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+}
+
+#sidebar .nav-link:hover,
+#sidebar .nav-link.active {
+    background: rgba(139, 92, 246, 0.16);
+    color: var(--primary-strong);
+}
+
+.stat-card,
+.card {
+    background: var(--surface-1);
+    border: 1px solid var(--border);
+}
+
+.card-header { background: var(--surface-2); }
+
+.badge.bg-blue {
+    background: rgba(139, 92, 246, 0.18) !important;
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.35);
+}
+
+/* Force purple buttons */
+.btn,
+.btn-primary,
+.btn-success,
+.btn-secondary,
+.btn-dark {
+    background-color: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+.btn:hover,
+.btn-primary:hover,
+.btn-success:hover,
+.btn-secondary:hover,
+.btn-dark:hover {
+    background-color: #6d28d9 !important;
+    border-color: #6d28d9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(124, 58, 237, 0.35);
+}
+
+.btn-outline-primary,
+.btn-outline-success,
+.btn-outline-secondary,
+.btn-outline-dark {
+    background-color: transparent !important;
+    border-color: #8b5cf6 !important;
+    color: #c4b5fd !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-secondary:hover,
+.btn-outline-dark:hover {
+    background-color: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+}
