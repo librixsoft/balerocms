@@ -953,11 +953,6 @@ footer {
 /** -------------------------------------------------------------------------- **/
 
 /* Body y contenedor principal */
-body.dark-theme {
-    background-color: #111111 !important;
-    color: #e0e0e0 !important;
-}
-
 body.dark-theme .container-fluid {
     background-color: #111111 !important;
 }
@@ -983,21 +978,21 @@ body.dark-theme .card-body {
 /* Forms */
 body.dark-theme .form-control,
 body.dark-theme .form-select {
-    background-color: #252528 !important;
-    border-color: #3b3b3d !important;
+    background-color: #2a2d3a !important;
+    border-color: #2f3342 !important;
     color: #e0e0e0 !important;
 }
 
 body.dark-theme .form-control:focus,
 body.dark-theme .form-select:focus {
-    background-color: #252528 !important;
-    border-color: #a3e635 !important;
+    background-color: #2a2d3a !important;
+    border-color: #8b5cf6 !important;
     box-shadow: 0 0 0 0.25rem rgba(163, 230, 53, 0.25) !important;
     color: #fff !important;
 }
 
 body.dark-theme textarea.form-control {
-    background-color: #252528 !important;
+    background-color: #2a2d3a !important;
     color: #e0e0e0 !important;
 }
 
@@ -1013,7 +1008,7 @@ body.dark-theme legend {
 
 /* Breadcrumbs */
 body.dark-theme .breadcrumb-item a {
-    color: #a3e635 !important;
+    color: #8b5cf6 !important;
 }
 
 body.dark-theme .breadcrumb-item.active {
@@ -1041,7 +1036,7 @@ body.dark-theme footer {
 }
 
 body.dark-theme footer a {
-    color: #a3e635 !important;
+    color: #8b5cf6 !important;
 }
 
 /* HR */
@@ -1063,6 +1058,7 @@ body.dark-theme .sidebar-nav {
 
 body.dark-theme .sidebar-nav .nav-link {
     color: #a1a1aa !important; /* Tailwind zinc-400 */
+    border: none !important;
 }
 
 body.dark-theme .sidebar-nav .nav-link:hover {
@@ -1071,20 +1067,16 @@ body.dark-theme .sidebar-nav .nav-link:hover {
 }
 
 body.dark-theme .sidebar-nav .nav-link.active {
-    background-color: #a3e635 !important; /* Accent verde */
+    background-color: #8b5cf6 !important; /* Accent morado */
     color: #111111 !important; /* Texto muy oscuro */
 }
 
 body.dark-theme .sidebar-nav .badge {
     background-color: #111111 !important;
-    color: #a3e635 !important;
-    border: 1px solid #a3e635 !important;
+    color: #8b5cf6 !important;
+    border: 1px solid #8b5cf6 !important;
 }
 
-/* Quitar/ajustar bordes en tema oscuro */
-body.dark-theme #sidebar {
-    border: none !important;
-}
 
 body.dark-theme #sidebar .rounded {
     border: none !important;
@@ -1103,9 +1095,6 @@ body.dark-theme .sidebar-nav .nav-item {
     border: none !important;
 }
 
-body.dark-theme .sidebar-nav .nav-link {
-    border: none !important;
-}
 
 body.dark-theme .col-md-3 {
     border-right: 1px solid #2c2c2e !important;
@@ -1142,7 +1131,7 @@ body.dark-theme .navbar .dropdown-toggle {
 }
 
 body.dark-theme .navbar-toggler {
-    border-color: #3b3b3d !important;
+    border-color: #2f3342 !important;
 }
 
 body.dark-theme .navbar-toggler-icon {
@@ -1150,7 +1139,7 @@ body.dark-theme .navbar-toggler-icon {
 }
 
 body.dark-theme .navbar .nav-link.active {
-    color: #a3e635 !important;
+    color: #8b5cf6 !important;
 }
 
 /** -------------------------- TEMA OSCURO - EDITOR (Quill.js) ----------------- **/
@@ -1230,13 +1219,19 @@ body.dark-theme #sidebar .nav-link {
 }
 
 body.dark-theme #sidebar .nav-link:hover {
-    background-color: #252528 !important;
+    background-color: #2a2d3a !important;
     color: #ffffff !important;
 }
 
 body.dark-theme #sidebar .nav-link.active {
     background-color: #2c2c2e !important;
-    color: #a3e635 !important;
+    color: #8b5cf6 !important;
+}
+
+body.dark-theme #sidebar .nav-link .badge.bg-blue {
+    background-color: #8b5cf6 !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
 }
 
 /* Tabla básica */
@@ -1274,39 +1269,6 @@ body.dark-theme .table tbody td {
     border-width: 1px !important;
 }
 
-/* Filas striped */
-body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #1c1c1e !important;
-}
-
-body.dark-theme .table-striped tbody tr:nth-of-type(even) {
-    background-color: #18181a !important;
-}
-
-/* Hover en filas */
-body.dark-theme .table-hover tbody tr:hover {
-    background-color: #252528 !important;
-    color: #ffffff !important;
-}
-
-/* Bordes de tabla */
-body.dark-theme .table-bordered {
-    border-color: #2c2c2e !important;
-    border-width: 1px !important;
-}
-
-body.dark-theme .table-bordered th,
-body.dark-theme .table-bordered td {
-    border-color: #2c2c2e !important;
-    border-width: 1px !important;
-}
-
-/* Todos los bordes de celdas */
-body.dark-theme .table th,
-body.dark-theme .table td {
-    border-color: #2c2c2e !important;
-    border-width: 1px !important;
-}
 
 /* Tabla striped (repite la regla anterior, quizás con un valor de borde diferente en la última parte) */
 body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
@@ -1319,7 +1281,7 @@ body.dark-theme .table-striped tbody tr:nth-of-type(even) {
 
 /* Hover en filas (repite la regla anterior) */
 body.dark-theme .table-hover tbody tr:hover {
-    background-color: #252528 !important;
+    background-color: #2a2d3a !important;
     color: #ffffff !important;
 }
 
@@ -1366,16 +1328,16 @@ body.dark-theme .table td {
 /* Variables base para botones en tema oscuro */
 body.dark-theme .btn-primary,
 body.dark-theme .btn-success {
-    background-color: #a3e635 !important;
-    border-color: #a3e635 !important;
+    background-color: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
     color: #111111 !important;
     font-weight: 500;
 }
 
 body.dark-theme .btn-primary:hover,
 body.dark-theme .btn-success:hover {
-    background-color: #bbf7d0 !important; /* Verde lima más claro */
-    border-color: #bbf7d0 !important;
+    background-color: #c4b5fd !important; /* Morado claro */
+    border-color: #c4b5fd !important;
     color: #000000 !important;
     box-shadow: 0 0 10px rgba(163, 230, 53, 0.4); /* Glow tenue */
 }
@@ -1383,46 +1345,37 @@ body.dark-theme .btn-success:hover {
 /* Botones secundarios u oscuros (Outline o Dark) */
 body.dark-theme .btn-secondary,
 body.dark-theme .btn-dark {
-    background-color: #252528 !important;
-    border-color: #3b3b3d !important;
+    background-color: #2a2d3a !important;
+    border-color: #2f3342 !important;
     color: #e0e0e0 !important;
 }
 
 body.dark-theme .btn-secondary:hover,
 body.dark-theme .btn-dark:hover {
-    background-color: #a3e635 !important;
-    border-color: #a3e635 !important;
+    background-color: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
     color: #111111 !important;
 }
 
 body.dark-theme .btn-outline-primary,
 body.dark-theme .btn-outline-success {
-    color: #a3e635 !important;
-    border-color: #a3e635 !important;
+    color: #8b5cf6 !important;
+    border-color: #8b5cf6 !important;
     background-color: transparent !important;
 }
 
 body.dark-theme .btn-outline-primary:hover,
 body.dark-theme .btn-outline-success:hover {
-    background-color: #a3e635 !important;
+    background-color: #8b5cf6 !important;
     color: #111111 !important;
     box-shadow: 0 0 10px rgba(163, 230, 53, 0.4);
 }
 
-/* Badges y etiquetas globales (por afuera del sidebar) */
-body.dark-theme .badge.bg-primary,
-body.dark-theme .badge.bg-success,
-body.dark-theme .badge.bg-blue {
-    background-color: rgba(163, 230, 53, 0.1) !important;
-    color: #a3e635 !important;
-    border: 1px solid rgba(163, 230, 53, 0.5) !important;
-}
-
 body.dark-theme .badge.bg-secondary,
 body.dark-theme .badge.bg-dark {
-    background-color: #252528 !important;
+    background-color: #2a2d3a !important;
     color: #a1a1aa !important;
-    border: 1px solid #3b3b3d !important;
+    border: 1px solid #2f3342 !important;
 }
 
 
@@ -1566,6 +1519,7 @@ body {
 /* -------------------------------------------------------------------------- */
 body.dark-theme {
     background-color: #0d0f15 !important;
+    color: var(--text-1) !important;
     --surface-1: #191a23;
     --surface-2: #202230;
     --surface-3: #2a2d3a;
@@ -1695,15 +1649,27 @@ body.dark-theme .quick-action-btn:hover,
 body.dark-theme .navbar-vue .nav-link:hover,
 body.dark-theme #sidebar .nav-link:hover {
     color: #c4b5fd !important;
-}
-
-body.dark-theme #sidebar .nav-link:hover {
     background-color: rgba(139, 92, 246, 0.16) !important;
 }
 
+
+/* Secondary buttons neutral gray (both themes) */
+.btn-secondary {
+    background-color: #6b7280 !important;
+    border-color: #6b7280 !important;
+    color: #ffffff !important;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
+}
+
 /* -------------------------------------------------------------------------- */
-/* Light theme adjustments                                                    */
+/* Consolidated theme overrides                                               */
 /* -------------------------------------------------------------------------- */
+/* Light theme tweaks */
 body:not(.dark-theme) .btn,
 body:not(.dark-theme) .btn-primary,
 body:not(.dark-theme) .btn-success,
@@ -1722,6 +1688,7 @@ body:not(.dark-theme) .btn-secondary:hover,
 body:not(.dark-theme) .btn-dark:hover {
     background-color: #1d4ed8 !important;
     border-color: #1d4ed8 !important;
+    box-shadow: none !important;
 }
 
 body:not(.dark-theme) .navbar-vue,
@@ -1737,89 +1704,16 @@ body:not(.dark-theme) .navbar-vue .navbar-separator {
 
 body:not(.dark-theme) .nav-context-pill,
 body:not(.dark-theme) .badge.bg-blue,
-body:not(.dark-theme) #sidebar .nav-link:hover,
-body:not(.dark-theme) #sidebar .nav-link.active {
-    background: rgba(59, 130, 246, 0.1) !important;
-    border-color: rgba(59, 130, 246, 0.25) !important;
-    color: #1d4ed8 !important;
-}
-
-/* Secondary buttons neutral gray (both themes) */
-.btn-secondary {
-    background-color: #6b7280 !important;
-    border-color: #6b7280 !important;
-    color: #ffffff !important;
-}
-
-.btn-secondary:hover {
-    background-color: #4b5563 !important;
-    border-color: #4b5563 !important;
-    color: #ffffff !important;
-}
-
-/* Remove hover shadows on buttons */
-.btn:hover,
-.btn-primary:hover,
-.btn-success:hover,
-.btn-secondary:hover,
-.btn-dark:hover,
-.btn-outline-primary:hover,
-.btn-outline-success:hover,
-.btn-outline-secondary:hover,
-.btn-outline-dark:hover {
-    box-shadow: none !important;
-}
-
-/* Dark theme: breadcrumb + badges to purple */
-body.dark-theme .breadcrumb-item a {
-    color: #c4b5fd !important;
-}
-
-body.dark-theme .breadcrumb-item.active {
-    color: #9aa4b2 !important;
-}
-
-body.dark-theme .badge.bg-primary,
-body.dark-theme .badge.bg-success,
-body.dark-theme .badge.bg-blue {
-    background-color: rgba(139, 92, 246, 0.18) !important;
-    color: #c4b5fd !important;
-    border: 1px solid rgba(139, 92, 246, 0.4) !important;
-}
-
-/* Fix badges (light theme) */
 body:not(.dark-theme) .badge.bg-primary,
 body:not(.dark-theme) .badge.bg-success,
-body:not(.dark-theme) .badge.bg-blue {
-    background-color: rgba(59, 130, 246, 0.12) !important;
+body:not(.dark-theme) #sidebar .nav-link:hover,
+body:not(.dark-theme) #sidebar .nav-link.active {
+    background: rgba(59, 130, 246, 0.12) !important;
+    border-color: rgba(59, 130, 246, 0.28) !important;
     color: #1d4ed8 !important;
-    border: 1px solid rgba(59, 130, 246, 0.28) !important;
 }
 
-/* Force btn-secondary gray on all themes */
-body .btn-secondary {
-    background-color: #6b7280 !important;
-    border-color: #6b7280 !important;
-    color: #ffffff !important;
-}
-
-body .btn-secondary:hover {
-    background-color: #4b5563 !important;
-    border-color: #4b5563 !important;
-    color: #ffffff !important;
-}
-
-/* Fix: dark theme sidebar badges green -> purple */
-body.dark-theme #sidebar .badge,
-body.dark-theme #sidebar .badge.bg-blue,
-body.dark-theme #sidebar .badge.bg-primary,
-body.dark-theme #sidebar .badge.bg-success {
-    background-color: rgba(139, 92, 246, 0.18) !important;
-    color: #c4b5fd !important;
-    border: 1px solid rgba(139, 92, 246, 0.4) !important;
-}
-
-/* Fix: secondary buttons always gray */
+/* Force btn-secondary gray (all themes) */
 .btn.btn-secondary,
 body.dark-theme .btn.btn-secondary,
 body:not(.dark-theme) .btn.btn-secondary {
@@ -1834,4 +1728,186 @@ body:not(.dark-theme) .btn.btn-secondary:hover {
     background-color: #4b5563 !important;
     border-color: #4b5563 !important;
     color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+/* Dark theme palette + purple accents (handles html/body/data-bs-theme) */
+html.dark-theme, body.dark-theme,
+html[data-bs-theme="dark"], body[data-bs-theme="dark"],
+html[data-bs-theme="dark"] body, body[data-bs-theme="dark"] {
+    background-color: #0c0c14 !important;
+    --surface-1: #191a23;
+    --surface-2: #202230;
+    --surface-3: #2a2d3a;
+    --text-1: #eef0f7;
+    --text-2: #a7adbc;
+    --border: #2f3342;
+}
+
+html.dark-theme .navbar-vue,
+body.dark-theme .navbar-vue,
+html[data-bs-theme="dark"] .navbar-vue,
+body[data-bs-theme="dark"] .navbar-vue {
+    background: #10101a !important;
+    border-bottom-color: #2f3342 !important;
+    color: #e5e7eb !important;
+    z-index: 1100;
+}
+
+html.dark-theme .navbar-vue a,
+body.dark-theme .navbar-vue a,
+html[data-bs-theme="dark"] .navbar-vue a,
+body[data-bs-theme="dark"] .navbar-vue a,
+html.dark-theme .navbar-vue .icon-button,
+body.dark-theme .navbar-vue .icon-button,
+html[data-bs-theme="dark"] .navbar-vue .icon-button,
+body[data-bs-theme="dark"] .navbar-vue .icon-button,
+html.dark-theme .navbar-vue .navbar-toggler,
+body.dark-theme .navbar-vue .navbar-toggler,
+html[data-bs-theme="dark"] .navbar-vue .navbar-toggler,
+body[data-bs-theme="dark"] .navbar-vue .navbar-toggler {
+    color: #e5e7eb !important;
+}
+
+html.dark-theme .navbar-vue .navbar-separator,
+body.dark-theme .navbar-vue .navbar-separator,
+html[data-bs-theme="dark"] .navbar-vue .navbar-separator,
+body[data-bs-theme="dark"] .navbar-vue .navbar-separator {
+    background: #2f3342 !important;
+}
+
+body.dark-theme .nav-context-pill,
+html[data-bs-theme="dark"] .nav-context-pill {
+    background: rgba(139, 92, 246, 0.18) !important;
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    color: #c4b5fd !important;
+}
+
+body.dark-theme .quick-action-btn,
+html[data-bs-theme="dark"] .quick-action-btn {
+    background: #1b202b;
+    border: 1px solid #2f3342;
+    color: #e2e8f0;
+}
+
+body.dark-theme .quick-action-btn:hover,
+html[data-bs-theme="dark"] .quick-action-btn:hover {
+    background: #232a36;
+    border-color: #8b5cf6;
+    color: #c4b5fd;
+}
+
+body.dark-theme #sidebar,
+html[data-bs-theme="dark"] #sidebar {
+    background: var(--surface-1) !important;
+    border: 1px solid var(--border) !important;
+}
+
+body.dark-theme #sidebar .nav-link:hover,
+body.dark-theme #sidebar .nav-link.active,
+html[data-bs-theme="dark"] #sidebar .nav-link:hover,
+html[data-bs-theme="dark"] #sidebar .nav-link.active {
+    background: rgba(139, 92, 246, 0.16) !important;
+    color: #c4b5fd !important;
+}
+
+body.dark-theme #sidebar .nav-link::before,
+html[data-bs-theme="dark"] #sidebar .nav-link::before {
+    color: #c4b5fd !important;
+}
+
+body.dark-theme #sidebar .nav-link.active::before,
+body.dark-theme #sidebar .nav-link:hover::before,
+html[data-bs-theme="dark"] #sidebar .nav-link.active::before,
+html[data-bs-theme="dark"] #sidebar .nav-link:hover::before {
+    color: #8b5cf6 !important;
+}
+
+body.dark-theme .stat-card,
+body.dark-theme .card,
+body.dark-theme .card-header,
+body.dark-theme .card-body,
+html[data-bs-theme="dark"] .stat-card,
+html[data-bs-theme="dark"] .card,
+html[data-bs-theme="dark"] .card-header,
+html[data-bs-theme="dark"] .card-body {
+    background: var(--surface-1) !important;
+    border-color: var(--border) !important;
+}
+
+body.dark-theme .breadcrumb-item a,
+html[data-bs-theme="dark"] .breadcrumb-item a {
+    color: #c4b5fd !important;
+}
+
+body.dark-theme .breadcrumb-item.active,
+html[data-bs-theme="dark"] .breadcrumb-item.active {
+    color: #9aa4b2 !important;
+}
+
+body.dark-theme .badge,
+body.dark-theme .badge.bg-blue,
+body.dark-theme .badge.bg-primary,
+body.dark-theme .badge.bg-success,
+html[data-bs-theme="dark"] .badge,
+html[data-bs-theme="dark"] .badge.bg-blue,
+html[data-bs-theme="dark"] .badge.bg-primary,
+html[data-bs-theme="dark"] .badge.bg-success {
+    background-color: rgba(139, 92, 246, 0.18) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+}
+
+body.dark-theme .btn,
+body.dark-theme .btn-primary,
+body.dark-theme .btn-success,
+body.dark-theme .btn-dark,
+html[data-bs-theme="dark"] .btn,
+html[data-bs-theme="dark"] .btn-primary,
+html[data-bs-theme="dark"] .btn-success,
+html[data-bs-theme="dark"] .btn-dark {
+    background-color: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+body.dark-theme .btn:hover,
+body.dark-theme .btn-primary:hover,
+body.dark-theme .btn-success:hover,
+body.dark-theme .btn-dark:hover,
+html[data-bs-theme="dark"] .btn:hover,
+html[data-bs-theme="dark"] .btn-primary:hover,
+html[data-bs-theme="dark"] .btn-success:hover,
+html[data-bs-theme="dark"] .btn-dark:hover {
+    background-color: #6d28d9 !important;
+    border-color: #6d28d9 !important;
+    box-shadow: none !important;
+}
+
+body.dark-theme .btn-outline-primary,
+body.dark-theme .btn-outline-success,
+body.dark-theme .btn-outline-secondary,
+body.dark-theme .btn-outline-dark,
+html[data-bs-theme="dark"] .btn-outline-primary,
+html[data-bs-theme="dark"] .btn-outline-success,
+html[data-bs-theme="dark"] .btn-outline-secondary,
+html[data-bs-theme="dark"] .btn-outline-dark {
+    background-color: transparent !important;
+    border-color: #8b5cf6 !important;
+    color: #c4b5fd !important;
+}
+
+body.dark-theme .btn-outline-primary:hover,
+body.dark-theme .btn-outline-success:hover,
+body.dark-theme .btn-outline-secondary:hover,
+body.dark-theme .btn-outline-dark:hover,
+html[data-bs-theme="dark"] .btn-outline-primary:hover,
+html[data-bs-theme="dark"] .btn-outline-success:hover,
+html[data-bs-theme="dark"] .btn-outline-secondary:hover,
+html[data-bs-theme="dark"] .btn-outline-dark:hover {
+    background-color: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
 }
