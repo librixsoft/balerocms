@@ -987,7 +987,7 @@ body.dark-theme .form-control:focus,
 body.dark-theme .form-select:focus {
     background-color: #2a2d3a !important;
     border-color: #8b5cf6 !important;
-    box-shadow: 0 0 0 0.25rem rgba(163, 230, 53, 0.25) !important;
+    box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.25) !important;
     color: #fff !important;
 }
 
@@ -1236,71 +1236,71 @@ body.dark-theme #sidebar .nav-link .badge.bg-blue {
 
 /* Tabla básica */
 body.dark-theme .table {
-    color: #e0e0e0 !important;
-    border-color: #2c2c2e !important;
+    color: #eef0f7 !important;
+    border-color: #2f3342 !important;
 }
 
 /* Thead */
 body.dark-theme .table thead th {
-    background-color: #18181a !important;
-    color: #e0e0e0 !important;
-    border-color: #2c2c2e !important;
+    background-color: #202230 !important;
+    color: #eef0f7 !important;
+    border-color: #2f3342 !important;
     border-width: 1px !important;
 }
 
 /* Table-light en tema oscuro */
 body.dark-theme .table-light {
-    background-color: #18181a !important;
-    color: #e0e0e0 !important;
+    background-color: #202230 !important;
+    color: #eef0f7 !important;
 }
 
 body.dark-theme .table-light th,
 body.dark-theme .table-light td {
-    background-color: #18181a !important;
-    color: #e0e0e0 !important;
-    border-color: #2c2c2e !important;
+    background-color: #202230 !important;
+    color: #eef0f7 !important;
+    border-color: #2f3342 !important;
 }
 
 /* Tbody */
 body.dark-theme .table tbody td {
-    background-color: #1c1c1e !important;
-    color: #e0e0e0 !important;
-    border-color: #2c2c2e !important;
+    background-color: #191a23 !important;
+    color: #eef0f7 !important;
+    border-color: #2f3342 !important;
     border-width: 1px !important;
 }
 
 
-/* Tabla striped (repite la regla anterior, quizás con un valor de borde diferente en la última parte) */
+/* Tabla striped */
 body.dark-theme .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #1c1c1e !important;
+    background-color: #191a23 !important;
 }
 
 body.dark-theme .table-striped tbody tr:nth-of-type(even) {
-    background-color: #18181a !important;
+    background-color: #202230 !important;
 }
 
-/* Hover en filas (repite la regla anterior) */
+/* Hover en filas */
 body.dark-theme .table-hover tbody tr:hover {
     background-color: #2a2d3a !important;
     color: #ffffff !important;
 }
 
-/* Bordes de tabla (repite la regla anterior, pero con un color de borde #1c1c1e) */
+/* Bordes de tabla */
 body.dark-theme .table-bordered {
-    border-color: #1c1c1e !important;
+    border-color: #2f3342 !important;
     border-width: 1px !important;
 }
 
 body.dark-theme .table-bordered th,
 body.dark-theme .table-bordered td {
-    border-color: #1c1c1e !important;
+    border-color: #2f3342 !important;
     border-width: 1px !important;
 }
 
-/* Todos los bordes de celdas (repite la regla anterior, pero con un color de borde #1c1c1e) */
+/* Todos los bordes de celdas */
 body.dark-theme .table th,
 body.dark-theme .table td {
-    border-color: #1c1c1e !important;
+    border-color: #2f3342 !important;
     border-width: 1px !important;
 }
 
@@ -1339,7 +1339,7 @@ body.dark-theme .btn-success:hover {
     background-color: #c4b5fd !important; /* Morado claro */
     border-color: #c4b5fd !important;
     color: #000000 !important;
-    box-shadow: 0 0 10px rgba(163, 230, 53, 0.4); /* Glow tenue */
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.4); /* Glow tenue */
 }
 
 /* Botones secundarios u oscuros (Outline o Dark) */
