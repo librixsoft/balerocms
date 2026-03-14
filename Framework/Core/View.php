@@ -174,32 +174,6 @@ class View
             }
         }
 
-        $cssVersion = $coreVersion;
-        if (isset($_SERVER['DOCUMENT_ROOT'])) {
-            $assetPaths = [
-                $_SERVER['DOCUMENT_ROOT'] . '/assets/themes/' . $this->configSettings->theme . '/style.css',
-                $_SERVER['DOCUMENT_ROOT'] . '/assets/css/dashboard.css',
-                $_SERVER['DOCUMENT_ROOT'] . '/assets/css/notification.css',
-                $_SERVER['DOCUMENT_ROOT'] . '/assets/css/login.css',
-                $_SERVER['DOCUMENT_ROOT'] . '/assets/js/notification.js',
-                $_SERVER['DOCUMENT_ROOT'] . '/assets/js/admin-theme.js',
-            ];
-
-            $latestMtime = 0;
-            foreach ($assetPaths as $path) {
-                if (file_exists($path)) {
-                    $mtime = filemtime($path);
-                    if ($mtime > $latestMtime) {
-                        $latestMtime = $mtime;
-                    }
-                }
-            }
-
-            if ($latestMtime > 0) {
-                $cssVersion = (string) $latestMtime;
-            }
-        }
-
         $merged = array_merge([
             'title' => $this->configSettings->title,
             'url' => $currentUrl, // <--- Ahora es dinámica
@@ -210,7 +184,6 @@ class View
             'footer' => $this->configSettings->footer,
             'theme' => $this->configSettings->theme,
             'core_version' => $coreVersion,
-            'css_version' => $cssVersion,
         ], $params);
 
         // Calculate dynamic preview image
