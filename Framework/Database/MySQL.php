@@ -11,18 +11,17 @@ namespace Framework\Database;
 use Framework\Core\ConfigSettings;
 use Framework\Exceptions\MySQLException;
 use mysqli;
-use mysqli_result;
 use Throwable;
 
 class MySQL
 {
     private ConfigSettings $config;
-    private mysqli $conn;
+    private object $conn;
 
     /**
-     * Puede ser mysqli_result o false o null (al inicio)
+     * Puede ser un resultado de consulta, false o null (al inicio)
      */
-    private mysqli_result|bool|null $result = null;
+    private object|bool|null $result = null;
 
     private bool|string $error = false;
     private array $rows = [];
@@ -30,21 +29,40 @@ class MySQL
 
     private bool $status = false;
 
-    public function connect(string $host, string $user, string $pass, ?string $dbname = null): void
+    protected function createConnection(string $host, string $user, string $pass, ?string $dbname = null): object
     {
         if ($dbname) {
-            $this->conn = @new mysqli($host, $user, $pass, $dbname);
-        } else {
-            $this->conn = @new mysqli($host, $user, $pass);
+            return @new mysqli($host, $user, $pass, $dbname);
         }
 
-        $this->status = !$this->conn->connect_error;
+        return @new mysqli($host, $user, $pass);
+    }
+
+    private function getConnectionError(): string
+    {
+        return property_exists($this->conn, 'connect_error')
+            ? (string) $this->conn->connect_error
+            : '';
+    }
+
+    private function getConnectionErrorMessage(): string
+    {
+        return property_exists($this->conn, 'error')
+            ? (string) $this->conn->error
+            : '';
+    }
+
+    public function connect(string $host, string $user, string $pass, ?string $dbname = null): void
+    {
+        $this->conn = $this->createConnection($host, $user, $pass, $dbname);
+
+        $this->status = $this->getConnectionError() === '';
         if (!$this->status) {
-            throw new MySQLException("Failed to connect to MySQL: " . $this->conn->connect_error);
+            throw new MySQLException("Failed to connect to MySQL: " . $this->getConnectionError());
         }
 
         if (!$this->conn->set_charset("utf8mb4")) {
-            throw new MySQLException("Error loading character set utf8mb4: " . $this->conn->error);
+            throw new MySQLException("Error loading character set utf8mb4: " . $this->getConnectionErrorMessage());
         }
     }
 
@@ -64,7 +82,11 @@ class MySQL
                 }
 
                 $types = str_repeat('s', count($params));
-                $stmt->bind_param($types, ...$params);
+                $bindParams = [];
+                foreach ($params as $key => $value) {
+                    $bindParams[$key] = &$params[$key];
+                }
+                $stmt->bind_param($types, ...$bindParams);
 
                 if (!$stmt->execute()) {
                     throw new MySQLException("Failed to execute statement: " . $stmt->error);
@@ -81,12 +103,13 @@ class MySQL
     public function get(): void
     {
         try {
-            if (!($this->result instanceof mysqli_result)) {
+            if (!is_object($this->result) || !method_exists($this->result, 'fetch_array')) {
                 throw new MySQLException("No valid result set available for fetching.");
             }
 
             $this->rows = [];
-            while ($row = $this->result->fetch_array(MYSQLI_ASSOC)) {
+            $fetchMode = defined('MYSQLI_ASSOC') ? \MYSQLI_ASSOC : 1;
+            while ($row = $this->result->fetch_array($fetchMode)) {
                 $this->rows[] = $row;
             }
 
@@ -99,9 +122,16 @@ class MySQL
 
     public function num_rows(): int
     {
-        if ($this->result instanceof mysqli_result) {
-            return $this->result->num_rows;
+        if (is_object($this->result)) {
+            if (property_exists($this->result, 'num_rows')) {
+                return (int) $this->result->num_rows;
+            }
+
+            if (method_exists($this->result, 'numRows')) {
+                return (int) $this->result->numRows();
+            }
         }
+
         return 0;
     }
 
@@ -144,22 +174,22 @@ class MySQL
         return $this->error;
     }
 
-    public function getConn(): mysqli
+    public function getConn(): object
     {
         return $this->conn;
     }
 
-    public function setConn(mysqli $conn): void
+    public function setConn(object $conn): void
     {
         $this->conn = $conn;
     }
 
-    public function getResult(): mysqli_result|bool|null
+    public function getResult(): object|bool|null
     {
         return $this->result;
     }
 
-    public function setResult(mysqli_result|bool|null $result): void
+    public function setResult(object|bool|null $result): void
     {
         $this->result = $result;
     }
