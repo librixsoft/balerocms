@@ -166,20 +166,19 @@ class BaseController
             if (is_array($result) || is_object($result)) {
                 header('Content-Type: application/json');
                 echo json_encode($result);
-                exit;
-            } else {
-                header('Content-Type: application/json', true, 500);
-                echo json_encode([
-                    'status' => 'error',
-                    'message' => 'Controller marked for JSON response did not return an array or object.'
-                ]);
-                exit;
+                return;
             }
+
+            header('Content-Type: application/json', true, 500);
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Controller marked for JSON response did not return an array or object.'
+            ]);
+            return;
         }
 
         if (is_string($result)) {
             echo $result;
-            exit;
         }
 
     }
