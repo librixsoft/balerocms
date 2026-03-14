@@ -1560,3 +1560,278 @@ body {
     border-color: #7c3aed !important;
     color: #ffffff !important;
 }
+
+/* -------------------------------------------------------------------------- */
+/* Dark theme overrides only (purple + gray palette)                           */
+/* -------------------------------------------------------------------------- */
+body.dark-theme {
+    background-color: #0d0f15 !important;
+    --surface-1: #191a23;
+    --surface-2: #202230;
+    --surface-3: #2a2d3a;
+    --text-1: #eef0f7;
+    --text-2: #a7adbc;
+    --border: #2f3342;
+}
+
+body.dark-theme .navbar-vue {
+    background: #151724 !important;
+    border-bottom-color: #2f3342 !important;
+    color: #e5e7eb !important;
+    z-index: 1100;
+}
+
+body.dark-theme .navbar-vue a,
+body.dark-theme .navbar-vue .icon-button,
+body.dark-theme .navbar-vue .navbar-toggler {
+    color: #e5e7eb !important;
+}
+
+body.dark-theme .navbar-vue .navbar-separator {
+    background: #2f3342 !important;
+}
+
+body.dark-theme .nav-context-pill {
+    background: rgba(139, 92, 246, 0.18) !important;
+    border-color: rgba(139, 92, 246, 0.35) !important;
+    color: #c4b5fd !important;
+}
+
+body.dark-theme .quick-action-btn {
+    background: #1b202b;
+    border: 1px solid #2f3342;
+    color: #e2e8f0;
+}
+
+body.dark-theme .quick-action-btn:hover {
+    background: #232a36;
+    border-color: #8b5cf6;
+    color: #c4b5fd;
+}
+
+body.dark-theme .user-button {
+    background: #1b202b;
+    border: 1px solid #2f3342;
+}
+
+body.dark-theme .user-chip-name { color: #f8fafc; }
+body.dark-theme .user-chip-caret { color: #9aa4b2; }
+
+body.dark-theme #sidebar {
+    background: var(--surface-1) !important;
+    border: 1px solid var(--border) !important;
+}
+
+body.dark-theme #sidebar .nav-link:hover,
+body.dark-theme #sidebar .nav-link.active {
+    background: rgba(139, 92, 246, 0.16) !important;
+    color: #c4b5fd !important;
+}
+
+body.dark-theme #sidebar .nav-link::before {
+    color: #c4b5fd !important;
+}
+
+body.dark-theme #sidebar .nav-link.active::before,
+body.dark-theme #sidebar .nav-link:hover::before {
+    color: #8b5cf6 !important;
+}
+
+body.dark-theme .stat-card,
+body.dark-theme .card,
+body.dark-theme .card-header,
+body.dark-theme .card-body {
+    background: var(--surface-1) !important;
+    border-color: var(--border) !important;
+}
+
+body.dark-theme .badge.bg-blue {
+    background: rgba(139, 92, 246, 0.18) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.35) !important;
+}
+
+body.dark-theme .btn,
+body.dark-theme .btn-primary,
+body.dark-theme .btn-success,
+body.dark-theme .btn-secondary,
+body.dark-theme .btn-dark {
+    background-color: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+body.dark-theme .btn:hover,
+body.dark-theme .btn-primary:hover,
+body.dark-theme .btn-success:hover,
+body.dark-theme .btn-secondary:hover,
+body.dark-theme .btn-dark:hover {
+    background-color: #6d28d9 !important;
+    border-color: #6d28d9 !important;
+    color: #ffffff !important;
+    box-shadow: 0 10px 22px rgba(124, 58, 237, 0.35);
+}
+
+body.dark-theme .btn-outline-primary,
+body.dark-theme .btn-outline-success,
+body.dark-theme .btn-outline-secondary,
+body.dark-theme .btn-outline-dark {
+    background-color: transparent !important;
+    border-color: #8b5cf6 !important;
+    color: #c4b5fd !important;
+}
+
+body.dark-theme .btn-outline-primary:hover,
+body.dark-theme .btn-outline-success:hover,
+body.dark-theme .btn-outline-secondary:hover,
+body.dark-theme .btn-outline-dark:hover {
+    background-color: #7c3aed !important;
+    border-color: #7c3aed !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .quick-action-btn:hover,
+body.dark-theme .navbar-vue .nav-link:hover,
+body.dark-theme #sidebar .nav-link:hover {
+    color: #c4b5fd !important;
+}
+
+body.dark-theme #sidebar .nav-link:hover {
+    background-color: rgba(139, 92, 246, 0.16) !important;
+}
+
+/* -------------------------------------------------------------------------- */
+/* Light theme adjustments                                                    */
+/* -------------------------------------------------------------------------- */
+body:not(.dark-theme) .btn,
+body:not(.dark-theme) .btn-primary,
+body:not(.dark-theme) .btn-success,
+body:not(.dark-theme) .btn-secondary,
+body:not(.dark-theme) .btn-dark {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+body:not(.dark-theme) .btn:hover,
+body:not(.dark-theme) .btn-primary:hover,
+body:not(.dark-theme) .btn-success:hover,
+body:not(.dark-theme) .btn-secondary:hover,
+body:not(.dark-theme) .btn-dark:hover {
+    background-color: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+}
+
+body:not(.dark-theme) .navbar-vue,
+body:not(.dark-theme) .navbar-vue a,
+body:not(.dark-theme) .navbar-vue .icon-button,
+body:not(.dark-theme) .navbar-vue .navbar-toggler {
+    color: #0f172a !important;
+}
+
+body:not(.dark-theme) .navbar-vue .navbar-separator {
+    background: #cbd5e1 !important;
+}
+
+body:not(.dark-theme) .nav-context-pill,
+body:not(.dark-theme) .badge.bg-blue,
+body:not(.dark-theme) #sidebar .nav-link:hover,
+body:not(.dark-theme) #sidebar .nav-link.active {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.25) !important;
+    color: #1d4ed8 !important;
+}
+
+/* Secondary buttons neutral gray (both themes) */
+.btn-secondary {
+    background-color: #6b7280 !important;
+    border-color: #6b7280 !important;
+    color: #ffffff !important;
+}
+
+.btn-secondary:hover {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
+}
+
+/* Remove hover shadows on buttons */
+.btn:hover,
+.btn-primary:hover,
+.btn-success:hover,
+.btn-secondary:hover,
+.btn-dark:hover,
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-secondary:hover,
+.btn-outline-dark:hover {
+    box-shadow: none !important;
+}
+
+/* Dark theme: breadcrumb + badges to purple */
+body.dark-theme .breadcrumb-item a {
+    color: #c4b5fd !important;
+}
+
+body.dark-theme .breadcrumb-item.active {
+    color: #9aa4b2 !important;
+}
+
+body.dark-theme .badge.bg-primary,
+body.dark-theme .badge.bg-success,
+body.dark-theme .badge.bg-blue {
+    background-color: rgba(139, 92, 246, 0.18) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+}
+
+/* Fix badges (light theme) */
+body:not(.dark-theme) .badge.bg-primary,
+body:not(.dark-theme) .badge.bg-success,
+body:not(.dark-theme) .badge.bg-blue {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #1d4ed8 !important;
+    border: 1px solid rgba(59, 130, 246, 0.28) !important;
+}
+
+/* Force btn-secondary gray on all themes */
+body .btn-secondary {
+    background-color: #6b7280 !important;
+    border-color: #6b7280 !important;
+    color: #ffffff !important;
+}
+
+body .btn-secondary:hover {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
+}
+
+/* Fix: dark theme sidebar badges green -> purple */
+body.dark-theme #sidebar .badge,
+body.dark-theme #sidebar .badge.bg-blue,
+body.dark-theme #sidebar .badge.bg-primary,
+body.dark-theme #sidebar .badge.bg-success {
+    background-color: rgba(139, 92, 246, 0.18) !important;
+    color: #c4b5fd !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+}
+
+/* Fix: secondary buttons always gray */
+.btn.btn-secondary,
+body.dark-theme .btn.btn-secondary,
+body:not(.dark-theme) .btn.btn-secondary {
+    background-color: #6b7280 !important;
+    border-color: #6b7280 !important;
+    color: #ffffff !important;
+}
+
+.btn.btn-secondary:hover,
+body.dark-theme .btn.btn-secondary:hover,
+body:not(.dark-theme) .btn.btn-secondary:hover {
+    background-color: #4b5563 !important;
+    border-color: #4b5563 !important;
+    color: #ffffff !important;
+}
