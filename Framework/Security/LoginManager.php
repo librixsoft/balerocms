@@ -49,7 +49,7 @@ class LoginManager
     {
         $counter = $this->security->toInt($this->requestHelper->cookie('counter', 0));
         if ($counter >= 5) {
-            die("MAX LOGIN ATTEMPS, WAIT 5 MINUTES!");
+            $this->abortMaxAttempts();
         }
 
         // Intento de login por formulario
@@ -99,6 +99,17 @@ class LoginManager
     private function clearCookie(string $name): void
     {
         setcookie($name, '', time() - 3600, '/', '', false, true);
+    }
+
+    /**
+     * Termina la ejecución cuando se alcanzan los máximos intentos de login.
+     * Extraido como método protegido para permitir override en tests.
+     */
+    protected function abortMaxAttempts(): never
+    {
+        // @codeCoverageIgnoreStart
+        die("MAX LOGIN ATTEMPS, WAIT 5 MINUTES!");
+        // @codeCoverageIgnoreEnd
     }
 
     /**
