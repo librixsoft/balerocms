@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Framework\Preview;
 
+use Framework\Preview\GdAdapterInterface;
 use Framework\Preview\PreviewGenerator;
 use PHPUnit\Framework\TestCase;
 
@@ -48,12 +49,18 @@ final class PreviewGeneratorTest extends TestCase
         }
         rmdir($dir);
     }
+
+    // ─── generatePreviewUrl ──────────────────────────────────────────────────────
+
+    /**
+     * og_image absoluta (empieza con http) agrega ?v= con cachebuster.
+     */
     public function testGeneratePreviewUrlUsesAbsoluteOgImageWhenPresent(): void
     {
         $generator = new PreviewGenerator();
 
         $url = $generator->generatePreviewUrl([
-            'url' => 'https://example.com/page',
+            'url'      => 'https://example.com/page',
             'og_image' => 'https://cdn.example.com/preview.png',
         ]);
 
@@ -63,12 +70,15 @@ final class PreviewGeneratorTest extends TestCase
         );
     }
 
+    /**
+     * og_image relativa → se antepone baseUrl.
+     */
     public function testGeneratePreviewUrlUsesRelativeOgImageWithBaseUrl(): void
     {
         $generator = new PreviewGenerator();
 
         $url = $generator->generatePreviewUrl([
-            'url' => 'https://example.com/blog/post',
+            'url'      => 'https://example.com/blog/post',
             'og_image' => '/images/cover.png',
         ]);
 
@@ -78,12 +88,52 @@ final class PreviewGeneratorTest extends TestCase
         );
     }
 
+    /**
+     * og_image absoluta que ya tiene query string → se usa & en lugar de ?.
+     */
+    public function testGeneratePreviewUrlUsesAmpersandWhenOgImageHasQueryString(): void
+    {
+        $generator = new PreviewGenerator();
+
+        $url = $generator->generatePreviewUrl([
+            'url'      => 'https://example.com',
+            'og_image' => 'https://cdn.example.com/image.png?size=large',
+        ]);
+
+        $this->assertMatchesRegularExpression(
+            '#^https://cdn\.example\.com/image\.png\?size=large&v=\d{14}$#',
+            $url
+        );
+    }
+
+    /**
+     * og_image absoluta gana sobre la página (slug ignorado).
+     */
+    public function testGeneratePreviewUrlUsesObjectPageSlugAndPreservesExistingQueryString(): void
+    {
+        $generator = new PreviewGenerator();
+
+        $url = $generator->generatePreviewUrl([
+            'url'      => 'https://example.com',
+            'og_image' => 'https://cdn.example.com/image.png?size=large',
+            'page'     => (object) ['static_url' => 'ignored-because-og-image-wins'],
+        ]);
+
+        $this->assertMatchesRegularExpression(
+            '#^https://cdn\.example\.com/image\.png\?size=large&v=\d{14}$#',
+            $url
+        );
+    }
+
+    /**
+     * page como ARRAY con static_url genera la URL /page/og/{slug}.
+     */
     public function testGeneratePreviewUrlBuildsPageOgWhenSlugExists(): void
     {
         $generator = new PreviewGenerator();
 
         $url = $generator->generatePreviewUrl([
-            'url' => 'https://example.com',
+            'url'  => 'https://example.com',
             'page' => ['static_url' => 'mi página'],
         ]);
 
@@ -93,12 +143,55 @@ final class PreviewGeneratorTest extends TestCase
         );
     }
 
+    /**
+     * page como OBJETO con static_url genera la URL /page/og/{slug}.
+     */
+    public function testGeneratePreviewUrlBuildsPageOgWhenSlugExistsAsObject(): void
+    {
+        $generator = new PreviewGenerator();
+
+        $page = new \stdClass();
+        $page->static_url = 'my-page';
+
+        $url = $generator->generatePreviewUrl([
+            'url'  => 'https://example.com',
+            'page' => $page,
+        ]);
+
+        $this->assertMatchesRegularExpression(
+            '#^https://example\.com/page/og/my-page\?v=\d{14}$#',
+            $url
+        );
+    }
+
+    /**
+     * page como objeto SIN static_url → cae al fallback genérico.
+     */
+    public function testGeneratePreviewUrlFallsBackWhenObjectPageHasNoSlug(): void
+    {
+        $generator = new PreviewGenerator();
+
+        $url = $generator->generatePreviewUrl([
+            'url'   => 'https://example.com',
+            'page'  => new \stdClass(),
+            'title' => 'Sin slug',
+        ]);
+
+        $this->assertMatchesRegularExpression(
+            '#^https://example\.com/page/og/generic\?title=Sin\+slug&v=\d{14}$#',
+            $url
+        );
+    }
+
+    /**
+     * Fallback genérico con título personalizado.
+     */
     public function testGeneratePreviewUrlFallsBackToGenericTitleWhenNoOgImageOrSlug(): void
     {
         $generator = new PreviewGenerator();
 
         $url = $generator->generatePreviewUrl([
-            'url' => 'https://example.com',
+            'url'   => 'https://example.com',
             'title' => 'Hola mundo',
         ]);
 
@@ -108,22 +201,43 @@ final class PreviewGeneratorTest extends TestCase
         );
     }
 
-    public function testGeneratePreviewUrlUsesObjectPageSlugAndPreservesExistingQueryString(): void
+    /**
+     * Fallback genérico SIN título → usa 'Preview' por defecto.
+     */
+    public function testGeneratePreviewUrlFallsBackToDefaultTitleWhenNoTitleProvided(): void
     {
         $generator = new PreviewGenerator();
 
         $url = $generator->generatePreviewUrl([
             'url' => 'https://example.com',
-            'og_image' => 'https://cdn.example.com/image.png?size=large',
-            'page' => (object) ['static_url' => 'ignored-because-og-image-wins'],
         ]);
 
         $this->assertMatchesRegularExpression(
-            '#^https://cdn\.example\.com/image\.png\?size=large&v=\d{14}$#',
+            '#^https://example\.com/page/og/generic\?title=Preview&v=\d{14}$#',
             $url
         );
     }
 
+    /**
+     * URL vacía → base usa http:// con host vacío.
+     */
+    public function testGeneratePreviewUrlHandlesEmptyBaseUrl(): void
+    {
+        $generator = new PreviewGenerator();
+
+        $url = $generator->generatePreviewUrl([]);
+
+        $this->assertMatchesRegularExpression(
+            '#^http:///page/og/generic\?title=Preview&v=\d{14}$#',
+            $url
+        );
+    }
+
+    // ─── render ─────────────────────────────────────────────────────────────────
+
+    /**
+     * render(null) → serveStaticFallback() sin imagen → output vacío (404 sin body).
+     */
     public function testRenderUsesStaticFallbackWhenTitleMissing(): void
     {
         $generator = new PreviewGenerator();
@@ -135,6 +249,9 @@ final class PreviewGeneratorTest extends TestCase
         $this->assertSame('', $output);
     }
 
+    /**
+     * render('') → serveStaticFallback() con imagen existente → cuerpo del PNG.
+     */
     public function testRenderOutputsStaticFallbackWhenImageExists(): void
     {
         $imagePath = $this->tmpRoot . '/assets/images/og-image.png';
@@ -149,39 +266,49 @@ final class PreviewGeneratorTest extends TestCase
         $this->assertSame('png-data', $output);
     }
 
+    /**
+     * render() con título y GD NO disponible → serveStaticFallback().
+     */
+    public function testRenderUsesStaticFallbackWhenGdNotAvailable(): void
+    {
+        $imagePath = $this->tmpRoot . '/assets/images/og-image.png';
+        file_put_contents($imagePath, 'fallback-png');
+
+        $gd = $this->createMock(GdAdapterInterface::class);
+        $gd->method('hasGdSupport')->willReturn(false);
+        $gd->expects($this->never())->method('createImage');
+        $gd->expects($this->never())->method('output');
+
+        $generator = new PreviewGenerator();
+        $generator->setGdAdapter($gd);
+
+        ob_start();
+        $generator->render('Un título');
+        $output = ob_get_clean();
+
+        $this->assertSame('fallback-png', $output);
+    }
+
+    /**
+     * render() con GD disponible pero SIN soporte TTF → drawSimpleText().
+     */
     public function testRenderOutputsPngWhenNoTtfSupport(): void
     {
-        $generator = new class() extends PreviewGenerator {
-            protected function hasGdSupport(): bool
-            {
-                return true;
-            }
+        $gd = $this->createMock(GdAdapterInterface::class);
+        $gd->method('hasGdSupport')->willReturn(true);
+        $gd->method('hasTtfSupport')->willReturn(false);
+        $gd->method('createImage')->willReturn('img');
+        $gd->method('allocateColor')->willReturn(1);
 
-            protected function createImage(int $width, int $height)
-            {
-                return 'img';
-            }
+        $gd->expects($this->once())->method('fillBackground');
+        $gd->expects($this->once())->method('drawSimpleText');
+        $gd->expects($this->never())->method('drawTtfText');
+        $gd->expects($this->once())->method('output')->willReturnCallback(function () {
+            echo "\x89PNGstub";
+        });
 
-            protected function allocateColor($image, int $red, int $green, int $blue): int
-            {
-                return 1;
-            }
-
-            protected function fillBackground($image, int $width, int $height, int $color): void
-            {
-                // no-op
-            }
-
-            protected function drawSimpleText($image, int $width, int $height, string $title, int $color): void
-            {
-                // no-op
-            }
-
-            protected function output($image): void
-            {
-                echo "\x89PNGstub";
-            }
-        };
+        $generator = new PreviewGenerator();
+        $generator->setGdAdapter($gd);
 
         ob_start();
         $generator->render('Hola');
@@ -191,49 +318,27 @@ final class PreviewGeneratorTest extends TestCase
         $this->assertStringStartsWith("\x89PNG", $output);
     }
 
+    /**
+     * render() con GD Y soporte TTF disponibles → drawTtfText().
+     */
     public function testRenderUsesTtfPathWhenAvailable(): void
     {
-        $generator = new class() extends PreviewGenerator {
-            protected function hasGdSupport(): bool
-            {
-                return true;
-            }
+        $gd = $this->createMock(GdAdapterInterface::class);
+        $gd->method('hasGdSupport')->willReturn(true);
+        $gd->method('hasTtfSupport')->willReturn(true);
+        $gd->method('createImage')->willReturn('img');
+        $gd->method('allocateColor')->willReturn(1);
+        $gd->method('getTextBoundingBox')->willReturn([0, 0, 100, 0, 100, -20, 0, -20]);
 
-            protected function createImage(int $width, int $height)
-            {
-                return 'img';
-            }
+        $gd->expects($this->once())->method('fillBackground');
+        $gd->expects($this->once())->method('drawTtfText');
+        $gd->expects($this->never())->method('drawSimpleText');
+        $gd->expects($this->once())->method('output')->willReturnCallback(function () {
+            echo "\x89PNGstub";
+        });
 
-            protected function allocateColor($image, int $red, int $green, int $blue): int
-            {
-                return 1;
-            }
-
-            protected function fillBackground($image, int $width, int $height, int $color): void
-            {
-                // no-op
-            }
-
-            protected function hasTtfSupport(string $fontPath): bool
-            {
-                return true;
-            }
-
-            protected function getTextBoundingBox(int $fontSize, string $fontPath, string $title): array
-            {
-                return [0, 0, 100, 0, 100, -20, 0, -20];
-            }
-
-            protected function drawTtfText($image, int $fontSize, int $x, int $y, int $color, string $fontPath, string $title): void
-            {
-                // no-op for test
-            }
-
-            protected function output($image): void
-            {
-                echo "\x89PNGstub";
-            }
-        };
+        $generator = new PreviewGenerator();
+        $generator->setGdAdapter($gd);
 
         ob_start();
         $generator->render('Titulo');
@@ -241,5 +346,49 @@ final class PreviewGeneratorTest extends TestCase
 
         $this->assertNotSame('', $output);
         $this->assertStringStartsWith("\x89PNG", $output);
+    }
+
+    // ─── métodos protegidos: verificados vía mocks ───────────────────────────────
+
+    /**
+     * serveStaticFallback() cuando el archivo NO existe → sin output (envía 404).
+     */
+    public function testServeStaticFallbackSends404WhenFileNotFound(): void
+    {
+        $generator = new class() extends PreviewGenerator {
+            public function publicServeStaticFallback(): void
+            {
+                $this->serveStaticFallback();
+            }
+        };
+
+        ob_start();
+        $generator->publicServeStaticFallback();
+        $output = ob_get_clean();
+
+        $this->assertSame('', $output);
+        $this->assertSame(404, http_response_code());
+    }
+
+    /**
+     * serveStaticFallback() cuando el archivo SÍ existe → sirve el contenido.
+     */
+    public function testServeStaticFallbackServesFileWhenExists(): void
+    {
+        $imagePath = $this->tmpRoot . '/assets/images/og-image.png';
+        file_put_contents($imagePath, 'real-png-bytes');
+
+        $generator = new class() extends PreviewGenerator {
+            public function publicServeStaticFallback(): void
+            {
+                $this->serveStaticFallback();
+            }
+        };
+
+        ob_start();
+        $generator->publicServeStaticFallback();
+        $output = ob_get_clean();
+
+        $this->assertSame('real-png-bytes', $output);
     }
 }

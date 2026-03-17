@@ -31,14 +31,4 @@ return array (
     'class' => 'App\\Controllers\\Page\\PageController',
     'path' => '/page',
   ),
-  6 => 
-  array (
-    'class' => 'App\\Controllers\\Test\\TestController',
-    'path' => '/test',
-  ),
-  7 => 
-  array (
-    'class' => 'App\\Controllers\\Test\\TestControllerWithConstructor',
-    'path' => '/other',
-  ),
 );

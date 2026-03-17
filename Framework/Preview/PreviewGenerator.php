@@ -4,6 +4,17 @@ namespace Framework\Preview;
 
 class PreviewGenerator
 {
+    private GdAdapterInterface $gd;
+
+    public function __construct()
+    {
+        $this->gd = new NativeGdAdapter();
+    }
+
+    public function setGdAdapter(GdAdapterInterface $gd): void
+    {
+        $this->gd = $gd;
+    }
     /**
      * Genera la URL dinámica para el meta tag og:image.
      */
@@ -81,48 +92,42 @@ class PreviewGenerator
 
     protected function hasGdSupport(): bool
     {
-        return function_exists('imagecreatetruecolor')
-            && function_exists('imagecolorallocate')
-            && function_exists('imagefilledrectangle')
-            && function_exists('imagepng')
-            && function_exists('imagedestroy');
+        return $this->gd->hasGdSupport();
     }
 
     protected function createImage(int $width, int $height)
     {
-        return \imagecreatetruecolor($width, $height);
+        return $this->gd->createImage($width, $height);
     }
 
     protected function allocateColor($image, int $red, int $green, int $blue): int
     {
-        return \imagecolorallocate($image, $red, $green, $blue);
+        return $this->gd->allocateColor($image, $red, $green, $blue);
     }
 
     protected function fillBackground($image, int $width, int $height, int $color): void
     {
-        \imagefilledrectangle($image, 0, 0, $width, $height, $color);
+        $this->gd->fillBackground($image, $width, $height, $color);
     }
 
     protected function drawSimpleText($image, int $width, int $height, string $title, int $color): void
     {
-        \imagestring($image, 5, ($width / 2) - (strlen($title) * 4), $height / 2, $title, $color);
+        $this->gd->drawSimpleText($image, $width, $height, $title, $color);
     }
 
     protected function hasTtfSupport(string $fontPath): bool
     {
-        return file_exists($fontPath)
-            && function_exists('imagettftext')
-            && function_exists('imagettfbbox');
+        return $this->gd->hasTtfSupport($fontPath);
     }
 
     protected function getTextBoundingBox(int $fontSize, string $fontPath, string $title): array
     {
-        return \imagettfbbox($fontSize, 0, $fontPath, $title);
+        return $this->gd->getTextBoundingBox($fontSize, $fontPath, $title);
     }
 
     protected function drawTtfText($image, int $fontSize, int $x, int $y, int $color, string $fontPath, string $title): void
     {
-        \imagettftext($image, $fontSize, 0, $x, $y, $color, $fontPath, $title);
+        $this->gd->drawTtfText($image, $fontSize, $x, $y, $color, $fontPath, $title);
     }
 
     protected function serveStaticFallback(): void
@@ -138,9 +143,6 @@ class PreviewGenerator
 
     protected function output($image): void
     {
-        header('Content-Type: image/png');
-        header('Cache-Control: public, max-age=86400');
-        \imagepng($image);
-        \imagedestroy($image);
+        $this->gd->output($image);
     }
 }
