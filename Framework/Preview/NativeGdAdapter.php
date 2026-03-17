@@ -2,6 +2,9 @@
 
 namespace Framework\Preview;
 
+/**
+ * @codeCoverageIgnore
+ */
 class NativeGdAdapter implements GdAdapterInterface
 {
     public function hasGdSupport(): bool
