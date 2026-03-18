@@ -85,7 +85,7 @@ abstract class TestCase extends PHPUnitTestCase
      * ```
      *
      * @return void
-     * @throws \RuntimeException Si la clase del contenedor especificada no existe
+     * @throws \RuntimeException Si la clase del contenedor no existe o no puede instanciarse
      */
     protected function setUp(): void
     {
@@ -101,11 +101,16 @@ abstract class TestCase extends PHPUnitTestCase
         $attribute = $attributes[0]->newInstance();
         $containerClass = $attribute->containerClass ?? TestContainer::class;
 
-        if (!class_exists($containerClass)) {
-            throw new \RuntimeException("Container class {$containerClass} does not exist");
+        try {
+            $this->_autoContainer = new $containerClass($this);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(
+                "Container class {$containerClass} does not exist",
+                0,
+                $e
+            );
         }
 
-        $this->_autoContainer = new $containerClass($this);
         $this->_autoContainer->initTest($this);
     }
 

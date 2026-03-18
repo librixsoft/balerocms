@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Framework\Testing;
 
+use Framework\Attributes\SetupTestContainer;
 use Framework\DI\TestContainer;
 use Framework\Testing\TestCase as FrameworkTestCase;
 use PHPUnit\Framework\TestCase;
@@ -416,4 +417,136 @@ final class TestCaseTest extends TestCase
         $m->setAccessible(true);
         return $m->invoke($sut, $class);
     }
+
+    // =========================================================================
+    // 10. FLUJO REAL DE setUp() CON #[SetupTestContainer] PRESENTE
+    //     Cubre las líneas 101-109 del TestCase original que quedaban sin cubrir
+    //     porque todas las subclases anónimas sobreescribían setUp().
+    // =========================================================================
+
+    /**
+     * Una subclase concreta que NO sobreescribe setUp(), forzando que el
+     * setUp() real de FrameworkTestCase se ejecute con el atributo presente.
+     * El TestContainer real requiere un TestCase activo con createMock(),
+     * por lo que inyectamos el test actual al invocar setUp().
+     */
+    public function testRealSetUpWithAttributeInitializesContainer(): void
+    {
+        // Creamos una subclase concreta con el atributo real.
+        // No sobreescribe setUp() → el setUp() real de FrameworkTestCase se ejecuta.
+        $sut = new ConcreteTestCaseWithAttribute('testDummy');
+
+        // Llamamos setUp() directamente para cubrir las líneas 101-109.
+        $m = new ReflectionMethod(FrameworkTestCase::class, 'setUp');
+        $m->setAccessible(true);
+        $m->invoke($sut);
+
+        // getContainer() debe retornar una instancia de TestContainer
+        $containerM = new ReflectionMethod(FrameworkTestCase::class, 'getContainer');
+        $containerM->setAccessible(true);
+        $container = $containerM->invoke($sut);
+
+        $this->assertInstanceOf(
+            TestContainer::class,
+            $container,
+            'setUp() real debe inicializar _autoContainer con TestContainer'
+        );
+    }
+
+    public function testRealSetUpCallsGetMockAfterInit(): void
+    {
+        $sut = new ConcreteTestCaseWithAttribute('testDummy');
+
+        $m = new ReflectionMethod(FrameworkTestCase::class, 'setUp');
+        $m->setAccessible(true);
+        $m->invoke($sut);
+
+        // getMock() para una clase no registrada debe retornar null (no lanza)
+        $getMockM = new ReflectionMethod(FrameworkTestCase::class, 'getMock');
+        $getMockM->setAccessible(true);
+        $result = $getMockM->invoke($sut, \stdClass::class);
+
+        $this->assertNull($result);
+    }
+
+    public function testRealSetUpWithCustomContainerClass(): void
+    {
+        // Cubre la rama containerClass != null (línea 102) con una clase válida.
+        $sut = new ConcreteTestCaseWithCustomContainer('testDummy');
+
+        $m = new ReflectionMethod(FrameworkTestCase::class, 'setUp');
+        $m->setAccessible(true);
+        $m->invoke($sut);
+
+        $containerM = new ReflectionMethod(FrameworkTestCase::class, 'getContainer');
+        $containerM->setAccessible(true);
+        $container = $containerM->invoke($sut);
+
+        // CustomTestContainer también es un TestContainer
+        $this->assertInstanceOf(
+            TestContainer::class,
+            $container,
+            'setUp() real debe usar la containerClass personalizada del atributo'
+        );
+    }
+
+    public function testRealSetUpWithNonExistentContainerClassThrowsRuntimeException(): void
+    {
+        // Cubre la rama class_exists() === false (línea 104-105) en el setUp() real.
+        $sut = new ConcreteTestCaseWithInvalidContainer('testDummy');
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessageMatches('/does not exist/');
+
+        $m = new ReflectionMethod(FrameworkTestCase::class, 'setUp');
+        $m->setAccessible(true);
+        $m->invoke($sut);
+    }
+}
+
+// =============================================================================
+// CLASES HELPER NOMBRADAS
+// Las clases anónimas PHP no admiten atributos #[...], por eso se declaran
+// aquí como clases concretas para que #[SetupTestContainer] sea procesado
+// en tiempo de ejecución por ReflectionClass::getAttributes().
+// =============================================================================
+
+/**
+ * Subclase con #[SetupTestContainer] usando el TestContainer por defecto.
+ * NO sobreescribe setUp() → ejecuta el setUp() real de FrameworkTestCase.
+ */
+#[SetupTestContainer]
+class ConcreteTestCaseWithAttribute extends FrameworkTestCase
+{
+    public function testDummy(): void {}
+}
+
+/**
+ * Subclase con #[SetupTestContainer(containerClass: CustomTestContainer::class)].
+ * Cubre la rama donde containerClass es explícita y distinta del default.
+ */
+#[SetupTestContainer(containerClass: CustomTestContainer::class)]
+class ConcreteTestCaseWithCustomContainer extends FrameworkTestCase
+{
+    public function testDummy(): void {}
+}
+
+/**
+ * Subclase con #[SetupTestContainer] apuntando a una clase inexistente.
+ * Cubre la rama donde class_exists() retorna false → RuntimeException.
+ */
+#[SetupTestContainer(containerClass: 'NonExistentContainerXyz999')]
+class ConcreteTestCaseWithInvalidContainer extends FrameworkTestCase
+{
+    public function testDummy(): void {}
+}
+
+/**
+ * TestContainer personalizado válido para probar containerClass custom.
+ * Extiende TestContainer (que ya extiende nada especial) para ser aceptado.
+ */
+class CustomTestContainer extends TestContainer
+{
+    // Sin cambios: es suficiente para que class_exists() retorne true
+    // y se ejecuten las líneas 108-109 del setUp() real.
 }
