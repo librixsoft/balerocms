@@ -15,7 +15,7 @@
 
 namespace Framework\DI;
 
-use Framework\Attributes\FlashStorage;
+
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionMethod;
@@ -115,7 +115,6 @@ class DependencyFactory
                 $type = $prop->getType();
                 if (!$type instanceof ReflectionNamedType) continue;
 
-                $flashStorageAttrs = $prop->getAttributes(FlashStorage::class);
 
                 $prop->setAccessible(true);
 
