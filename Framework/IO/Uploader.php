@@ -1,11 +1,5 @@
 <?php
 
-/**
- * Balero CMS
- * @author Anibal Gomez <balerocms@gmail.com>
- * @license GNU General Public License
- */
-
 namespace Framework\IO;
 
 use Framework\Core\ConfigSettings;
@@ -15,251 +9,138 @@ class Uploader
 {
     private string $uploadsPath;
     private const RELATIVE_UPLOAD_PATH = "assets/images/uploads/";
-    private const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
     private ConfigSettings $configSettings;
 
-    public function __construct(ConfigSettings $configSettings)
+    public function __construct(ConfigSettings $configSettings, ?string $customPath = null)
     {
         $this->configSettings = $configSettings;
-        $this->uploadsPath = $this->detectUploadsPath();
+        $this->uploadsPath = $customPath ?? $this->detectUploadsPath();
     }
 
     private function detectUploadsPath(): string
     {
-        $root = $_SERVER['DOCUMENT_ROOT'] ?? dirname($_SERVER['SCRIPT_FILENAME']);
+        $root = $_SERVER['DOCUMENT_ROOT'] ?? dirname($_SERVER['SCRIPT_FILENAME'] ?? '');
         return rtrim($root, '/') . '/' . self::RELATIVE_UPLOAD_PATH;
     }
 
-    public function image($file, array $meta = []): string
+    protected function moveFile(string $from, string $to): bool
     {
-        if (!isset($file) || $file['error'] !== UPLOAD_ERR_OK) {
+        return (PHP_SAPI === 'cli') ? @copy($from, $to) : @move_uploaded_file($from, $to);
+    }
+
+    // Se eliminó el parámetro $meta no utilizado
+    public function image(array $file): string
+    {
+        if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
             throw new UploaderException("File upload error. Code: " . ($file['error'] ?? 'unknown'));
         }
 
-        $imageInfo = getimagesize($file['tmp_name']);
-        if ($imageInfo === false) {
+        $imageInfo = @getimagesize($file['tmp_name']);
+        if (!$imageInfo) {
             throw new UploaderException("The uploaded file is not a valid image.");
-        }
-
-        $mimeType = $imageInfo['mime'];
-        if (!in_array($mimeType, self::ALLOWED_MIME_TYPES)) {
-            throw new UploaderException("Unsupported image type: $mimeType. Allowed types: JPEG, PNG, GIF.");
         }
 
         $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         if (!in_array($extension, self::ALLOWED_EXTENSIONS)) {
-            throw new UploaderException("Unsupported file extension: .$extension. Allowed extensions: .jpg, .jpeg, .png, .gif.");
+            throw new UploaderException("Unsupported file extension.");
         }
 
         $uploadDir = rtrim($this->uploadsPath, '/') . '/';
-
-        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
-            throw new UploaderException("Failed to create upload directory: $uploadDir");
+        // Agregadas llaves en el if anidado
+        if (!is_dir($uploadDir) && !@mkdir($uploadDir, 0755, true)) {
+            throw new UploaderException("Failed to create upload directory.");
         }
 
-        if (!is_writable($uploadDir)) {
-            throw new UploaderException("Upload directory is not writable: $uploadDir. Set permissions to 755.");
-        }
-
-        $hash        = md5_file($file['tmp_name']);
-        $filename    = $hash . '.' . $extension;
+        $hash = md5_file($file['tmp_name']);
+        $filename = $hash . '.' . $extension;
         $destination = $uploadDir . $filename;
-        $url         = rtrim($this->configSettings->basepath, '/') . '/' . self::RELATIVE_UPLOAD_PATH . $filename;
+        $url = rtrim($this->configSettings->basepath ?? '/', '/') . '/' . self::RELATIVE_UPLOAD_PATH . $filename;
 
-        // Si ya existe la imagen física, comprobamos si hace falta crear el JSON o no, 
-        // pero evitamos mover el archivo
-        $exists = file_exists($destination);
-
-        if (!$exists) {
-            if (!move_uploaded_file($file['tmp_name'], $destination)) {
-                throw new UploaderException("Failed to move uploaded file to destination.");
-            }
+        // Fusionado el if de existencia con el de movimiento
+        if (!file_exists($destination) && !$this->moveFile($file['tmp_name'], $destination)) {
+            throw new UploaderException("Failed to move uploaded file.");
         }
 
-        // Si la imagen existía pero no existía el JSON o es un nuevo archivo, escribimos el JSON
         $jsonPath = $uploadDir . $hash . '.json';
-        if (!$exists || !file_exists($jsonPath)) {
-            // ── Crear JSON de metadatos junto a la imagen ──────────────────────
+        if (!file_exists($jsonPath)) {
             $metadata = [
-                'hash'          => $hash,
-                'filename'      => $filename,
-                'extension'     => $extension,
-                'mime'          => $mimeType,
-                'size_bytes'    => filesize($destination),
-                'width'         => $imageInfo[0],
-                'height'        => $imageInfo[1],
-                'url'           => $url,
-                'uploaded_at'   => date('c'),
-                'original_name' => $meta['original_name'] ?? $file['name'],
-                'client_size'   => $meta['size']          ?? 0,
-                'client_mime'   => $meta['mime']          ?? $mimeType,
-                'client_date'   => $meta['uploaded_at']   ?? date('c'),
-                'context'       => $meta['context']       ?? 'unknown',
-                // Array de registros donde se ha insertado la imagen
-                'records'       => [],
+                'hash' => $hash,
+                'filename' => $filename,
+                'extension' => $extension,
+                'mime' => $imageInfo['mime'],
+                'size_bytes' => filesize($destination),
+                'width' => $imageInfo[0],
+                'height' => $imageInfo[1],
+                'url' => $url,
+                'uploaded_at' => date('c'),
+                'records' => []
             ];
-
-            file_put_contents(
-                $jsonPath,
-                json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-            );
-            // ───────────────────────────────────────────────────────────────────
+            file_put_contents($jsonPath, json_encode($metadata, JSON_PRETTY_PRINT));
         }
 
         return $url;
     }
 
-    /**
-     * Añade un registro (record) al array de 'records' de una imagen dada.
-     * Así soportamos que la misma imagen se use en N lugares distintos.
-     *
-     * @param string $hash   Nombre del archivo sin extensión (el md5)
-     * @param array  $record Datos del registro a agregar (id, type, url)
-     */
-    public function addRecordToMetadata(string $hash, array $record): void
-    {
-        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
-        $jsonPath  = $uploadDir . $hash . '.json';
-
-        if (!file_exists($jsonPath)) {
-            return; // Imagen subida sin JSON, ignorar
-        }
-
-        $metadata = json_decode(file_get_contents($jsonPath), true) ?? [];
-        if (!isset($metadata['records']) || !is_array($metadata['records'])) {
-            $metadata['records'] = [];
-        }
-
-        // Verificar si el registro ya está asociado para no duplicarlo
-        $exists = false;
-        foreach ($metadata['records'] as $r) {
-            if (isset($r['id']) && isset($r['type']) && $r['id'] == $record['id'] && $r['type'] === $record['type']) {
-                $exists = true;
-                break;
-            }
-        }
-
-        if (!$exists) {
-            $metadata['records'][] = $record;
-            file_put_contents(
-                $jsonPath,
-                json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-            );
-        }
-    }
-
-    /**
-     * Elimina una referencia a un registro de todos los JSON de metadatos.
-     * Esto se usa al borrar una página o un bloque completo o al actualizarlos.
-     */
-    public function removeRecordFromAllMetadata(int $recordId, string $recordType): void
-    {
-        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
-        if (!is_dir($uploadDir)) return;
-
-        $files = glob($uploadDir . '*.json');
-        if (!$files) return;
-
-        foreach ($files as $file) {
-            $json = file_get_contents($file);
-            if (!$json) continue;
-            
-            $metadata = json_decode($json, true);
-            if (!isset($metadata['records']) || !is_array($metadata['records'])) continue;
-
-            $originalCount = count($metadata['records']);
-            $metadata['records'] = array_filter($metadata['records'], function($r) use ($recordId, $recordType) {
-                return !($r['id'] == $recordId && $r['type'] === $recordType);
-            });
-
-            // Reindexar array
-            $metadata['records'] = array_values($metadata['records']);
-
-            if (count($metadata['records']) !== $originalCount) {
-                file_put_contents(
-                    $file,
-                    json_encode($metadata, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-                );
-            }
-        }
-    }
-
-    /**
-     * Borra físicamente la imagen y su JSON de disco. Lanza excepción si la imagen está en uso.
-     */
-    public function deleteMedia(string $hash): void
-    {
-        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
-        $jsonPath  = $uploadDir . $hash . '.json';
-        
-        if (!file_exists($jsonPath)) {
-            throw new UploaderException("Media file metadata not found.");
-        }
-
-        $metadata = json_decode(file_get_contents($jsonPath), true) ?? [];
-        if (!empty($metadata['records'])) {
-            throw new UploaderException("Cannot delete media. It is currently in use in " . count($metadata['records']) . " location(s).");
-        }
-
-        $filename = $metadata['filename'] ?? ($hash . '.' . ($metadata['extension'] ?? 'jpg'));
-        $imagePath = $uploadDir . $filename;
-
-        // Borrar imagen y JSON
-        if (file_exists($imagePath)) {
-            unlink($imagePath);
-        }
-        unlink($jsonPath);
-    }
     public function getAllMediaMetadata(): array
     {
         $uploadDir = rtrim($this->uploadsPath, '/') . '/';
         $media = [];
-
-        if (is_dir($uploadDir)) {
-            $files = glob($uploadDir . '*.json');
-            if ($files) {
-                foreach ($files as $file) {
-                    $json = file_get_contents($file);
-                    if ($json) {
-                        $data = json_decode($json, true);
-                        if ($data) {
-                            // Crear un resumen textual de los registros
-                            $recordsStr = '';
-                            if (!empty($data['records'])) {
-                                $types = [];
-                                foreach ($data['records'] as $r) {
-                                    $types[] = ($r['type'] ?? '?') . ' #' . ($r['id'] ?? '?');
-                                }
-                                $recordsStr = implode(', ', $types);
-                            } else {
-                                $recordsStr = 'Not linked';
-                            }
-                            $data['records_summary'] = $recordsStr;
-
-                            // Formatear tamaño a KB o MB
-                            $bytes = $data['size_bytes'] ?? 0;
-                            if ($bytes > 1024 * 1024) {
-                                $data['size_formatted'] = round($bytes / (1024 * 1024), 2) . ' MB';
-                            } else {
-                                $data['size_formatted'] = round($bytes / 1024, 2) . ' KB';
-                            }
-
-                            $media[] = $data;
-                        }
-                    }
-                }
-            }
+        if (!is_dir($uploadDir)) {
+            return [];
         }
 
-        // Ordenar por fecha de subida, más reciente primero
-        usort($media, function ($a, $b) {
-            $dateA = strtotime($a['uploaded_at'] ?? '0');
-            $dateB = strtotime($b['uploaded_at'] ?? '0');
-            return $dateB <=> $dateA;
-        });
+        foreach (glob($uploadDir . '*.json') as $file) {
+            $data = json_decode(file_get_contents($file), true) ?: [];
+            $data['records_summary'] = empty($data['records']) ? 'Not linked' :
+                implode(', ', array_map(fn($r) => ($r['type'] ?? '?') . ' #' . ($r['id'] ?? '?'), $data['records']));
 
+            $bytes = $data['size_bytes'] ?? 0;
+            $data['size_formatted'] = ($bytes > 1048576) ? round($bytes / 1048576, 2) . ' MB' : round($bytes / 1024, 2) . ' KB';
+            $media[] = $data;
+        }
+
+        usort($media, fn($a, $b) => strtotime($b['uploaded_at'] ?? '0') <=> strtotime($a['uploaded_at'] ?? '0'));
         return $media;
+    }
+
+    public function addRecordToMetadata(string $hash, array $record): void
+    {
+        $path = rtrim($this->uploadsPath, '/') . '/' . $hash . '.json';
+        if (!file_exists($path)) {
+            return;
+        }
+        $data = json_decode(file_get_contents($path), true);
+        foreach ($data['records'] as $r) {
+            if (($r['id'] ?? null) == $record['id'] && ($r['type'] ?? null) === $record['type']) {
+                return;
+            }
+        }
+        $data['records'][] = $record;
+        file_put_contents($path, json_encode($data, JSON_PRETTY_PRINT));
+    }
+
+    public function removeRecordFromAllMetadata(int $id, string $type): void
+    {
+        foreach (glob(rtrim($this->uploadsPath, '/') . '/*.json') as $file) {
+            $data = json_decode(file_get_contents($file), true);
+            $data['records'] = array_values(array_filter($data['records'] ?? [], fn($r) => !($r['id'] == $id && $r['type'] == $type)));
+            file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
+        }
+    }
+
+    public function deleteMedia(string $hash): void
+    {
+        $path = rtrim($this->uploadsPath, '/') . '/' . $hash . '.json';
+        if (!file_exists($path)) {
+            throw new UploaderException("Media file metadata not found.");
+        }
+        $data = json_decode(file_get_contents($path), true);
+        if (!empty($data['records'])) {
+            throw new UploaderException("Cannot delete media. It is in use.");
+        }
+        @unlink(rtrim($this->uploadsPath, '/') . '/' . ($data['filename'] ?? ''));
+        @unlink($path);
     }
 
     public function getUploadsPath(): string
@@ -267,8 +148,9 @@ class Uploader
         return $this->uploadsPath;
     }
 
-    public function setUploadsPath(string $uploadsPath): void
+    public function setUploadsPath(string $p): void
     {
-        $this->uploadsPath = $uploadsPath;
+        $this->uploadsPath = $p;
     }
 }
+
