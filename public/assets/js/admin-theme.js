@@ -248,8 +248,9 @@ if (typeof $ !== 'undefined' && typeof $.fn.summernote !== 'undefined') {
             $('#summernote').summernote({
                 height: 200,
                 focus: true,
+                styleTags: ['p', 'h1', 'h2', 'h3'],
                 toolbar: [
-                    ['style', ['bold', 'italic', 'underline']],
+                    ['style', ['style', 'bold', 'italic', 'underline']],
                     ['font', ['strikethrough']],
                     ['para', ['ul', 'ol', 'paragraph']],
                     ['insert', ['link', 'picture', 'video']],
