@@ -246,7 +246,9 @@ class UpdateService
             }
         }
 
-        $zip->close();
+        if ($result['success']) {
+            $zip->close();
+        }
         return $result;
     }
 

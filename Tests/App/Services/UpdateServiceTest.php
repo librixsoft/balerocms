@@ -2,7 +2,26 @@
 
 declare(strict_types=1);
 
-namespace Tests\App\Services;
+namespace App\Services {
+    $GLOBALS['mock_curl_exec_return'] = false;
+    $GLOBALS['mock_curl_getinfo_return'] = 200;
+    
+    // PHP doesn't easily let us undefine curl_init to hit line 396
+    function curl_init() { return \curl_init(); }
+    function curl_setopt($a, $b, $c) { return \curl_setopt($a, $b, $c); }
+    function curl_exec($ch) {
+        if ($GLOBALS['mock_curl_exec_return'] !== false) {
+            return $GLOBALS['mock_curl_exec_return'];
+        }
+        return false;
+    }
+    function curl_getinfo($ch, $opt) { 
+        return $GLOBALS['mock_curl_getinfo_return']; 
+    }
+    function curl_close($ch) { \curl_close($ch); }
+}
+
+namespace Tests\App\Services {
 
 use App\Services\UpdateFilesystem;
 use App\Services\UpdateService;
@@ -346,6 +365,63 @@ final class UpdateServiceTest extends TestCase
         $this->assertStringContainsString('Failed to write', $result['message']);
     }
 
+    public function testSelfUpdateFailsWhenFilePutContentsFails(): void
+    {
+        $dir = $this->makeTempRoot('write-fail');
+        $file = $dir . '/is-dir.php';
+        mkdir($file); // dirname($file) is $dir (writable), but file_put_contents on a dir fails
+
+        $svc = new class($file) extends UpdateService {
+            public function __construct(private string $target) {}
+            protected function fetchUrl(string $url, int $timeout = 10): ?string { return '<?php'; }
+            protected function getSelfFilePath(): string { return $this->target; }
+        };
+        $result = $svc->selfUpdate();
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Failed to write UpdateService.php', $result['message']);
+    }
+
+    public function testSelfUpdateFailsWhenUpdateSupportFilesFails(): void
+    {
+        $target = tempnam(sys_get_temp_dir(), 'self-upd-');
+        $svc = new class($target) extends UpdateService {
+            public function __construct(private string $t) {}
+            protected function getSelfFilePath(): string { return $this->t; }
+            protected function fetchUrl(string $url, int $timeout = 10): ?string {
+                if (str_contains($url, 'UpdateService.php')) return '<?php';
+                return null;
+            }
+        };
+        $result = $svc->selfUpdate();
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Failed to download UpdateFilesystem.php', $result['message']);
+        @unlink($target);
+    }
+
+    public function testSelfUpdateFailsWhenSupportFileWriteFails(): void
+    {
+        $dir = $this->makeTempRoot('support-fail');
+        $target = $dir . '/UpdateService.php';
+        mkdir($dir . '/UpdateFilesystem.php');
+
+        $svc = new class($target) extends UpdateService {
+            public function __construct(private string $t) {}
+            protected function getSelfFilePath(): string { return $this->t; }
+            protected function fetchUrl(string $url, int $timeout = 10): ?string { return '<?php'; }
+        };
+        $result = $svc->selfUpdate();
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Failed to write UpdateFilesystem.php', $result['message']);
+    }
+
+    public function testGetSelfFilePathReturnsCurrentFile(): void
+    {
+        $svc = clone $this->stubFetch([]);
+        $refl = new \ReflectionMethod(UpdateService::class, 'getSelfFilePath');
+        $refl->setAccessible(true);
+        $this->assertStringEndsWith('UpdateService.php', $refl->invoke($svc));
+    }
+
     // =========================================================================
     //  downloadUpdate()
     // =========================================================================
@@ -391,6 +467,22 @@ final class UpdateServiceTest extends TestCase
         $result = $svc->downloadUpdate();
         $this->assertFalse($result['success']);
         $this->assertStringContainsString('Failed to save', $result['message']);
+    }
+
+    public function testDownloadUpdateFailsWhenFilePutContentsFails(): void
+    {
+        $tempDir = $this->makeTempRoot('dl-fail');
+        mkdir($tempDir . '/balerocms-update.zip');
+
+        $svc = new class($tempDir) extends UpdateService {
+            public function __construct(private string $td) {}
+            protected function getTempDir(): string { return $this->td; }
+            protected function fetchUrl(string $url, int $timeout = 10): ?string { return 'DATA'; }
+        };
+
+        $result = $svc->downloadUpdate();
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Failed to save update file', $result['message']);
     }
 
     // =========================================================================
@@ -521,6 +613,82 @@ final class UpdateServiceTest extends TestCase
 
         @unlink($zipPath);
         $this->makeFilesystem()->removeDirectory($dest);
+    }
+
+    public function testOpenAndExtractZipFailsOnInvalidZip(): void
+    {
+        $svc = clone $this->stubFetch([]);
+        $refl = new \ReflectionMethod(UpdateService::class, 'openAndExtractZip');
+        $refl->setAccessible(true);
+        $result = $refl->invoke($svc, '/nonexistent.zip', '/dest');
+        $this->assertFalse($result['success']);
+        $this->assertSame('Failed to open ZIP file', $result['message']);
+    }
+
+    public function testOpenAndExtractZipFailsWhenExtractToFails(): void
+    {
+        $zipPath = $this->createZip(['safe.txt' => 'a']);
+        $destFile = tempnam(sys_get_temp_dir(), 'ext-f');
+        
+        $svc = clone $this->stubFetch([]);
+        $refl = new \ReflectionMethod(UpdateService::class, 'openAndExtractZip');
+        $refl->setAccessible(true);
+        
+        set_error_handler(static fn() => true, E_WARNING);
+        $result = $refl->invoke($svc, $zipPath, $destFile); // target is file, extractTo will fail
+        restore_error_handler();
+        
+        $this->assertFalse($result['success']);
+        $this->assertSame('Failed to extract ZIP file', $result['message']);
+        
+        @unlink($zipPath);
+        @unlink($destFile);
+    }
+
+    public function testValidateZipContentsFailsWhenStatIndexReturnsFalse(): void
+    {
+        $mockZip = new class extends \ZipArchive {
+            #[\ReturnTypeWillChange]
+            public function statIndex(int $index, int $flags = 0) { return false; }
+        };
+
+        $zipPath = sys_get_temp_dir() . '/testzip-' . uniqid() . '.zip';
+        $realZip = new \ZipArchive();
+        $realZip->open($zipPath, \ZipArchive::CREATE);
+        $realZip->addFromString('test', '1');
+        $realZip->close();
+
+        $mockZip->open($zipPath);
+
+        $svc = clone $this->stubFetch([]);
+        $refl = new \ReflectionMethod(UpdateService::class, 'validateZipContents');
+        $refl->setAccessible(true);
+        
+        $result = $refl->invoke($svc, $mockZip);
+        $this->assertFalse($result['success']);
+        $this->assertSame('Failed to read ZIP file entries', $result['message']);
+
+        $mockZip->close();
+        @unlink($zipPath);
+    }
+
+    public function testIsSafeZipEntryNameRejectsRootAndEmptyAndBackslash(): void
+    {
+        $svc = clone $this->stubFetch([]);
+        $refl = new \ReflectionMethod(UpdateService::class, 'isSafeZipEntryName');
+        $refl->setAccessible(true);
+        
+        $this->assertFalse($refl->invoke($svc, ''));
+        $this->assertFalse($refl->invoke($svc, '/absolute.txt'));
+        $this->assertFalse($refl->invoke($svc, 'subdir\\file.txt'));
+    }
+
+    public function testIsZipAvailableReturnsBoolean(): void
+    {
+        $svc = clone $this->stubFetch([]);
+        $refl = new \ReflectionMethod(UpdateService::class, 'isZipAvailable');
+        $refl->setAccessible(true);
+        $this->assertTrue(is_bool($refl->invoke($svc)));
     }
 
     public function testExtractUpdateFailsWhenZipExtensionUnavailable(): void
@@ -860,14 +1028,19 @@ final class UpdateServiceTest extends TestCase
         $src = $this->makeTempRoot('src-mkdir-fail');
         file_put_contents($src . '/file.txt', 'x');
 
-        $dst = tempnam(sys_get_temp_dir(), 'dst-file-');
+        $fileAsDir = tempnam(sys_get_temp_dir(), 'dst-file-');
+        $dst = $fileAsDir . '/invalid';
 
+        $fs = clone $this->stubFetch([]); 
         $fs = $this->makeFilesystem();
+
+        set_error_handler(static fn() => true, E_WARNING);
         $result = $fs->copyDirectory($src, $dst);
+        restore_error_handler();
 
         $this->assertFalse($result);
 
-        @unlink($dst);
+        @unlink($fileAsDir);
     }
 
     public function testCopyDirectoryReturnsFalseWhenCopyFails(): void
@@ -1030,4 +1203,49 @@ final class UpdateServiceTest extends TestCase
         $this->assertSame(['download', 'extract', 'install'], $callOrder->getArrayCopy());
         $this->assertFileDoesNotExist($zipFile);
     }
+
+    // =========================================================================
+    //  fetchUrl()
+    // =========================================================================
+
+    public function testFetchUrlExecutesSuccessfullyAndHandlesFailures(): void
+    {
+        // Use the real UpdateService, un-mocked
+        $svc = new UpdateService();
+        $refl = new \ReflectionMethod($svc, 'fetchUrl');
+        $refl->setAccessible(true);
+
+        // Success branch
+        $GLOBALS['mock_curl_exec_return'] = "MOCKED_HTTP_BODY";
+        $GLOBALS['mock_curl_getinfo_return'] = 200;
+        $this->assertSame("MOCKED_HTTP_BODY", $refl->invoke($svc, 'http://test'));
+
+        // curl_exec fails branch
+        $GLOBALS['mock_curl_exec_return'] = false;
+        $this->assertNull($refl->invoke($svc, 'http://test'));
+
+        // non-200 branch
+        $GLOBALS['mock_curl_exec_return'] = "foo";
+        $GLOBALS['mock_curl_getinfo_return'] = 404;
+        $this->assertNull($refl->invoke($svc, 'http://test'));
+    }
+
+    /**
+     * Execute this test LAST so defining _CORE_VERSION doesn't pollute
+     * other tests that rely on reading version from file or comparing states.
+     * Starts with 'Z' so PHPUnit will execute it last if sorting alphabetically.
+     */
+    public function testZGetCurrentVersionUsesCoreVersionConstant(): void
+    {
+        if (!defined('_CORE_VERSION')) {
+            define('_CORE_VERSION', '9.9.9-const');
+        }
+
+        $svc = new class extends UpdateService {
+            protected function fetchUrl(string $url, int $timeout = 10): ?string { return null; }
+        };
+
+        $this->assertSame('9.9.9-const', $svc->getCurrentVersion());
+    }
+}
 }
