@@ -34,4 +34,37 @@ final class AndConditionTest extends TestCase
 
         $this->assertFalse($cond->evaluate([]));
     }
+
+    public function testEvaluateReturnsTrueWhenAllPass(): void
+    {
+        $cond = new AndCondition();
+        $ok = new class implements ConditionInterface {
+            public function supports(string $expression): bool { return true; }
+            public function fromExpression(string $expression): self { return $this; }
+            public function evaluate(array $params): bool { return true; }
+        };
+
+        $cond->addCondition($ok);
+        $cond->addCondition($ok);
+
+        $this->assertTrue($cond->evaluate([]));
+    }
+
+    public function testEvaluateReturnsTrueWhenEmpty(): void
+    {
+        $cond = new AndCondition();
+        $this->assertTrue($cond->evaluate([]));
+    }
+    
+    public function testSupportsAlwaysReturnsFalse(): void
+    {
+        $cond = new AndCondition();
+        $this->assertFalse($cond->supports('anything'));
+    }
+
+    public function testFromExpressionReturnsSelf(): void
+    {
+        $cond = new AndCondition();
+        $this->assertSame($cond, $cond->fromExpression('anything'));
+    }
 }

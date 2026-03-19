@@ -31,4 +31,37 @@ final class OrConditionTest extends TestCase
 
         $this->assertTrue($or->evaluate([]));
     }
+
+    public function testEvaluateReturnsFalseWhenAllFail(): void
+    {
+        $or = new OrCondition();
+        $falseCond = new class implements ConditionInterface {
+            public function supports(string $expression): bool { return true; }
+            public function fromExpression(string $expression): self { return $this; }
+            public function evaluate(array $flatParams): bool { return false; }
+        };
+
+        $or->addCondition($falseCond);
+        $or->addCondition($falseCond);
+
+        $this->assertFalse($or->evaluate([]));
+    }
+
+    public function testEvaluateReturnsFalseWhenEmpty(): void
+    {
+        $or = new OrCondition();
+        $this->assertFalse($or->evaluate([]));
+    }
+    
+    public function testSupportsAlwaysReturnsFalse(): void
+    {
+        $or = new OrCondition();
+        $this->assertFalse($or->supports('anything'));
+    }
+
+    public function testFromExpressionReturnsSelf(): void
+    {
+        $or = new OrCondition();
+        $this->assertSame($or, $or->fromExpression('anything'));
+    }
 }
