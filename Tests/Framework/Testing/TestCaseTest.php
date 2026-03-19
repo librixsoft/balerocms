@@ -6,6 +6,7 @@ namespace Tests\Framework\Testing;
 
 use Framework\Attributes\SetupTestContainer;
 use Framework\DI\TestContainer;
+use Framework\Testing\Exceptions\TestCaseException;
 use Framework\Testing\TestCase as FrameworkTestCase;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -255,7 +256,7 @@ final class TestCaseTest extends TestCase
                 \PHPUnit\Framework\TestCase::setUp();
 
                 $containerClass = 'NonExistentContainer123456';
-                throw new \RuntimeException(
+                throw new TestCaseException(
                     "Container class {$containerClass} does not exist"
                 );
             }
@@ -265,8 +266,8 @@ final class TestCaseTest extends TestCase
 
         try {
             $this->runSetUp($sut);
-            $this->fail('Se esperaba RuntimeException');
-        } catch (\RuntimeException $e) {
+            $this->fail('Se esperaba TestCaseException');
+        } catch (TestCaseException $e) {
             $this->assertStringContainsString('NonExistentContainer123456', $e->getMessage());
             $this->assertStringContainsString('does not exist', $e->getMessage());
         }
@@ -495,7 +496,7 @@ final class TestCaseTest extends TestCase
         // Cubre la rama class_exists() === false (línea 104-105) en el setUp() real.
         $sut = new ConcreteTestCaseWithInvalidContainer('testDummy');
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(TestCaseException::class);
         $this->expectExceptionMessageMatches('/does not exist/');
 
         $m = new ReflectionMethod(FrameworkTestCase::class, 'setUp');

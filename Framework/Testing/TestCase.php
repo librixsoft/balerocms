@@ -22,6 +22,7 @@ namespace Framework\Testing;
 
 use Framework\Attributes\SetupTestContainer;
 use Framework\DI\TestContainer;
+use Framework\Testing\Exceptions\TestCaseException;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 use ReflectionClass;
 
@@ -85,7 +86,7 @@ abstract class TestCase extends PHPUnitTestCase
      * ```
      *
      * @return void
-     * @throws \RuntimeException Si la clase del contenedor no existe o no puede instanciarse
+     * @throws TestCaseException Si la clase del contenedor no existe o no puede instanciarse
      */
     protected function setUp(): void
     {
@@ -104,7 +105,7 @@ abstract class TestCase extends PHPUnitTestCase
         try {
             $this->_autoContainer = new $containerClass($this);
         } catch (\Throwable $e) {
-            throw new \RuntimeException(
+            throw new TestCaseException(
                 "Container class {$containerClass} does not exist",
                 0,
                 $e
