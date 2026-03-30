@@ -25,6 +25,22 @@ CREATE TABLE IF NOT EXISTS `block`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
+CREATE TABLE IF NOT EXISTS `media`
+(
+    `name`          VARCHAR(255) CHARACTER SET utf8  NOT NULL,
+    `original_name` VARCHAR(255) CHARACTER SET utf8  NOT NULL,
+    `extension`     VARCHAR(10) CHARACTER SET utf8   NOT NULL,
+    `mime`          VARCHAR(100) CHARACTER SET utf8  NOT NULL,
+    `size_bytes`    BIGINT                           NOT NULL DEFAULT 0,
+    `width`         INT(10)                          NOT NULL DEFAULT 0,
+    `height`        INT(10)                          NOT NULL DEFAULT 0,
+    `url`           VARCHAR(500) CHARACTER SET utf8  NOT NULL,
+    `uploaded_at`   VARCHAR(50) CHARACTER SET utf8   NOT NULL,
+    `records`       LONGTEXT CHARACTER SET utf8      NOT NULL,
+    PRIMARY KEY (`name`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
 INSERT INTO `page` (`id`, `virtual_title`, `static_url`, `virtual_content`, `created_at`, `visible`, `sort_order`)
 VALUES (1, 'Welcome Title', 'welcome-title', 'Welcome content ...', '2025-07-04', 1, 1),
        (2, 'Another Example', 'another-example-page-demo', 'Hello there ...', '2025-07-04', 1, 2);

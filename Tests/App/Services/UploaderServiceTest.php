@@ -5,21 +5,34 @@ declare(strict_types=1);
 namespace Tests\App\Services;
 
 use App\Services\UploaderService;
+use App\Models\AdminModel;
+use Framework\Core\ConfigSettings;
 use Framework\IO\Uploader;
 use PHPUnit\Framework\TestCase;
 
 final class UploaderServiceTest extends TestCase
 {
+    private function injectProperty($object, $propertyName, $value): void
+    {
+        $r = new \ReflectionClass($object);
+        $p = $r->getProperty($propertyName);
+        $p->setAccessible(true);
+        $p->setValue($object, $value);
+    }
+
     public function testUploadImageOkErrorAndEmptyFile(): void
     {
         $uploader = $this->createMock(Uploader::class);
-        $uploader->method('image')->willReturn('/assets/images/uploads/x.jpg');
+        $uploader->method('image')->willReturn(['url' => '/assets/images/uploads/x.jpg', 'hash' => 'hash123']);
+
+        $adminModel = $this->createMock(AdminModel::class);
+        $configSettings = new \stdClass();
+        $configSettings->installed = 'no';
 
         $service = new UploaderService();
-        $r = new \ReflectionClass($service);
-        $p = $r->getProperty('uploader');
-        $p->setAccessible(true);
-        $p->setValue($service, $uploader);
+        $this->injectProperty($service, 'uploader', $uploader);
+        $this->injectProperty($service, 'adminModel', $adminModel);
+        $this->injectProperty($service, 'configSettings', $configSettings);
 
         $ok = $service->uploadImage(['name' => 'x']);
         $this->assertSame('ok', $ok['status']);
@@ -28,7 +41,8 @@ final class UploaderServiceTest extends TestCase
 
         $uploader2 = $this->createMock(Uploader::class);
         $uploader2->method('image')->willThrowException(new \RuntimeException('boom'));
-        $p->setValue($service, $uploader2);
+        $this->injectProperty($service, 'uploader', $uploader2);
+        
         $err = $service->uploadImage(['name' => 'x']);
         $this->assertSame('error', $err['status']);
     }
@@ -41,11 +55,14 @@ final class UploaderServiceTest extends TestCase
         $uploader->method('getAllMediaMetadata')->willReturn([['hash' => 'a']]);
         $uploader->expects($this->once())->method('deleteMedia')->with('a');
 
+        $adminModel = $this->createMock(AdminModel::class);
+        $configSettings = new \stdClass();
+        $configSettings->installed = 'no';
+
         $service = new UploaderService();
-        $r = new \ReflectionClass($service);
-        $p = $r->getProperty('uploader');
-        $p->setAccessible(true);
-        $p->setValue($service, $uploader);
+        $this->injectProperty($service, 'uploader', $uploader);
+        $this->injectProperty($service, 'adminModel', $adminModel);
+        $this->injectProperty($service, 'configSettings', $configSettings);
 
         $html = '<img src="/assets/images/uploads/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.jpg">' .
                 '<img src="/assets/images/uploads/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.png">';

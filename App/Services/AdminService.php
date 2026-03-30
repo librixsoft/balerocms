@@ -89,7 +89,9 @@ class AdminService
 
     public function createPage(array $data): int
     {
-        return $this->model->createPage($data);
+        $id = $this->model->createPage($data);
+        $this->linkMediaToRecord($data['virtual_content'], $id, 'page', $data['static_url'] ?? '');
+        return $id;
     }
 
     public function getNextPageSortOrder(): int
@@ -112,11 +114,13 @@ class AdminService
     public function updatePage(int $id, array $data): void
     {
         $this->model->updatePage($id, $data);
+        $this->linkMediaToRecord($data['virtual_content'], $id, 'page', $data['static_url'] ?? '');
     }
 
     public function deletePage(int $id): void
     {
         $this->model->deletePage($id);
+        $this->linkMediaToRecord('', $id, 'page', '');
     }
 
     public function getAllBlocksViewParams(): array
@@ -148,7 +152,9 @@ class AdminService
 
     public function createBlock(array $data): int
     {
-        return $this->model->createBlock($data);
+        $id = $this->model->createBlock($data);
+        $this->linkMediaToRecord($data['content'], $id, 'block', $data['name'] ?? '');
+        return $id;
     }
 
     public function getEditBlockViewParams(int $id): array
@@ -164,11 +170,13 @@ class AdminService
     public function updateBlock(int $id, array $data): void
     {
         $this->model->updateBlock($id, $data);
+        $this->linkMediaToRecord($data['content'], $id, 'block', $data['name'] ?? '');
     }
 
     public function deleteBlock(int $id): void
     {
         $this->model->deleteBlock($id);
+        $this->linkMediaToRecord('', $id, 'block', '');
     }
 
     public function getUpdateViewParams(): array
@@ -200,12 +208,20 @@ class AdminService
 
     private function getMediaCount(): int
     {
-        return count($this->uploaderService->getAllMedia());
+        return count($this->getAllMedia());
+    }
+
+    public function getAllMedia(): array
+    {
+        if (($this->configSettings->installed ?? 'no') === 'yes') {
+            return $this->model->getAllMedia();
+        }
+        return $this->uploaderService->getAllMediaJson();
     }
 
     public function getMediaViewParams(): array
     {
-        $mediaItems = $this->uploaderService->getAllMedia();
+        $mediaItems = $this->getAllMedia();
 
         $params = [
             'pages_count'  => $this->model->getPagesCount(),
@@ -215,6 +231,74 @@ class AdminService
         ];
 
         return $this->viewModel->getMediaParams($params);
+    }
+
+    public function saveMediaMetadata(array $metadata): void
+    {
+        if (($this->configSettings->installed ?? 'no') === 'yes') {
+            $existing = $this->model->getMediaByName($metadata['name']);
+            if (!$existing) {
+                $this->model->insertMedia($metadata);
+            }
+        }
+    }
+
+    public function deleteMedia(string $name): void
+    {
+        if (($this->configSettings->installed ?? 'no') === 'yes') {
+            $media = $this->model->getMediaByName($name);
+            if (!$media) {
+                throw new \Framework\Exceptions\UploaderException("Media file metadata not found.");
+            }
+            if (!empty($media['records'])) {
+                throw new \Framework\Exceptions\UploaderException("Cannot delete media. It is in use.");
+            }
+            $this->uploaderService->deleteMediaFile($name);
+            $this->model->deleteMedia($name);
+        } else {
+            $this->uploaderService->deleteMediaFile($name);
+        }
+    }
+
+    public function linkMediaToRecord(string $htmlContent, int $recordId, string $recordType, string $recordUrl): void
+    {
+        if (($this->configSettings->installed ?? 'no') === 'yes') {
+            $this->model->removeRecordFromAllMediaRecords($recordId, $recordType);
+        } else {
+            $this->uploaderService->unlinkImagesFromRecordJson($recordId, $recordType);
+        }
+
+        $pattern = '/assets\/images\/uploads\/([a-zA-Z0-9_\-\.]+)/i';
+        if (!preg_match_all($pattern, $htmlContent, $matches)) {
+            return;
+        }
+
+        $names = array_unique($matches[1]);
+        foreach ($names as $name) {
+            if (($this->configSettings->installed ?? 'no') === 'yes') {
+                $media = $this->model->getMediaByName($name);
+                if ($media) {
+                    $records = $media['records'];
+                    $exists = false;
+                    foreach ($records as $r) {
+                        if (($r['id'] ?? null) == $recordId && ($r['type'] ?? null) === $recordType) {
+                            $exists = true;
+                            break;
+                        }
+                    }
+                    if (!$exists) {
+                        $records[] = ['id' => $recordId, 'type' => $recordType, 'url' => $recordUrl];
+                        $this->model->updateMediaRecords($name, $records);
+                    }
+                }
+            } else {
+                $this->uploaderService->linkImageToRecordJson($name, [
+                    'id' => $recordId,
+                    'type' => $recordType,
+                    'url' => $recordUrl
+                ]);
+            }
+        }
     }
     public function getThemesViewParams(): array
     {

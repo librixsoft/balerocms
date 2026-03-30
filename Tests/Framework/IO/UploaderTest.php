@@ -64,7 +64,8 @@ final class UploaderTest extends TestCase
         file_put_contents($dummyImg, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
 
         // Probar subida sin el parámetro $meta
-        $url = $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
+        $metadata = $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
+        $url = $metadata['url'];
         $hash = md5_file($dummyImg);
 
         $this->assertStringContainsString($hash, $url);
@@ -152,7 +153,8 @@ final class UploaderTest extends TestCase
         @mkdir($this->testDir, 0777, true);
         file_put_contents($this->testDir . '/' . $hash . '.json', '{"existing": "data"}');
 
-        $url = $u->image(['name' => 'pixel.gif', 'tmp_name' => $dummyImg, 'error' => UPLOAD_ERR_OK]);
+        $metadata = $u->image(['name' => 'pixel.gif', 'tmp_name' => $dummyImg, 'error' => UPLOAD_ERR_OK]);
+        $url = $metadata['url'];
         $this->assertStringContainsString($hash, $url);
 
         $data = json_decode(file_get_contents($this->testDir . '/' . $hash . '.json'), true);
@@ -231,7 +233,7 @@ final class UploaderTest extends TestCase
 
         $u->addRecordToMetadata($hash, ['id'=>1, 'type'=>'post']);
         $this->expectException(UploaderException::class);
-        $this->expectExceptionMessage('Cannot delete media. It is in use.');
+        $this->expectExceptionMessage('Cannot delete media. It is in use (JSON).');
         $u->deleteMedia($hash);
     }
 }

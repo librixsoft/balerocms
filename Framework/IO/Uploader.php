@@ -29,8 +29,7 @@ class Uploader
         return (PHP_SAPI === 'cli') ? @copy($from, $to) : @move_uploaded_file($from, $to);
     }
 
-    // Se eliminó el parámetro $meta no utilizado
-    public function image(array $file): string
+    public function image(array $file, array $meta = []): array
     {
         if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
             throw new UploaderException("File upload error. Code: " . ($file['error'] ?? 'unknown'));
@@ -42,44 +41,57 @@ class Uploader
         }
 
         $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        if (!in_array($extension, self::ALLOWED_EXTENSIONS)) {
+        if (!in_array($extension, self::ALLOWED_EXTENSIONS, true)) {
             throw new UploaderException("Unsupported file extension.");
         }
 
         $uploadDir = rtrim($this->uploadsPath, '/') . '/';
-        // Agregadas llaves en el if anidado
         if (!is_dir($uploadDir) && !@mkdir($uploadDir, 0755, true)) {
             throw new UploaderException("Failed to create upload directory.");
         }
 
-        $hash = md5_file($file['tmp_name']);
-        $filename = $hash . '.' . $extension;
+        $originalName = pathinfo($file['name'], PATHINFO_FILENAME);
+        $safeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $originalName);
+        if (empty($safeName)) {
+            $safeName = 'image_' . time();
+        }
+        $filename = $safeName . '.' . $extension;
         $destination = $uploadDir . $filename;
+
+        // If file exists, we might want to append a timestamp to avoid collision since we aren't using hashes
+        if (file_exists($destination)) {
+            $filename = $safeName . '_' . time() . '.' . $extension;
+            $destination = $uploadDir . $filename;
+        }
+
         $url = rtrim($this->configSettings->basepath ?? '/', '/') . '/' . self::RELATIVE_UPLOAD_PATH . $filename;
 
-        // Fusionado el if de existencia con el de movimiento
-        if (!file_exists($destination) && !$this->moveFile($file['tmp_name'], $destination)) {
+        if (!$this->moveFile($file['tmp_name'], $destination)) {
             throw new UploaderException("Failed to move uploaded file.");
         }
 
-        $jsonPath = $uploadDir . $hash . '.json';
-        if (!file_exists($jsonPath)) {
-            $metadata = [
-                'hash' => $hash,
-                'filename' => $filename,
-                'extension' => $extension,
-                'mime' => $imageInfo['mime'],
-                'size_bytes' => filesize($destination),
-                'width' => $imageInfo[0],
-                'height' => $imageInfo[1],
-                'url' => $url,
-                'uploaded_at' => date('c'),
-                'records' => []
-            ];
-            file_put_contents($jsonPath, json_encode($metadata, JSON_PRETTY_PRINT));
+        $metadata = [
+            'name' => $filename,
+            'original_name' => (string) ($meta['original_name'] ?? $file['name'] ?? $filename),
+            'extension' => $extension,
+            'mime' => (string) ($meta['mime'] ?? $imageInfo['mime']),
+            'size_bytes' => filesize($destination),
+            'width' => $imageInfo[0],
+            'height' => $imageInfo[1],
+            'url' => $url,
+            'uploaded_at' => (string) ($meta['uploaded_at'] ?? date('c')),
+            'records' => [],
+        ];
+
+        // Save JSON metadata as a fallback or for systems without DB
+        if (($this->configSettings->installed ?? 'no') !== 'yes') {
+            $jsonPath = $uploadDir . $filename . '.json';
+            if (!file_exists($jsonPath)) {
+                file_put_contents($jsonPath, json_encode($metadata, JSON_PRETTY_PRINT));
+            }
         }
 
-        return $url;
+        return $metadata;
     }
 
     public function getAllMediaMetadata(): array
@@ -92,7 +104,7 @@ class Uploader
 
         foreach (glob($uploadDir . '*.json') as $file) {
             $data = json_decode(file_get_contents($file), true) ?: [];
-            $data['records_summary'] = empty($data['records']) ? 'Not linked' :
+            $data['records_summary'] = empty($data['records'] ?? []) ? 'Not linked' :
                 implode(', ', array_map(fn($r) => ($r['type'] ?? '?') . ' #' . ($r['id'] ?? '?'), $data['records']));
 
             $bytes = $data['size_bytes'] ?? 0;
@@ -104,13 +116,14 @@ class Uploader
         return $media;
     }
 
-    public function addRecordToMetadata(string $hash, array $record): void
+    public function addRecordToMetadata(string $name, array $record): void
     {
-        $path = rtrim($this->uploadsPath, '/') . '/' . $hash . '.json';
+        $path = rtrim($this->uploadsPath, '/') . '/' . $name . '.json';
         if (!file_exists($path)) {
             return;
         }
         $data = json_decode(file_get_contents($path), true);
+        $data['records'] = $data['records'] ?? [];
         foreach ($data['records'] as $r) {
             if (($r['id'] ?? null) == $record['id'] && ($r['type'] ?? null) === $record['type']) {
                 return;
@@ -129,18 +142,23 @@ class Uploader
         }
     }
 
-    public function deleteMedia(string $hash): void
+    public function deleteMedia(string $name): void
     {
-        $path = rtrim($this->uploadsPath, '/') . '/' . $hash . '.json';
-        if (!file_exists($path)) {
-            throw new UploaderException("Media file metadata not found.");
+        $uploadDir = rtrim($this->uploadsPath, '/') . '/';
+        $jsonPath = $uploadDir . $name . '.json';
+        $filePath = $uploadDir . $name;
+        
+        if (file_exists($jsonPath)) {
+            $data = json_decode(file_get_contents($jsonPath), true);
+            if (!empty($data['records'])) {
+                throw new UploaderException("Cannot delete media. It is in use (JSON).");
+            }
+            @unlink($jsonPath);
         }
-        $data = json_decode(file_get_contents($path), true);
-        if (!empty($data['records'])) {
-            throw new UploaderException("Cannot delete media. It is in use.");
+
+        if (file_exists($filePath)) {
+            @unlink($filePath);
         }
-        @unlink(rtrim($this->uploadsPath, '/') . '/' . ($data['filename'] ?? ''));
-        @unlink($path);
     }
 
     public function getUploadsPath(): string
@@ -153,4 +171,3 @@ class Uploader
         $this->uploadsPath = $p;
     }
 }
-

@@ -108,14 +108,7 @@ class AdminController
             'sort_order'      => $this->request->post('sort_order'),
         ];
 
-        $newId = $this->adminService->createPage($data);
-
-        $this->uploaderService->linkImagesToRecord(
-            $data['virtual_content'],
-            $newId,
-            'page',
-            $data['static_url'] ?? ''
-        );
+        $this->adminService->createPage($data);
 
         $this->redirect->to('/admin/pages');
     }
@@ -141,13 +134,6 @@ class AdminController
 
         $this->adminService->updatePage($id, $data);
 
-        $this->uploaderService->linkImagesToRecord(
-            $data['virtual_content'],
-            $id,
-            'page',
-            $data['static_url'] ?? ''
-        );
-
         $this->redirect->to('/admin/pages');
     }
 
@@ -155,7 +141,6 @@ class AdminController
     public function deletePage(int $id)
     {
         $this->adminService->deletePage($id);
-        $this->uploaderService->linkImagesToRecord('', $id, 'page', '');
         $this->redirect->to('/admin/pages');
     }
 
@@ -173,7 +158,13 @@ class AdminController
             'context'       => $this->request->post('meta_context') ?? 'unknown',
         ];
 
-        return $this->uploaderService->uploadImage($file, $meta);
+        try {
+            $metadata = $this->uploaderService->uploadImage($file, $meta);
+            $this->adminService->saveMediaMetadata($metadata);
+            return ['status' => 'ok', 'url' => $metadata['url']];
+        } catch (\Throwable $e) {
+            return ['status' => 'error', 'message' => $e->getMessage()];
+        }
     }
 
     #[Get('/blocks')]
@@ -199,14 +190,7 @@ class AdminController
             'content'    => $this->request->raw('content'),
         ];
 
-        $newId = $this->adminService->createBlock($data);
-
-        $this->uploaderService->linkImagesToRecord(
-            $data['content'],
-            $newId,
-            'block',
-            $data['name'] ?? ''
-        );
+        $this->adminService->createBlock($data);
 
         $this->redirect->to('/admin/blocks');
     }
@@ -229,13 +213,6 @@ class AdminController
 
         $this->adminService->updateBlock($id, $data);
 
-        $this->uploaderService->linkImagesToRecord(
-            $data['content'],
-            $id,
-            'block',
-            $data['name'] ?? ''
-        );
-
         $this->redirect->to('/admin/blocks');
     }
 
@@ -243,7 +220,6 @@ class AdminController
     public function deleteBlock(int $id)
     {
         $this->adminService->deleteBlock($id);
-        $this->uploaderService->linkImagesToRecord('', $id, 'block', '');
         $this->redirect->to('/admin/blocks');
     }
 
@@ -302,11 +278,11 @@ class AdminController
         return $this->view->render("admin/dashboard.html", $params, false);
     }
 
-    #[Post('/media/delete/{hash}')]
-    public function deleteMedia(string $hash)
+    #[Post('/media/delete/{name}')]
+    public function deleteMedia(string $name)
     {
         try {
-            $this->uploaderService->deleteMedia($hash);
+            $this->adminService->deleteMedia($name);
         } catch (\Framework\Exceptions\UploaderException $e) {
             $this->flash->set("danger", $e->getMessage());
         } catch (\Throwable $e) {
