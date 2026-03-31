@@ -178,10 +178,6 @@ private AdminService $adminService;
 
 ---
 
-## 🐳 Docker
-
-Balero is Docker-ready out of the box.
-
 ---
 
 ## 🧠 Philosophy
@@ -217,6 +213,21 @@ Balero is built for developers who:
 
 ---
 
-## Documentation
+## 🐳 Docker
 
-https://librixsoft.github.io/balerocms-docs/latest/
+Balero is Docker-ready out of the box. Just run:
+
+```bash
+docker-compose up -d
+```
+
+*   **App UI**: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 📚 Documentation
+
+For more detailed information, guides and API reference:
+
+👉 [https://librixsoft.github.io/balerocms-docs/latest/](https://librixsoft.github.io/balerocms-docs/latest/)
+
