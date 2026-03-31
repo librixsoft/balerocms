@@ -33,7 +33,7 @@
                     <i class="fas fa-external-link-alt"></i> View
                 </a>
                 
-                <form action="./admin/media/delete/{media.hash}" method="POST" class="flex-fill m-0 p-0" onsubmit="return confirm('Irreversible action. Are you sure you want to delete this media file?');">
+                <form action="./admin/media/delete/{media.name}" method="POST" class="flex-fill m-0 p-0" onsubmit="return confirm('Irreversible action. Are you sure you want to delete this media file?');">
                     <%-- @if media.records -->
                     <button type="button" class="btn btn-sm btn-outline-danger w-100" disabled title="Cannot delete: This image is currently in use.">
                         <i class="fas fa-trash"></i> Delete
