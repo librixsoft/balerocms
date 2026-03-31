@@ -1,4 +1,4 @@
-# Balero
+# Balero Framework/CMS
 
 A modern, lightweight, enterprise-style PHP framework inspired by Spring Boot.
 
