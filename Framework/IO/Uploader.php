@@ -10,6 +10,7 @@ class Uploader
     private string $uploadsPath;
     private const RELATIVE_UPLOAD_PATH = "assets/images/uploads/";
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+    private const METADATA_EXT = '.json';
     private ConfigSettings $configSettings;
 
     public function __construct(ConfigSettings $configSettings, ?string $customPath = null)
@@ -85,7 +86,7 @@ class Uploader
 
         // Save JSON metadata as a fallback or for systems without DB
         if (($this->configSettings->installed ?? 'no') !== 'yes') {
-            $jsonPath = $uploadDir . $filename . '.json';
+            $jsonPath = $uploadDir . $filename . self::METADATA_EXT;
             if (!file_exists($jsonPath)) {
                 file_put_contents($jsonPath, json_encode($metadata, JSON_PRETTY_PRINT));
             }
@@ -102,7 +103,7 @@ class Uploader
             return [];
         }
 
-        foreach (glob($uploadDir . '*.json') as $file) {
+        foreach (glob($uploadDir . '*' . self::METADATA_EXT) as $file) {
             $data = json_decode(file_get_contents($file), true) ?: [];
             $data['records_summary'] = empty($data['records'] ?? []) ? 'Not linked' :
                 implode(', ', array_map(fn($r) => ($r['type'] ?? '?') . ' #' . ($r['id'] ?? '?'), $data['records']));
@@ -118,7 +119,7 @@ class Uploader
 
     public function addRecordToMetadata(string $name, array $record): void
     {
-        $path = rtrim($this->uploadsPath, '/') . '/' . $name . '.json';
+        $path = rtrim($this->uploadsPath, '/') . '/' . $name . self::METADATA_EXT;
         if (!file_exists($path)) {
             return;
         }
@@ -135,7 +136,7 @@ class Uploader
 
     public function removeRecordFromAllMetadata(int $id, string $type): void
     {
-        foreach (glob(rtrim($this->uploadsPath, '/') . '/*.json') as $file) {
+        foreach (glob(rtrim($this->uploadsPath, '/') . '/*' . self::METADATA_EXT) as $file) {
             $data = json_decode(file_get_contents($file), true);
             $data['records'] = array_values(array_filter($data['records'] ?? [], fn($r) => !($r['id'] == $id && $r['type'] == $type)));
             file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
@@ -145,7 +146,7 @@ class Uploader
     public function deleteMedia(string $name): void
     {
         $uploadDir = rtrim($this->uploadsPath, '/') . '/';
-        $jsonPath = $uploadDir . $name . '.json';
+        $jsonPath = $uploadDir . $name . self::METADATA_EXT;
         $filePath = $uploadDir . $name;
         
         if (file_exists($jsonPath)) {

@@ -262,43 +262,62 @@ class AdminService
 
     public function linkMediaToRecord(string $htmlContent, int $recordId, string $recordType, string $recordUrl): void
     {
+        $this->unlinkOldMedia($recordId, $recordType);
+
+        $names = $this->parseMediaNames($htmlContent);
+        foreach ($names as $name) {
+            $this->linkSingleMedia($name, $recordId, $recordType, $recordUrl);
+        }
+    }
+
+    private function unlinkOldMedia(int $recordId, string $recordType): void
+    {
         if (($this->configSettings->installed ?? 'no') === 'yes') {
             $this->model->removeRecordFromAllMediaRecords($recordId, $recordType);
         } else {
             $this->uploaderService->unlinkImagesFromRecordJson($recordId, $recordType);
         }
+    }
 
-        $pattern = '/assets\/images\/uploads\/([a-zA-Z0-9_\-\.]+)/i';
+    private function parseMediaNames(string $htmlContent): array
+    {
+        $pattern = '/assets\/images\/uploads\/([a-z0-9_\-\.]+)/i';
         if (!preg_match_all($pattern, $htmlContent, $matches)) {
+            return [];
+        }
+
+        return array_unique($matches[1]);
+    }
+
+    private function linkSingleMedia(string $name, int $recordId, string $recordType, string $recordUrl): void
+    {
+        if (($this->configSettings->installed ?? 'no') === 'yes') {
+            $this->linkMediaInDb($name, $recordId, $recordType, $recordUrl);
+        } else {
+            $this->uploaderService->linkImageToRecordJson($name, [
+                'id' => $recordId,
+                'type' => $recordType,
+                'url' => $recordUrl
+            ]);
+        }
+    }
+
+    private function linkMediaInDb(string $name, int $recordId, string $recordType, string $recordUrl): void
+    {
+        $media = $this->model->getMediaByName($name);
+        if (!$media) {
             return;
         }
 
-        $names = array_unique($matches[1]);
-        foreach ($names as $name) {
-            if (($this->configSettings->installed ?? 'no') === 'yes') {
-                $media = $this->model->getMediaByName($name);
-                if ($media) {
-                    $records = $media['records'];
-                    $exists = false;
-                    foreach ($records as $r) {
-                        if (($r['id'] ?? null) == $recordId && ($r['type'] ?? null) === $recordType) {
-                            $exists = true;
-                            break;
-                        }
-                    }
-                    if (!$exists) {
-                        $records[] = ['id' => $recordId, 'type' => $recordType, 'url' => $recordUrl];
-                        $this->model->updateMediaRecords($name, $records);
-                    }
-                }
-            } else {
-                $this->uploaderService->linkImageToRecordJson($name, [
-                    'id' => $recordId,
-                    'type' => $recordType,
-                    'url' => $recordUrl
-                ]);
+        $records = $media['records'];
+        foreach ($records as $r) {
+            if (($r['id'] ?? null) == $recordId && ($r['type'] ?? null) === $recordType) {
+                return;
             }
         }
+
+        $records[] = ['id' => $recordId, 'type' => $recordType, 'url' => $recordUrl];
+        $this->model->updateMediaRecords($name, $records);
     }
     public function getThemesViewParams(): array
     {
@@ -313,82 +332,13 @@ class AdminService
 
     public function uploadThemeZip(array $file): void
     {
-        $zipPath = $file['tmp_name'];
-        $zip = new \ZipArchive();
-        if ($zip->open($zipPath) !== true) {
-            throw new \Exception("Invalid ZIP file.");
-        }
-        
-        $themeName = pathinfo($file['name'], PATHINFO_FILENAME);
-        // Ensure valid directory name
-        $themeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $themeName);
-        if (empty($themeName)) {
-            $zip->close();
-            throw new \Exception("Invalid theme name.");
-        }
+        $zip = $this->openAndValidateZip($file['tmp_name']);
+        $themeName = $this->extractThemeName($file['name'], $zip);
 
-        $publicPath = !empty($_SERVER['DOCUMENT_ROOT']) 
-            ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') 
-            : rtrim(BASE_PATH, '/') . '/public';
+        [$publicThemesDir, $resourcesThemesDir] = $this->initThemeDirectories($themeName);
+        $rootDir = $this->findThemeRoot($zip);
 
-        $publicThemesDir = $publicPath . '/assets/themes/' . $themeName;
-        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
-
-        // Limpiar el tema anterior si ya existe para reemplazarlo completamente
-        if (is_dir($publicThemesDir)) {
-            $this->removeDirectory($publicThemesDir);
-        }
-        if (is_dir($resourcesThemesDir)) {
-            $this->removeDirectory($resourcesThemesDir);
-        }
-
-        mkdir($publicThemesDir, 0755, true);
-        mkdir($resourcesThemesDir, 0755, true);
-
-        // Find the root directory inside the zip (where main.html is located)
-        $rootDir = '';
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $name = str_replace('\\', '/', $zip->getNameIndex($i));
-            if (basename($name) === 'main.html') {
-                $rootDir = dirname($name);
-                if ($rootDir === '.' || $rootDir === '') {
-                    $rootDir = '';
-                } else {
-                    $rootDir .= '/';
-                }
-                break;
-            }
-        }
-
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            $filename = str_replace('\\', '/', $zip->getNameIndex($i));
-            
-            // Skip directories
-            if (substr($filename, -1) == '/') {
-                continue;
-            }
-
-            // Normalizamos removiendo el directorio base del zip si existe
-            if ($rootDir !== '' && strpos($filename, $rootDir) === 0) {
-                $relativePath = substr($filename, strlen($rootDir));
-            } elseif ($rootDir === '') {
-                $relativePath = $filename;
-            } else {
-                continue; // Ignore files outside the theme root
-            }
-
-            $content = $zip->getFromIndex($i);
-            
-            if ($relativePath === 'main.html') {
-                file_put_contents($resourcesThemesDir . '/main.html', $content);
-            } else {
-                $destPath = $publicThemesDir . '/' . $relativePath;
-                $destDir = dirname($destPath);
-                if (!is_dir($destDir)) mkdir($destDir, 0755, true);
-                
-                file_put_contents($destPath, $content);
-            }
-        }
+        $this->processZipEntries($zip, $rootDir, $publicThemesDir, $resourcesThemesDir);
         $zip->close();
     }
 
@@ -415,8 +365,8 @@ class AdminService
             throw new \Exception("Cannot delete the active theme.");
         }
 
-        $publicPath = !empty($_SERVER['DOCUMENT_ROOT']) 
-            ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') 
+        $publicPath = !empty($_SERVER['DOCUMENT_ROOT'])
+            ? rtrim($_SERVER['DOCUMENT_ROOT'], '/')
             : rtrim(BASE_PATH, '/') . '/public';
 
         $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
@@ -424,6 +374,105 @@ class AdminService
 
         $this->removeDirectory($resourcesThemesDir);
         $this->removeDirectory($publicThemesDir);
+    }
+
+    private function openAndValidateZip(string $zipPath): \ZipArchive
+    {
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            throw new \Exception("Invalid ZIP file.");
+        }
+        return $zip;
+    }
+
+    private function extractThemeName(string $filename, \ZipArchive $zip): string
+    {
+        $themeName = pathinfo($filename, PATHINFO_FILENAME);
+        $themeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $themeName);
+        if (empty($themeName)) {
+            $zip->close();
+            throw new \Exception("Invalid theme name.");
+        }
+        return $themeName;
+    }
+
+    private function initThemeDirectories(string $themeName): array
+    {
+        $publicPath = !empty($_SERVER['DOCUMENT_ROOT'])
+            ? rtrim($_SERVER['DOCUMENT_ROOT'], '/')
+            : rtrim(BASE_PATH, '/') . '/public';
+
+        $publicThemesDir = $publicPath . '/assets/themes/' . $themeName;
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+
+        if (is_dir($publicThemesDir)) {
+            $this->removeDirectory($publicThemesDir);
+        }
+        if (is_dir($resourcesThemesDir)) {
+            $this->removeDirectory($resourcesThemesDir);
+        }
+
+        mkdir($publicThemesDir, 0755, true);
+        mkdir($resourcesThemesDir, 0755, true);
+
+        return [$publicThemesDir, $resourcesThemesDir];
+    }
+
+    private function findThemeRoot(\ZipArchive $zip): string
+    {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $name = str_replace('\\', '/', $zip->getNameIndex($i));
+            if (basename($name) === 'main.html') {
+                $rootDir = dirname($name);
+                return ($rootDir === '.' || $rootDir === '') ? '' : $rootDir . '/';
+            }
+        }
+        return '';
+    }
+
+    private function processZipEntries(\ZipArchive $zip, string $rootDir, string $publicThemesDir, string $resourcesThemesDir): void
+    {
+        for ($i = 0; $i < $zip->numFiles; $i++) {
+            $filename = str_replace('\\', '/', $zip->getNameIndex($i));
+            if (substr($filename, -1) == '/') {
+                continue;
+            }
+
+            $relativePath = $this->getRelativeZipPath($filename, $rootDir);
+            if ($relativePath === null) {
+                continue;
+            }
+
+            $content = $zip->getFromIndex($i);
+            if ($relativePath === 'main.html') {
+                file_put_contents($resourcesThemesDir . '/main.html', $content);
+            } else {
+                $this->saveThemeAsset($publicThemesDir, $relativePath, $content);
+            }
+        }
+    }
+
+    private function getRelativeZipPath(string $filename, string $rootDir): ?string
+    {
+        if ($rootDir !== '' && strpos($filename, $rootDir) === 0) {
+            return substr($filename, strlen($rootDir));
+        }
+
+        if ($rootDir === '') {
+            return $filename;
+        }
+
+        return null;
+    }
+
+    private function saveThemeAsset(string $publicThemesDir, string $relativePath, string $content): void
+    {
+        $destPath = $publicThemesDir . '/' . $relativePath;
+        $destDir = dirname($destPath);
+        if (!is_dir($destDir)) {
+            mkdir($destDir, 0755, true);
+        }
+        file_put_contents($destPath, $content);
     }
 
     private function removeDirectory(string $dir): void
