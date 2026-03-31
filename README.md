@@ -1,66 +1,69 @@
-# Balero Framework/CMS
+# Balero
 
-A zero-dependency, annotation-driven PHP framework inspired by Spring Boot.
+A modern, lightweight, enterprise-style PHP framework inspired by Spring Boot.
 
 ---
 
 ## Overview
 
-Balero is a lightweight PHP framework built for developers who prefer structured, predictable backend architectures.
+Balero is a modern PHP framework designed for developers who want structured, predictable, and maintainable backend applications.
 
-It brings an enterprise-style development experience to PHP, combining:
+It brings an enterprise Java/Spring Boot development style into PHP — without the complexity or bloat.
 
-* Attribute-based routing
+Balero combines:
+
+* Attribute-based routing (annotation-style)
 * Dependency Injection (DI)
 * DTO-driven development
 * JSON APIs and server-side templates
 * Built-in testing with mock injection
 
-This repository also includes a minimal CMS built on top of the framework as a real-world implementation.
+This repository also includes a minimal CMS as a reference implementation of the framework.
 
 ---
 
 ## 🏢 Enterprise-style Architecture
 
-Balero is designed with patterns commonly found in enterprise frameworks like Spring Boot:
+Balero follows architectural patterns commonly found in enterprise frameworks like Spring Boot:
 
-* Clear separation of layers (Controller / Service / DTO)
+* Layered architecture (Controller / Service / DTO)
 * Dependency Injection via attributes (`#[Inject]`)
 * Annotation-driven configuration
 * Predictable request lifecycle
 * Testable components with mock injection
 
-This allows developers to build scalable and maintainable applications without relying on heavy frameworks.
+Designed for scalability, maintainability, and clarity.
 
 ---
 
-## Why Balero?
+## ⚡ Why Balero?
 
-After working with Spring Boot, many PHP frameworks feel either too unstructured or overly magical.
+Most PHP frameworks are either:
 
-Balero provides a more disciplined approach:
+* too unstructured
+* or too “magical”
 
-* Explicit behavior over hidden magic
-* Minimal boilerplate with structured patterns
-* Familiar architecture for enterprise developers
+Balero offers a different approach:
+
+* Structured like enterprise backends
+* Lightweight and fast
+* Minimal boilerplate
+* Full control over the stack
 
 ---
 
-## Key Features
+## 🔥 Key Features
 
 ### 🧠 Dependency Injection
-
-Native DI using attributes:
 
 ```php
 #[Inject]
 private AdminService $adminService;
-
-#[Inject]
-private View $view;
 ```
 
-No container configuration required.
+* Native DI
+* No container configuration
+* Clean and predictable
 
 ---
 
@@ -71,9 +74,9 @@ $settingsDTO = new SettingsDTO();
 $settingsDTO->fromRequest($this->request);
 ```
 
-Encapsulate request data cleanly without repetitive mapping logic.
-
-Inspired by patterns used alongside Project Lombok.
+* Clean request mapping
+* Reduced boilerplate
+* Inspired by patterns used with Project Lombok
 
 ---
 
@@ -96,7 +99,9 @@ class AdminController {
 }
 ```
 
-Structured, readable, and predictable.
+* Clear structure
+* Easy to read
+* Predictable behavior
 
 ---
 
@@ -110,36 +115,37 @@ public function postUploader() {
 }
 ```
 
-* Use templates for views
-* Use JSON for APIs
+* JSON APIs
+* Server-side rendering
+* Flexible response model
 
 ---
 
 ### 🧪 Testing with Mock Injection
 
-Built-in testing utilities inspired by Mockito.
+Inspired by Mockito:
 
 ```php
 #[InjectMocks]
 private AdminService $adminService;
 ```
 
-* Easy unit testing
-* Clean dependency mocking
+* Built-in mocking
+* Clean unit tests
 * No external libraries
 
 ---
 
-### 🔐 Built-in Features via Attributes
+### 🔐 Attribute-driven features
 
 ```php
 #[Auth(required: true)]
 #[FlashStorage]
 ```
 
-* Authentication handling
+* Authentication
 * Flash messaging
-* Request abstraction
+* Request handling
 
 ---
 
@@ -147,11 +153,11 @@ private AdminService $adminService;
 
 * No Composer dependencies
 * No external frameworks
-* Full control over the stack
+* Full control
 
 ---
 
-## What is included?
+## 📦 What is included?
 
 * Core framework (routing, DI, controllers)
 * Template engine
@@ -162,32 +168,33 @@ private AdminService $adminService;
 
 ---
 
-## Use Cases
+## 🎯 Use Cases
 
 * REST APIs
 * Lightweight CMS
 * Internal tools
 * Prototypes
-* Structured backend applications
+* Structured backend systems
 
 ---
 
-## Docker
+## 🐳 Docker
 
 Balero is Docker-ready out of the box.
 
 ---
 
-## Philosophy
+## 🧠 Philosophy
 
 * No magic
 * No dependencies
 * Full control
 * Structured development
+* Enterprise patterns, simplified
 
 ---
 
-## Included CMS
+## 🧩 Included CMS
 
 This repository includes a minimal CMS built on top of Balero.
 
@@ -195,18 +202,18 @@ It serves as:
 
 * a real-world example
 * a starter project
-* a reference implementation of the framework
+* a reference implementation
 
 ---
 
-## Positioning
+## 🎯 Positioning
 
-Balero is designed for developers who:
+Balero is built for developers who:
 
 * come from Java / enterprise environments
 * are familiar with Spring Boot
-* want structure instead of “magic”
-* prefer predictable backend architecture
+* want structure instead of magic
+* prefer lightweight and predictable frameworks
 
 ---
 
