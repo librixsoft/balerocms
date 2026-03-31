@@ -1,6 +1,6 @@
 {
-  "name": "librix/balerocms-src",
-  "description": "Balerocms CMS propio",
+  "name": "librix/balerocms",
+  "description": "Balerocms Framework/CMS",
   "type": "project",
   "autoload": {
     "psr-4": {
@@ -16,7 +16,7 @@
   "authors": [
     {
       "name": "Anibal Gomez",
-      "email": "balerocms@gmail.com"
+      "email": "anibal@librixsoft.com"
     }
   ],
   "require-dev": {
