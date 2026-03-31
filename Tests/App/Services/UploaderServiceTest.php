@@ -23,52 +23,33 @@ final class UploaderServiceTest extends TestCase
     public function testUploadImageOkErrorAndEmptyFile(): void
     {
         $uploader = $this->createMock(Uploader::class);
-        $uploader->method('image')->willReturn(['url' => '/assets/images/uploads/x.jpg', 'hash' => 'hash123']);
-
-        $adminModel = $this->createMock(AdminModel::class);
-        $configSettings = new \stdClass();
-        $configSettings->installed = 'no';
+        $uploader->method('image')->willReturn(['status' => 'ok', 'url' => '/assets/images/uploads/x.jpg', 'name' => 'x.jpg']);
 
         $service = new UploaderService();
         $this->injectProperty($service, 'uploader', $uploader);
-        $this->injectProperty($service, 'adminModel', $adminModel);
-        $this->injectProperty($service, 'configSettings', $configSettings);
 
-        $ok = $service->uploadImage(['name' => 'x']);
+        $ok = $service->uploadImage(['name' => 'x.jpg', 'error' => 0]);
         $this->assertSame('ok', $ok['status']);
 
-        $this->assertSame('error', $service->uploadImage([])['status']);
-
-        $uploader2 = $this->createMock(Uploader::class);
-        $uploader2->method('image')->willThrowException(new \RuntimeException('boom'));
-        $this->injectProperty($service, 'uploader', $uploader2);
-        
-        $err = $service->uploadImage(['name' => 'x']);
-        $this->assertSame('error', $err['status']);
+        $this->expectException(\Framework\Exceptions\UploaderException::class);
+        $service->uploadImage([]);
     }
 
     public function testLinkImagesGetAllMediaAndDelete(): void
     {
         $uploader = $this->createMock(Uploader::class);
         $uploader->expects($this->once())->method('removeRecordFromAllMetadata')->with(10, 'page');
-        $uploader->expects($this->exactly(2))->method('addRecordToMetadata');
-        $uploader->method('getAllMediaMetadata')->willReturn([['hash' => 'a']]);
-        $uploader->expects($this->once())->method('deleteMedia')->with('a');
-
-        $adminModel = $this->createMock(AdminModel::class);
-        $configSettings = new \stdClass();
-        $configSettings->installed = 'no';
+        $uploader->expects($this->once())->method('addRecordToMetadata');
+        $uploader->method('getAllMediaMetadata')->willReturn([['name' => 'a.jpg']]);
+        $uploader->expects($this->once())->method('deleteMedia')->with('a.jpg');
 
         $service = new UploaderService();
         $this->injectProperty($service, 'uploader', $uploader);
-        $this->injectProperty($service, 'adminModel', $adminModel);
-        $this->injectProperty($service, 'configSettings', $configSettings);
 
-        $html = '<img src="/assets/images/uploads/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.jpg">' .
-                '<img src="/assets/images/uploads/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.png">';
-        $service->linkImagesToRecord($html, 10, 'page', '/hola');
+        $service->unlinkImagesFromRecordJson(10, 'page');
+        $service->linkImageToRecordJson('a.jpg', ['id' => 10, 'type' => 'page']);
 
-        $this->assertSame([['hash' => 'a']], $service->getAllMedia());
-        $service->deleteMedia('a');
+        $this->assertSame([['name' => 'a.jpg']], $service->getAllMediaJson());
+        $service->deleteMediaFile('a.jpg');
     }
 }

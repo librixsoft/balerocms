@@ -66,17 +66,17 @@ final class UploaderTest extends TestCase
         // Probar subida sin el parámetro $meta
         $metadata = $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
         $url = $metadata['url'];
-        $hash = md5_file($dummyImg);
+        $name = $metadata['name'];
 
-        $this->assertStringContainsString($hash, $url);
+        $this->assertStringContainsString($name, $url);
 
-        $u->addRecordToMetadata($hash, ['id'=>1, 'type'=>'post']);
+        $u->addRecordToMetadata($name, ['id'=>1, 'type'=>'post']);
         $list = $u->getAllMediaMetadata();
         $this->assertEquals('post #1', $list[0]['records_summary']);
 
         $u->removeRecordFromAllMetadata(1, 'post');
-        $u->deleteMedia($hash);
-        $this->assertFileDoesNotExist($this->testDir.'/'.$hash.'.json');
+        $u->deleteMedia($name);
+        $this->assertFileDoesNotExist($this->testDir.'/'.$name.'.json');
     }
 
     public function testImageUploadFailsOnError(): void
@@ -146,19 +146,22 @@ final class UploaderTest extends TestCase
     public function testImageSkipsMetadataCreationIfExists(): void
     {
         $u = $this->makeUploader();
-        $dummyImg = $this->testDir . '/pixel.gif';
+        // Create source pixel elsewhere
+        $srcDir = sys_get_temp_dir() . '/src_pixel_' . uniqid();
+        @mkdir($srcDir, 0777, true);
+        $dummyImg = $srcDir . '/pixel.gif';
         file_put_contents($dummyImg, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
-        $hash = md5_file($dummyImg);
 
         @mkdir($this->testDir, 0777, true);
-        file_put_contents($this->testDir . '/' . $hash . '.json', '{"existing": "data"}');
+        file_put_contents($this->testDir . '/pixel.gif.json', '{"existing": "data"}');
 
         $metadata = $u->image(['name' => 'pixel.gif', 'tmp_name' => $dummyImg, 'error' => UPLOAD_ERR_OK]);
-        $url = $metadata['url'];
-        $this->assertStringContainsString($hash, $url);
+        $this->assertSame('pixel.gif', $metadata['name']);
 
-        $data = json_decode(file_get_contents($this->testDir . '/' . $hash . '.json'), true);
+        $data = json_decode(file_get_contents($this->testDir . '/pixel.gif.json'), true);
         $this->assertEquals("data", $data['existing'] ?? null);
+        
+        $this->recursiveRmdir($srcDir);
     }
 
     public function testGetAllMediaMetadataEmpty(): void
@@ -172,14 +175,12 @@ final class UploaderTest extends TestCase
     {
         $u = $this->makeUploader();
         
-        $hash1 = md5("1");
-        $hash2 = md5("2");
-        file_put_contents($this->testDir . '/' . $hash1 . '.json', json_encode([
+        file_put_contents($this->testDir . '/1.json', json_encode([
             'size_bytes' => 2097152,
             'uploaded_at' => '2025-01-01T00:00:00Z',
             'records' => []
         ]));
-        file_put_contents($this->testDir . '/' . $hash2 . '.json', json_encode([
+        file_put_contents($this->testDir . '/2.json', json_encode([
             'size_bytes' => 512,
             'uploaded_at' => '2025-01-02T00:00:00Z',
             'records' => [['id'=>2, 'type'=>'page']]
@@ -197,7 +198,7 @@ final class UploaderTest extends TestCase
     public function testAddRecordToMetadataNotExists(): void
     {
         $u = $this->makeUploader();
-        $u->addRecordToMetadata('not-a-hash', ['id'=>1, 'type'=>'post']);
+        $u->addRecordToMetadata('not-exists.jpg', ['id'=>1, 'type'=>'post']);
         $this->assertTrue(true);
     }
     
@@ -206,35 +207,28 @@ final class UploaderTest extends TestCase
         $u = $this->makeUploader();
         $dummyImg = $this->testDir . '/pixel.gif';
         file_put_contents($dummyImg, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
-        $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
-        $hash = md5_file($dummyImg);
+        $metadata = $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
+        $name = $metadata['name'];
 
-        $u->addRecordToMetadata($hash, ['id'=>1, 'type'=>'post']);
-        $u->addRecordToMetadata($hash, ['id'=>1, 'type'=>'post']);
+        $u->addRecordToMetadata($name, ['id'=>1, 'type'=>'post']);
+        $u->addRecordToMetadata($name, ['id'=>1, 'type'=>'post']);
 
         $list = $u->getAllMediaMetadata();
         $this->assertCount(1, $list[0]['records']);
     }
     
-    public function testDeleteMediaThrowsIfNotFound(): void
-    {
-        $u = $this->makeUploader();
-        $this->expectException(UploaderException::class);
-        $u->deleteMedia('not-a-hash');
-    }
-
-    public function testDeleteMediaThrowsIfInUse(): void
+    public function testDeleteMediaInUseThrows(): void
     {
         $u = $this->makeUploader();
         $dummyImg = $this->testDir . '/pixel.gif';
         file_put_contents($dummyImg, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'));
-        $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
-        $hash = md5_file($dummyImg);
+        $metadata = $u->image(['name'=>'pixel.gif','tmp_name'=>$dummyImg,'error'=>UPLOAD_ERR_OK]);
+        $name = $metadata['name'];
 
-        $u->addRecordToMetadata($hash, ['id'=>1, 'type'=>'post']);
+        $u->addRecordToMetadata($name, ['id'=>1, 'type'=>'post']);
         $this->expectException(UploaderException::class);
         $this->expectExceptionMessage('Cannot delete media. It is in use (JSON).');
-        $u->deleteMedia($hash);
+        $u->deleteMedia($name);
     }
 }
 

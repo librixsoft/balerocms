@@ -148,7 +148,7 @@ final class AdminServiceTest extends TestCase
         $update->method('isUpdateAvailable')->willReturn(['update_available' => false]);
 
         $uploader = $this->createMock(UploaderService::class);
-        $uploader->method('getAllMedia')->willReturn([['hash' => 'x']]);
+        $uploader->method('getAllMediaJson')->willReturn([['name' => 'x.jpg']]);
 
         $svc = $this->makeService($model, $vm, $update, $uploader);
 
@@ -169,11 +169,11 @@ final class AdminServiceTest extends TestCase
     public function testCrudDelegatesToModelAndUpdateService(): void
     {
         $model = $this->createMock(AdminModel::class);
-        $model->expects($this->once())->method('createPage')->with(['title' => 'x'])->willReturn(11);
-        $model->expects($this->once())->method('updatePage')->with(11, ['title' => 'y']);
+        $model->expects($this->once())->method('createPage')->with(['title' => 'x', 'virtual_content' => ''])->willReturn(11);
+        $model->expects($this->once())->method('updatePage')->with(11, ['title' => 'y', 'virtual_content' => '']);
         $model->expects($this->once())->method('deletePage')->with(11);
-        $model->expects($this->once())->method('createBlock')->with(['title' => 'b'])->willReturn(22);
-        $model->expects($this->once())->method('updateBlock')->with(22, ['title' => 'c']);
+        $model->expects($this->once())->method('createBlock')->with(['title' => 'b', 'content' => ''])->willReturn(22);
+        $model->expects($this->once())->method('updateBlock')->with(22, ['title' => 'c', 'content' => '']);
         $model->expects($this->once())->method('deleteBlock')->with(22);
 
         $update = $this->createMock(UpdateService::class);
@@ -182,11 +182,11 @@ final class AdminServiceTest extends TestCase
 
         $svc = $this->makeService($model, null, $update);
 
-        $this->assertSame(11, $svc->createPage(['title' => 'x']));
-        $svc->updatePage(11, ['title' => 'y']);
+        $this->assertSame(11, $svc->createPage(['title' => 'x', 'virtual_content' => '']));
+        $svc->updatePage(11, ['title' => 'y', 'virtual_content' => '']);
         $svc->deletePage(11);
-        $this->assertSame(22, $svc->createBlock(['title' => 'b']));
-        $svc->updateBlock(22, ['title' => 'c']);
+        $this->assertSame(22, $svc->createBlock(['title' => 'b', 'content' => '']));
+        $svc->updateBlock(22, ['title' => 'c', 'content' => '']);
         $svc->deleteBlock(22);
         $this->assertTrue($svc->selfUpdateService()['success']);
         $this->assertTrue($svc->performUpdate()['success']);

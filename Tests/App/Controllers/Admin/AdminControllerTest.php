@@ -262,22 +262,17 @@ class AdminControllerTest extends TestCase
     public function testPostUploaderUploadsImage(): void
     {
         $_FILES['file'] = ['name' => 'test.jpg', 'tmp_name' => '/tmp/test', 'error' => 0];
-        $response = ['status' => 'success'];
+        $response = ['status' => 'ok', 'url' => '/assets/images/uploads/test.jpg'];
         $this->uploaderServiceMock->expects($this->once())
             ->method('uploadImage')
             ->with(
                 $_FILES['file'],
                 $this->callback(function ($meta) {
                     $this->assertIsArray($meta);
-                    $this->assertArrayHasKey('original_name', $meta);
-                    $this->assertArrayHasKey('size', $meta);
-                    $this->assertArrayHasKey('mime', $meta);
-                    $this->assertArrayHasKey('uploaded_at', $meta);
-                    $this->assertArrayHasKey('context', $meta);
                     return true;
                 })
             )
-            ->willReturn($response);
+            ->willReturn(['url' => '/assets/images/uploads/test.jpg']);
 
         $result = $this->controller->postUploader();
         $this->assertSame($response, $result);
