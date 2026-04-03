@@ -72,13 +72,33 @@ class Router
         }
 
         $requestedPath = $this->requestHelper->getPath();
-        $matchedController = $this->findMatchingController($requestedPath);
+        $matchedControllers = $this->findMatchingControllers($requestedPath);
 
-        if (!$matchedController) {
+        if (empty($matchedControllers)) {
             throw new RouterException("No controller found for path: {$requestedPath}");
         }
 
-        $this->executeController($matchedController);
+        $lastException = null;
+        foreach ($matchedControllers as $matchedController) {
+            try {
+                $this->executeController($matchedController);
+                return;
+            } catch (RouterException $e) {
+                // Si es un error de "ruta no encontrada", intentamos con el siguiente controller
+                if (str_contains($e->getMessage(), 'Route not found')) {
+                    $lastException = $e;
+                    continue;
+                }
+                // Si es cualquier otro error (ej: Unauthorized), lo lanzamos inmediatamente
+                throw $e;
+            }
+        }
+
+        if ($lastException) {
+            throw $lastException;
+        }
+
+        throw new RouterException("No controller found for path: {$requestedPath}");
     }
 
     private function initializeSession(): void
@@ -118,7 +138,7 @@ class Router
         }
     }
 
-    private function findMatchingController(string $requestedPath): ?string
+    private function findMatchingControllers(string $requestedPath): array
     {
         $cacheFile = $this->cachePath ?? BASE_PATH . '/cache/controllers.cache.php';
 
@@ -131,22 +151,24 @@ class Router
         return $this->findFromCache($cacheFile, $requestedPath);
     }
 
-    private function findFromCache(string $cacheFile, string $requestedPath): ?string
+    private function findFromCache(string $cacheFile, string $requestedPath): array
     {
         $controllers = require $cacheFile;
+        // Ordenar por longitud del path (más largos primero)
         usort($controllers, fn($a, $b) => strlen($b['path']) <=> strlen($a['path']));
 
         $requestedPath = rtrim($requestedPath, '/') ?: '/';
+        $matched = [];
 
         foreach ($controllers as $controller) {
             $path = rtrim($controller['path'], '/') ?: '/';
 
             if ($requestedPath === $path || ($path !== '/' && str_starts_with($requestedPath, $path . '/'))) {
-                return $controller['class'];
+                $matched[] = $controller['class'];
             }
         }
 
-        return null;
+        return $matched;
     }
 
     private function executeController(string $matchedController): void
