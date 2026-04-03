@@ -21,9 +21,13 @@ class Redirect
 
     public function to(string $url, bool $forceExit = true): void
     {
-        $basepath = rtrim($this->config->basepath, '/');
-        $url = ltrim($url, '/');
-        $normalizedUrl = preg_replace('#(?<!:)//+#', '/', $basepath . '/' . $url);
+        if (preg_match('/^https?:\/\//', $url)) {
+            $normalizedUrl = $url;
+        } else {
+            $basepath = rtrim($this->config->basepath, '/');
+            $url = ltrim($url, '/');
+            $normalizedUrl = preg_replace('#(?<!:)//+#', '/', $basepath . '/' . $url);
+        }
 
         header("Location: " . $normalizedUrl);
 
