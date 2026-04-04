@@ -3,12 +3,11 @@
 namespace Tests\App\Controllers\Admin;
 
 use App\Controllers\Admin\AdminThemesController;
-use App\Services\AdminService;
+use App\Services\Admin\AdminThemesService;
 use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
 use Framework\Core\View;
 use Framework\Testing\TestCase;
-use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,15 +23,13 @@ class AdminThemesControllerTest extends TestCase
 
     private $adminServiceMock;
     private $viewMock;
-    private $flashMock;
     private $redirectMock;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->adminServiceMock = $this->getMock(AdminService::class);
+        $this->adminServiceMock = $this->getMock(AdminThemesService::class);
         $this->viewMock = $this->getMock(View::class);
-        $this->flashMock = $this->getMock(Flash::class);
         $this->redirectMock = $this->getMock(Redirect::class);
     }
 

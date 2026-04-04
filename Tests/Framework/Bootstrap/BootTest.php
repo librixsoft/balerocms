@@ -1200,8 +1200,6 @@ class BootTest extends TestCase
     // ─────────────────────────────────────────────
 
     #[Test]
-    #[RunInSeparateProcess]
-    #[PreserveGlobalState(false)]
     public function create_context_real_ejecuta_flujo_de_inicializacion(): void
     {
         $boot = new class(true) extends Boot {

@@ -3,8 +3,7 @@
 namespace Tests\App\Controllers\Admin;
 
 use App\Controllers\Admin\AdminSettingsController;
-use App\DTO\SettingsDTO;
-use App\Services\AdminService;
+use App\Services\Admin\AdminSettingsService;
 use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
 use Framework\Core\View;
@@ -33,7 +32,7 @@ class AdminSettingsControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->adminServiceMock = $this->getMock(AdminService::class);
+        $this->adminServiceMock = $this->getMock(AdminSettingsService::class);
         $this->viewMock = $this->getMock(View::class);
         $this->requestMock = $this->getMock(RequestHelper::class);
         $this->flashMock = $this->getMock(Flash::class);

@@ -3,7 +3,7 @@
 namespace Tests\App\Controllers\Admin;
 
 use App\Controllers\Admin\AdminUpdateController;
-use App\Services\AdminService;
+use App\Services\Admin\AdminUpdateService;
 use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
 use Framework\Core\View;
@@ -26,7 +26,7 @@ class AdminUpdateControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->adminServiceMock = $this->getMock(AdminService::class);
+        $this->adminServiceMock = $this->getMock(AdminUpdateService::class);
         $this->viewMock = $this->getMock(View::class);
     }
 

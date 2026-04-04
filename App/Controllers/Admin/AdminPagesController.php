@@ -2,7 +2,7 @@
 
 namespace App\Controllers\Admin;
 
-use App\Services\AdminService;
+use App\Services\Admin\AdminPagesService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\Inject;
 use Framework\Http\Get;
@@ -17,7 +17,7 @@ use Framework\Utils\Redirect;
 class AdminPagesController
 {
     #[Inject]
-    private AdminService $adminService;
+    private AdminPagesService $adminService;
 
     #[Inject]
     private View $view;

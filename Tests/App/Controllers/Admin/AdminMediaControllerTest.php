@@ -3,12 +3,11 @@
 namespace Tests\App\Controllers\Admin;
 
 use App\Controllers\Admin\AdminMediaController;
-use App\Services\AdminService;
+use App\Services\Admin\AdminMediaService;
 use App\Services\UploaderService;
 use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
 use Framework\Core\View;
-use Framework\Http\RequestHelper;
 use Framework\Testing\TestCase;
 use Framework\Utils\Flash;
 use Framework\Utils\Redirect;
@@ -27,17 +26,15 @@ class AdminMediaControllerTest extends TestCase
     private $adminServiceMock;
     private $uploaderServiceMock;
     private $viewMock;
-    private $requestMock;
     private $flashMock;
     private $redirectMock;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->adminServiceMock = $this->getMock(AdminService::class);
+        $this->adminServiceMock = $this->getMock(AdminMediaService::class);
         $this->uploaderServiceMock = $this->getMock(UploaderService::class);
         $this->viewMock = $this->getMock(View::class);
-        $this->requestMock = $this->getMock(RequestHelper::class);
         $this->flashMock = $this->getMock(Flash::class);
         $this->redirectMock = $this->getMock(Redirect::class);
     }

@@ -2,7 +2,7 @@
 
 namespace App\Controllers\Admin;
 
-use App\Services\AdminService;
+use App\Services\Admin\AdminMediaService;
 use App\Services\UploaderService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\Inject;
@@ -21,7 +21,7 @@ use Framework\Utils\Redirect;
 class AdminMediaController
 {
     #[Inject]
-    private AdminService $adminService;
+    private AdminMediaService $adminService;
 
     #[Inject]
     private UploaderService $uploaderService;

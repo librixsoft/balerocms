@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\App\Models;
 
-use App\Models\AdminModel;
+use App\Models\Admin\AdminModel;
 use Framework\Core\ConfigSettings;
 use Framework\Core\Model;
 use Framework\Database\MySQL;

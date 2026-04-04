@@ -3,7 +3,7 @@
 namespace Tests\App\Controllers\Admin;
 
 use App\Controllers\Admin\AdminBlocksController;
-use App\Services\AdminService;
+use App\Services\Admin\AdminBlocksService;
 use Framework\Attributes\InjectMocks;
 use Framework\Attributes\SetupTestContainer;
 use Framework\Core\View;
@@ -30,7 +30,7 @@ class AdminBlocksControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->adminServiceMock = $this->getMock(AdminService::class);
+        $this->adminServiceMock = $this->getMock(AdminBlocksService::class);
         $this->viewMock = $this->getMock(View::class);
         $this->requestMock = $this->getMock(RequestHelper::class);
         $this->redirectMock = $this->getMock(Redirect::class);

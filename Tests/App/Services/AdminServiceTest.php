@@ -4,8 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\App\Services;
 
-use App\Models\AdminModel;
-use App\Services\AdminService;
+use App\Models\Admin\AdminModel;
+use App\Models\Admin\AdminPagesModel;
+use App\Models\Admin\AdminBlocksModel;
+use App\Models\Admin\AdminMediaModel;
+use App\Services\Admin\AdminService;
+use App\Services\Admin\AdminSettingsService;
+use App\Services\Admin\AdminPagesService;
+use App\Services\Admin\AdminBlocksService;
+use App\Services\Admin\AdminMediaService;
+use App\Services\Admin\AdminThemesService;
+use App\Services\Admin\AdminUpdateService;
 use App\Services\UpdateService;
 use App\Services\UploaderService;
 use App\Views\AdminViewModel;
@@ -92,7 +101,9 @@ final class AdminServiceTest extends TestCase
     }
 
     private function makeService(
-        ?AdminModel $model = null,
+        ?AdminPagesModel $pagesModel = null,
+        ?AdminBlocksModel $blocksModel = null,
+        ?AdminMediaModel $mediaModel = null,
         ?AdminViewModel $vm = null,
         ?UpdateService $update = null,
         ?UploaderService $uploader = null,
@@ -101,36 +112,120 @@ final class AdminServiceTest extends TestCase
         ?\App\Mapper\AdminSettingsMapper $mapper = null,
     ): AdminService {
         $svc = new AdminService();
-        $r = new \ReflectionClass($svc);
 
-        $deps = [
-            'model' => $model ?? $this->createMock(AdminModel::class),
-            'viewModel' => $vm ?? $this->createMock(AdminViewModel::class),
-            'updateService' => $update ?? $this->createMock(UpdateService::class),
-            'uploaderService' => $uploader ?? $this->createMock(UploaderService::class),
-            'configSettings' => $configSettings ?? $this->createMock(ConfigSettings::class),
-            'validator' => $validator ?? $this->createMock(\Framework\Utils\Validator::class),
-            'adminSettingsMapper' => $mapper ?? $this->createMock(\App\Mapper\AdminSettingsMapper::class),
-        ];
+        // --- Create specialized services ---
+        $settingsSvc = new AdminSettingsService();
+        $pagesSvc = new AdminPagesService();
+        $blocksSvc = new AdminBlocksService();
+        $mediaSvc = new AdminMediaService();
+        $themesSvc = new AdminThemesService();
+        $updateSvc = new AdminUpdateService();
 
-        foreach ($deps as $prop => $val) {
-            $p = $r->getProperty($prop);
-            $p->setAccessible(true);
-            $p->setValue($svc, $val);
-        }
+        $configSettings = $configSettings ?? $this->createMock(ConfigSettings::class);
+        $vm = $vm ?? $this->createMock(AdminViewModel::class);
+        $validator = $validator ?? $this->createMock(\Framework\Utils\Validator::class);
+        $uploader = $uploader ?? $this->createMock(UploaderService::class);
+        $update = $update ?? $this->createMock(UpdateService::class);
+        $mapper = $mapper ?? $this->createMock(\App\Mapper\AdminSettingsMapper::class);
+
+        // Models (defaults if not provided)
+        $dbModel = $this->createMock(\Framework\Core\Model::class);
+        $utils = $this->createMock(\Framework\Utils\Utils::class);
+        $pagesModel = $pagesModel ?? new AdminPagesModel($dbModel, $utils);
+        $blocksModel = $blocksModel ?? new AdminBlocksModel($dbModel);
+        $mediaModel = $mediaModel ?? new AdminMediaModel($dbModel);
+
+        // Inject dependencies into specialized services
+        $this->injectService($settingsSvc, [
+            'pagesModel' => $pagesModel,
+            'blocksModel' => $blocksModel,
+            'mediaModel' => $mediaModel,
+            'viewModel' => $vm,
+            'validator' => $validator,
+            'adminSettingsMapper' => $mapper,
+            'configSettings' => $configSettings,
+        ]);
+
+        $this->injectService($pagesSvc, [
+            'model' => $pagesModel,
+            'blocksModel' => $blocksModel,
+            'mediaModel' => $mediaModel,
+            'mediaService' => $mediaSvc,
+            'viewModel' => $vm,
+        ]);
+
+        $this->injectService($blocksSvc, [
+            'model' => $blocksModel,
+            'pagesModel' => $pagesModel,
+            'mediaModel' => $mediaModel,
+            'mediaService' => $mediaSvc,
+            'viewModel' => $vm,
+        ]);
+
+        $this->injectService($mediaSvc, [
+            'model' => $mediaModel,
+            'pagesModel' => $pagesModel,
+            'blocksModel' => $blocksModel,
+            'viewModel' => $vm,
+            'configSettings' => $configSettings,
+            'uploaderService' => $uploader,
+        ]);
+
+        $this->injectService($themesSvc, [
+            'pagesModel' => $pagesModel,
+            'blocksModel' => $blocksModel,
+            'mediaModel' => $mediaModel,
+            'viewModel' => $vm,
+            'configSettings' => $configSettings,
+        ]);
+
+        $this->injectService($updateSvc, [
+            'pagesModel' => $pagesModel,
+            'blocksModel' => $blocksModel,
+            'mediaModel' => $mediaModel,
+            'viewModel' => $vm,
+            'updateService' => $update,
+        ]);
+
+        // Inject specialized services into AdminService facade
+        $this->injectService($svc, [
+            'settingsService' => $settingsSvc,
+            'pagesService' => $pagesSvc,
+            'blocksService' => $blocksService ?? $blocksSvc,
+            'mediaService' => $mediaSvc,
+            'themesService' => $themesSvc,
+            'updateService' => $updateSvc,
+        ]);
 
         return $svc;
     }
 
+    private function injectService($service, array $deps): void
+    {
+        $r = new \ReflectionClass($service);
+        foreach ($deps as $prop => $val) {
+            if ($r->hasProperty($prop)) {
+                $p = $r->getProperty($prop);
+                $p->setAccessible(true);
+                $p->setValue($service, $val);
+            }
+        }
+    }
+
     public function testBasicViewParamsAndSortHelpers(): void
     {
-        $model = $this->createMock(AdminModel::class);
-        $model->method('getVirtualPages')->willReturn([['sort_order' => 2], ['sort_order' => 5]]);
-        $model->method('getBlocks')->willReturn([['sort_order' => 1], ['sort_order' => 7]]);
-        $model->method('getPagesCount')->willReturn(10);
-        $model->method('getBlocksCount')->willReturn(20);
-        $model->method('getPageById')->willReturn(['id' => 1]);
-        $model->method('getBlockById')->willReturn(['id' => 2]);
+        $pagesModel = $this->createMock(AdminPagesModel::class);
+        $pagesModel->method('getVirtualPages')->willReturn([['sort_order' => 2], ['sort_order' => 5]]);
+        $pagesModel->method('getPagesCount')->willReturn(10);
+        $pagesModel->method('getPageById')->willReturn(['id' => 1]);
+
+        $blocksModel = $this->createMock(AdminBlocksModel::class);
+        $blocksModel->method('getBlocks')->willReturn([['sort_order' => 1], ['sort_order' => 7]]);
+        $blocksModel->method('getBlocksCount')->willReturn(20);
+        $blocksModel->method('getBlockById')->willReturn(['id' => 2]);
+
+        $mediaModel = $this->createMock(AdminMediaModel::class);
+        $mediaModel->method('getAllMedia')->willReturn([]);
 
         $vm = $this->createMock(AdminViewModel::class);
         $vm->method('getSettingsParams')->willReturnArgument(0);
@@ -150,7 +245,14 @@ final class AdminServiceTest extends TestCase
         $uploader = $this->createMock(UploaderService::class);
         $uploader->method('getAllMediaJson')->willReturn([['name' => 'x.jpg']]);
 
-        $svc = $this->makeService($model, $vm, $update, $uploader);
+        $svc = $this->makeService(
+            pagesModel: $pagesModel,
+            blocksModel: $blocksModel,
+            mediaModel: $mediaModel,
+            vm: $vm,
+            update: $update,
+            uploader: $uploader
+        );
 
         $this->assertSame(6, $svc->getNextPageSortOrder());
         $this->assertSame(8, $svc->getNextBlockSortOrder());
@@ -168,19 +270,21 @@ final class AdminServiceTest extends TestCase
 
     public function testCrudDelegatesToModelAndUpdateService(): void
     {
-        $model = $this->createMock(AdminModel::class);
-        $model->expects($this->once())->method('createPage')->with(['title' => 'x', 'virtual_content' => ''])->willReturn(11);
-        $model->expects($this->once())->method('updatePage')->with(11, ['title' => 'y', 'virtual_content' => '']);
-        $model->expects($this->once())->method('deletePage')->with(11);
-        $model->expects($this->once())->method('createBlock')->with(['title' => 'b', 'content' => ''])->willReturn(22);
-        $model->expects($this->once())->method('updateBlock')->with(22, ['title' => 'c', 'content' => '']);
-        $model->expects($this->once())->method('deleteBlock')->with(22);
+        $pagesModel = $this->createMock(AdminPagesModel::class);
+        $pagesModel->expects($this->once())->method('createPage')->with(['title' => 'x', 'virtual_content' => ''])->willReturn(11);
+        $pagesModel->expects($this->once())->method('updatePage')->with(11, ['title' => 'y', 'virtual_content' => '']);
+        $pagesModel->expects($this->once())->method('deletePage')->with(11);
+
+        $blocksModel = $this->createMock(AdminBlocksModel::class);
+        $blocksModel->expects($this->once())->method('createBlock')->with(['title' => 'b', 'content' => ''])->willReturn(22);
+        $blocksModel->expects($this->once())->method('updateBlock')->with(22, ['title' => 'c', 'content' => '']);
+        $blocksModel->expects($this->once())->method('deleteBlock')->with(22);
 
         $update = $this->createMock(UpdateService::class);
         $update->expects($this->once())->method('selfUpdate')->willReturn(['success' => true]);
         $update->expects($this->once())->method('performUpdate')->willReturn(['success' => true]);
 
-        $svc = $this->makeService($model, null, $update);
+        $svc = $this->makeService(pagesModel: $pagesModel, blocksModel: $blocksModel, update: $update);
 
         $this->assertSame(11, $svc->createPage(['title' => 'x', 'virtual_content' => '']));
         $svc->updatePage(11, ['title' => 'y', 'virtual_content' => '']);
@@ -204,7 +308,7 @@ final class AdminServiceTest extends TestCase
 
         $settings = $this->createMock(\App\DTO\SettingsDTO::class);
 
-        $svc = $this->makeService(null, null, null, null, $this->createMock(ConfigSettings::class), $validator, $mapper);
+        $svc = $this->makeService(configSettings: $this->createMock(ConfigSettings::class), validator: $validator, mapper: $mapper);
 
         $this->assertTrue($svc->validateSettings($settings));
         $svc->mapAndSaveSettings($settings);
@@ -310,7 +414,7 @@ final class AdminServiceTest extends TestCase
             }
         };
 
-        $svc = $this->makeService(null, null, null, null, $configSettings);
+        $svc = $this->makeService(configSettings: $configSettings);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Theme does not exist.');
         $svc->activateTheme('missing');
@@ -337,7 +441,7 @@ final class AdminServiceTest extends TestCase
             }
         };
 
-        $svc = $this->makeService(null, null, null, null, $configSettings);
+        $svc = $this->makeService(configSettings: $configSettings);
         $svc->activateTheme($theme);
         $this->assertSame($theme, $configSettings->theme);
     }
@@ -364,7 +468,7 @@ final class AdminServiceTest extends TestCase
             }
         };
 
-        $svc = $this->makeService(null, null, null, null, $configSettings);
+        $svc = $this->makeService(configSettings: $configSettings);
 
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Invalid theme name.');
@@ -394,7 +498,7 @@ final class AdminServiceTest extends TestCase
         };
         $configSettings->theme = 'active';
 
-        $svc = $this->makeService(null, null, null, null, $configSettings);
+        $svc = $this->makeService(configSettings: $configSettings);
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Cannot delete the active theme.');
         $svc->deleteTheme('active');
@@ -433,7 +537,7 @@ final class AdminServiceTest extends TestCase
         file_put_contents($resourcesDir . '/file.txt', 'x');
         file_put_contents($publicDir . '/file.txt', 'y');
 
-        $svc = $this->makeService(null, null, null, null, $configSettings);
+        $svc = $this->makeService(configSettings: $configSettings);
         $svc->deleteTheme($theme);
 
         $this->assertDirectoryDoesNotExist($resourcesDir);

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Tests\App\Services;
 
 use App\Services\UploaderService;
-use App\Models\AdminModel;
-use Framework\Core\ConfigSettings;
 use Framework\IO\Uploader;
 use PHPUnit\Framework\TestCase;
 

@@ -3,7 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\DTO\SettingsDTO;
-use App\Services\AdminService;
+use App\Services\Admin\AdminSettingsService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\FlashStorage;
 use Framework\Attributes\Inject;
@@ -20,7 +20,7 @@ use Framework\Utils\Redirect;
 class AdminSettingsController
 {
     #[Inject]
-    private AdminService $adminService;
+    private AdminSettingsService $adminService;
 
     #[Inject]
     private View $view;

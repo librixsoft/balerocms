@@ -2,7 +2,7 @@
 
 namespace App\Controllers\Admin;
 
-use App\Services\AdminService;
+use App\Services\Admin\AdminUpdateService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\Inject;
 use Framework\Http\Get;
@@ -16,7 +16,7 @@ use Framework\Core\View;
 class AdminUpdateController
 {
     #[Inject]
-    private AdminService $adminService;
+    private AdminUpdateService $adminService;
 
     #[Inject]
     private View $view;

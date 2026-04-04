@@ -2,7 +2,7 @@
 
 namespace App\Controllers\Admin;
 
-use App\Services\AdminService;
+use App\Services\Admin\AdminThemesService;
 use Framework\Attributes\Controller;
 use Framework\Attributes\Inject;
 use Framework\Attributes\FlashStorage;
@@ -18,7 +18,7 @@ use Framework\Utils\Redirect;
 class AdminThemesController
 {
     #[Inject]
-    private AdminService $adminService;
+    private AdminThemesService $adminService;
 
     #[Inject]
     private View $view;
