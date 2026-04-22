@@ -16,6 +16,9 @@ use Framework\Utils\Redirect;
 #[Auth(required: true)]
 class AdminPagesController
 {
+    private const DASHBOARD_VIEW = "admin/dashboard.html";
+    private const PAGES_ROUTE = "/admin/pages";
+
     #[Inject]
     private AdminPagesService $adminService;
 
@@ -32,15 +35,17 @@ class AdminPagesController
     public function getPages()
     {
         $params = $this->adminService->getNewPageViewParams();
-        return $this->view->render("admin/dashboard.html", $params, false);
+        return $this->view->render(self::DASHBOARD_VIEW, $params, false);
     }
+
 
     #[Get('/pages')]
     public function getAllPages()
     {
         $params = $this->adminService->getAllPagesViewParams();
-        return $this->view->render("admin/dashboard.html", $params, false);
+        return $this->view->render(self::DASHBOARD_VIEW, $params, false);
     }
+
 
     #[Post('/pages/new')]
     public function postNewPage()
@@ -56,15 +61,17 @@ class AdminPagesController
 
         $this->adminService->createPage($data);
 
-        $this->redirect->to('/admin/pages');
+        $this->redirect->to(self::PAGES_ROUTE);
     }
+
 
     #[Get('/pages/edit/{id}')]
     public function editPage(int $id)
     {
         $params = $this->adminService->getEditPageViewParams($id);
-        return $this->view->render("admin/dashboard.html", $params, false);
+        return $this->view->render(self::DASHBOARD_VIEW, $params, false);
     }
+
 
     #[Post('/pages/edit/{id}')]
     public function postEditPage(int $id)
@@ -80,13 +87,15 @@ class AdminPagesController
 
         $this->adminService->updatePage($id, $data);
 
-        $this->redirect->to('/admin/pages');
+        $this->redirect->to(self::PAGES_ROUTE);
     }
+
 
     #[Post('/pages/delete/{id}')]
     public function deletePage(int $id)
     {
         $this->adminService->deletePage($id);
-        $this->redirect->to('/admin/pages');
+        $this->redirect->to(self::PAGES_ROUTE);
     }
+
 }

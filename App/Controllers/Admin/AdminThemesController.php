@@ -17,6 +17,9 @@ use Framework\Utils\Redirect;
 #[Auth(required: true)]
 class AdminThemesController
 {
+    private const DASHBOARD_VIEW = "admin/dashboard.html";
+    private const THEMES_ROUTE = "/admin/themes";
+
     #[Inject]
     private AdminThemesService $adminService;
 
@@ -34,8 +37,9 @@ class AdminThemesController
     public function getThemes()
     {
         $params = $this->adminService->getThemesViewParams();
-        return $this->view->render("admin/dashboard.html", $params, false);
+        return $this->view->render(self::DASHBOARD_VIEW, $params, false);
     }
+
 
     #[Post('/themes/upload')]
     public function uploadTheme()
@@ -51,8 +55,9 @@ class AdminThemesController
         } else {
             $this->flash->set("danger", "Failed to upload file.");
         }
-        $this->redirect->to('/admin/themes');
+        $this->redirect->to(self::THEMES_ROUTE);
     }
+
 
     #[Post('/themes/activate/{themeName}')]
     public function activateTheme(string $themeName)
@@ -63,8 +68,9 @@ class AdminThemesController
         } catch (\Exception $e) {
             $this->flash->set("danger", "Failed to activate theme.");
         }
-        $this->redirect->to('/admin/themes');
+        $this->redirect->to(self::THEMES_ROUTE);
     }
+
 
     #[Post('/themes/delete/{themeName}')]
     public function deleteTheme(string $themeName)
@@ -75,6 +81,7 @@ class AdminThemesController
         } catch (\Exception $e) {
             $this->flash->set("danger", $e->getMessage());
         }
-        $this->redirect->to('/admin/themes');
+        $this->redirect->to(self::THEMES_ROUTE);
     }
+
 }

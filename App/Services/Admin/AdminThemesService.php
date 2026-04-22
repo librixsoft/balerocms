@@ -9,10 +9,13 @@ use App\Views\AdminViewModel;
 use Framework\Attributes\Inject;
 use Framework\Attributes\Service;
 use Framework\Core\ConfigSettings;
+use App\Exceptions\Admin\ThemeException;
 
 #[Service]
 class AdminThemesService
 {
+    private const THEMES_PATH = '/resources/views/themes/';
+
     #[Inject]
     private AdminPagesModel $pagesModel;
 
@@ -53,9 +56,9 @@ class AdminThemesService
 
     public function activateTheme(string $themeName): void
     {
-        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . self::THEMES_PATH . $themeName;
         if (!is_dir($resourcesThemesDir)) {
-            throw new \Exception("Theme does not exist.");
+            throw new ThemeException("Theme does not exist.");
         }
 
         $this->configSettings->theme = $themeName;
@@ -65,18 +68,18 @@ class AdminThemesService
     {
         $themeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $themeName);
         if (empty($themeName)) {
-            throw new \Exception("Invalid theme name.");
+            throw new ThemeException("Invalid theme name.");
         }
 
         if ($this->configSettings->theme === $themeName) {
-            throw new \Exception("Cannot delete the active theme.");
+            throw new ThemeException("Cannot delete the active theme.");
         }
 
         $publicPath = !empty($_SERVER['DOCUMENT_ROOT'])
             ? rtrim($_SERVER['DOCUMENT_ROOT'], '/')
             : rtrim(BASE_PATH, '/') . '/public';
 
-        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . self::THEMES_PATH . $themeName;
         $publicThemesDir = $publicPath . '/assets/themes/' . $themeName;
 
         $this->removeDirectory($resourcesThemesDir);
@@ -87,7 +90,7 @@ class AdminThemesService
     {
         $zip = new \ZipArchive();
         if ($zip->open($zipPath) !== true) {
-            throw new \Exception("Invalid ZIP file.");
+            throw new ThemeException("Invalid ZIP file.");
         }
         return $zip;
     }
@@ -98,10 +101,11 @@ class AdminThemesService
         $themeName = preg_replace('/[^a-zA-Z0-9_\-]/', '', $themeName);
         if (empty($themeName)) {
             $zip->close();
-            throw new \Exception("Invalid theme name.");
+            throw new ThemeException("Invalid theme name.");
         }
         return $themeName;
     }
+
 
     private function initThemeDirectories(string $themeName): array
     {
@@ -110,7 +114,7 @@ class AdminThemesService
             : rtrim(BASE_PATH, '/') . '/public';
 
         $publicThemesDir = $publicPath . '/assets/themes/' . $themeName;
-        $resourcesThemesDir = rtrim(BASE_PATH, '/') . '/resources/views/themes/' . $themeName;
+        $resourcesThemesDir = rtrim(BASE_PATH, '/') . self::THEMES_PATH . $themeName;
 
         if (is_dir($publicThemesDir)) {
             $this->removeDirectory($publicThemesDir);

@@ -4,24 +4,22 @@ declare(strict_types=1);
 
 namespace Tests\App\Services;
 
-use App\Models\Admin\AdminModel;
 use App\Models\Admin\AdminPagesModel;
 use App\Models\Admin\AdminBlocksModel;
 use App\Models\Admin\AdminMediaModel;
-use App\Services\Admin\AdminService;
+use App\Services\Admin\AdminSystemService;
 use App\Services\Admin\AdminSettingsService;
-use App\Services\Admin\AdminPagesService;
-use App\Services\Admin\AdminBlocksService;
 use App\Services\Admin\AdminMediaService;
 use App\Services\Admin\AdminThemesService;
 use App\Services\Admin\AdminUpdateService;
 use App\Services\UpdateService;
 use App\Services\UploaderService;
 use App\Views\AdminViewModel;
+use App\Exceptions\Admin\ThemeException;
 use Framework\Core\ConfigSettings;
 use PHPUnit\Framework\TestCase;
 
-final class AdminServiceTest extends TestCase
+final class AdminSystemServiceTest extends TestCase
 {
     private array $tempDirs = [];
     private array $tempPaths = [];
@@ -41,7 +39,7 @@ final class AdminServiceTest extends TestCase
 
     private function makeTempDir(): string
     {
-        $base = sys_get_temp_dir() . '/balerocms_adminservice_' . bin2hex(random_bytes(6));
+        $base = sys_get_temp_dir() . '/balerocms_adminsystemservice_' . bin2hex(random_bytes(6));
         if (!is_dir($base)) {
             mkdir($base, 0777, true);
         }
@@ -110,13 +108,10 @@ final class AdminServiceTest extends TestCase
         ?ConfigSettings $configSettings = null,
         ?\Framework\Utils\Validator $validator = null,
         ?\App\Mapper\AdminSettingsMapper $mapper = null,
-    ): AdminService {
-        $svc = new AdminService();
+    ): AdminSystemService {
+        $svc = new AdminSystemService();
 
-        // --- Create specialized services ---
         $settingsSvc = new AdminSettingsService();
-        $pagesSvc = new AdminPagesService();
-        $blocksSvc = new AdminBlocksService();
         $mediaSvc = new AdminMediaService();
         $themesSvc = new AdminThemesService();
         $updateSvc = new AdminUpdateService();
@@ -128,14 +123,12 @@ final class AdminServiceTest extends TestCase
         $update = $update ?? $this->createMock(UpdateService::class);
         $mapper = $mapper ?? $this->createMock(\App\Mapper\AdminSettingsMapper::class);
 
-        // Models (defaults if not provided)
         $dbModel = $this->createMock(\Framework\Core\Model::class);
         $utils = $this->createMock(\Framework\Utils\Utils::class);
         $pagesModel = $pagesModel ?? new AdminPagesModel($dbModel, $utils);
         $blocksModel = $blocksModel ?? new AdminBlocksModel($dbModel);
         $mediaModel = $mediaModel ?? new AdminMediaModel($dbModel);
 
-        // Inject dependencies into specialized services
         $this->injectService($settingsSvc, [
             'pagesModel' => $pagesModel,
             'blocksModel' => $blocksModel,
@@ -144,22 +137,6 @@ final class AdminServiceTest extends TestCase
             'validator' => $validator,
             'adminSettingsMapper' => $mapper,
             'configSettings' => $configSettings,
-        ]);
-
-        $this->injectService($pagesSvc, [
-            'model' => $pagesModel,
-            'blocksModel' => $blocksModel,
-            'mediaModel' => $mediaModel,
-            'mediaService' => $mediaSvc,
-            'viewModel' => $vm,
-        ]);
-
-        $this->injectService($blocksSvc, [
-            'model' => $blocksModel,
-            'pagesModel' => $pagesModel,
-            'mediaModel' => $mediaModel,
-            'mediaService' => $mediaSvc,
-            'viewModel' => $vm,
         ]);
 
         $this->injectService($mediaSvc, [
@@ -187,11 +164,8 @@ final class AdminServiceTest extends TestCase
             'updateService' => $update,
         ]);
 
-        // Inject specialized services into AdminService facade
         $this->injectService($svc, [
             'settingsService' => $settingsSvc,
-            'pagesService' => $pagesSvc,
-            'blocksService' => $blocksService ?? $blocksSvc,
             'mediaService' => $mediaSvc,
             'themesService' => $themesSvc,
             'updateService' => $updateSvc,
@@ -212,29 +186,19 @@ final class AdminServiceTest extends TestCase
         }
     }
 
-    public function testBasicViewParamsAndSortHelpers(): void
+    public function testBasicViewParams(): void
     {
         $pagesModel = $this->createMock(AdminPagesModel::class);
-        $pagesModel->method('getVirtualPages')->willReturn([['sort_order' => 2], ['sort_order' => 5]]);
         $pagesModel->method('getPagesCount')->willReturn(10);
-        $pagesModel->method('getPageById')->willReturn(['id' => 1]);
 
         $blocksModel = $this->createMock(AdminBlocksModel::class);
-        $blocksModel->method('getBlocks')->willReturn([['sort_order' => 1], ['sort_order' => 7]]);
         $blocksModel->method('getBlocksCount')->willReturn(20);
-        $blocksModel->method('getBlockById')->willReturn(['id' => 2]);
 
         $mediaModel = $this->createMock(AdminMediaModel::class);
         $mediaModel->method('getAllMedia')->willReturn([]);
 
         $vm = $this->createMock(AdminViewModel::class);
         $vm->method('getSettingsParams')->willReturnArgument(0);
-        $vm->method('getPagesParams')->willReturnArgument(0);
-        $vm->method('getAllPagesParams')->willReturnArgument(0);
-        $vm->method('getEditPageParams')->willReturnArgument(0);
-        $vm->method('getAllBlocksParams')->willReturnArgument(0);
-        $vm->method('getNewBlockParams')->willReturnArgument(0);
-        $vm->method('getEditBlockParams')->willReturnArgument(0);
         $vm->method('getUpdateParams')->willReturnArgument(0);
         $vm->method('getMediaParams')->willReturnArgument(0);
         $vm->method('getThemesParams')->willReturnArgument(0);
@@ -254,44 +218,20 @@ final class AdminServiceTest extends TestCase
             uploader: $uploader
         );
 
-        $this->assertSame(6, $svc->getNextPageSortOrder());
-        $this->assertSame(8, $svc->getNextBlockSortOrder());
         $this->assertArrayHasKey('media_count', $svc->getSettingsViewParams());
-        $this->assertArrayHasKey('next_sort_order', $svc->getNewPageViewParams());
-        $this->assertArrayHasKey('pages', $svc->getAllPagesViewParams());
-        $this->assertArrayHasKey('page', $svc->getEditPageViewParams(1));
-        $this->assertArrayHasKey('blocks', $svc->getAllBlocksViewParams());
-        $this->assertArrayHasKey('next_sort_order', $svc->getNewBlockViewParams());
-        $this->assertArrayHasKey('block', $svc->getEditBlockViewParams(2));
         $this->assertArrayHasKey('update_available', $svc->getUpdateViewParams());
         $this->assertArrayHasKey('media_items', $svc->getMediaViewParams());
         $this->assertArrayHasKey('media_count', $svc->getThemesViewParams());
     }
 
-    public function testCrudDelegatesToModelAndUpdateService(): void
+    public function testUpdateDelegation(): void
     {
-        $pagesModel = $this->createMock(AdminPagesModel::class);
-        $pagesModel->expects($this->once())->method('createPage')->with(['title' => 'x', 'virtual_content' => ''])->willReturn(11);
-        $pagesModel->expects($this->once())->method('updatePage')->with(11, ['title' => 'y', 'virtual_content' => '']);
-        $pagesModel->expects($this->once())->method('deletePage')->with(11);
-
-        $blocksModel = $this->createMock(AdminBlocksModel::class);
-        $blocksModel->expects($this->once())->method('createBlock')->with(['title' => 'b', 'content' => ''])->willReturn(22);
-        $blocksModel->expects($this->once())->method('updateBlock')->with(22, ['title' => 'c', 'content' => '']);
-        $blocksModel->expects($this->once())->method('deleteBlock')->with(22);
-
         $update = $this->createMock(UpdateService::class);
         $update->expects($this->once())->method('selfUpdate')->willReturn(['success' => true]);
         $update->expects($this->once())->method('performUpdate')->willReturn(['success' => true]);
 
-        $svc = $this->makeService(pagesModel: $pagesModel, blocksModel: $blocksModel, update: $update);
+        $svc = $this->makeService(update: $update);
 
-        $this->assertSame(11, $svc->createPage(['title' => 'x', 'virtual_content' => '']));
-        $svc->updatePage(11, ['title' => 'y', 'virtual_content' => '']);
-        $svc->deletePage(11);
-        $this->assertSame(22, $svc->createBlock(['title' => 'b', 'content' => '']));
-        $svc->updateBlock(22, ['title' => 'c', 'content' => '']);
-        $svc->deleteBlock(22);
         $this->assertTrue($svc->selfUpdateService()['success']);
         $this->assertTrue($svc->performUpdate()['success']);
     }
@@ -355,19 +295,12 @@ final class AdminServiceTest extends TestCase
 
     public function testUploadThemeZipInvalidZip(): void
     {
-        $base = $this->getBasePath();
-        $docRoot = $this->makeTempDir() . '/public';
-        $_SERVER['DOCUMENT_ROOT'] = $docRoot;
-        if (!is_dir($_SERVER['DOCUMENT_ROOT'])) {
-            mkdir($_SERVER['DOCUMENT_ROOT'], 0777, true);
-        }
-
         $zipDir = $this->makeTempDir();
         $zipPath = $zipDir . '/bad.zip';
         file_put_contents($zipPath, 'not a zip');
 
         $svc = $this->makeService();
-        $this->expectException(\Exception::class);
+        $this->expectException(ThemeException::class);
         $this->expectExceptionMessage('Invalid ZIP file.');
         $svc->uploadThemeZip([
             'tmp_name' => $zipPath,
@@ -377,19 +310,12 @@ final class AdminServiceTest extends TestCase
 
     public function testUploadThemeZipInvalidThemeName(): void
     {
-        $base = $this->getBasePath();
-        $docRoot = $this->makeTempDir() . '/public';
-        $_SERVER['DOCUMENT_ROOT'] = $docRoot;
-        if (!is_dir($_SERVER['DOCUMENT_ROOT'])) {
-            mkdir($_SERVER['DOCUMENT_ROOT'], 0777, true);
-        }
-
         $zipDir = $this->makeTempDir();
         $zipPath = $zipDir . '/theme.zip';
         $this->makeZip($zipPath, ['main.html' => '<html></html>']);
 
         $svc = $this->makeService();
-        $this->expectException(\Exception::class);
+        $this->expectException(ThemeException::class);
         $this->expectExceptionMessage('Invalid theme name.');
         $svc->uploadThemeZip([
             'tmp_name' => $zipPath,
@@ -399,23 +325,15 @@ final class AdminServiceTest extends TestCase
 
     public function testActivateThemeMissingDirThrows(): void
     {
-        $base = $this->getBasePath();
-
         $configSettings = new class extends ConfigSettings {
             public string $theme = '';
             public function __construct() {}
-            public function __get(string $name)
-            {
-                return $this->$name ?? null;
-            }
-            public function __set(string $name, string $value)
-            {
-                $this->$name = $value;
-            }
+            public function __get(string $name) { return $this->$name ?? null; }
+            public function __set(string $name, string $value) { $this->$name = $value; }
         };
 
         $svc = $this->makeService(configSettings: $configSettings);
-        $this->expectException(\Exception::class);
+        $this->expectException(ThemeException::class);
         $this->expectExceptionMessage('Theme does not exist.');
         $svc->activateTheme('missing');
     }
@@ -431,14 +349,8 @@ final class AdminServiceTest extends TestCase
         $configSettings = new class extends ConfigSettings {
             public string $theme = '';
             public function __construct() {}
-            public function __get(string $name)
-            {
-                return $this->$name ?? null;
-            }
-            public function __set(string $name, string $value)
-            {
-                $this->$name = $value;
-            }
+            public function __get(string $name) { return $this->$name ?? null; }
+            public function __set(string $name, string $value) { $this->$name = $value; }
         };
 
         $svc = $this->makeService(configSettings: $configSettings);
@@ -448,58 +360,32 @@ final class AdminServiceTest extends TestCase
 
     public function testDeleteThemeValidationActiveThemeAndRemoval(): void
     {
-        $base = $this->getBasePath();
-        $docRoot = $this->makeTempDir() . '/public';
-        $_SERVER['DOCUMENT_ROOT'] = $docRoot;
-        if (!is_dir($_SERVER['DOCUMENT_ROOT'])) {
-            mkdir($_SERVER['DOCUMENT_ROOT'], 0777, true);
-        }
-
         $configSettings = new class extends ConfigSettings {
             public string $theme = '';
             public function __construct() {}
-            public function __get(string $name)
-            {
-                return $this->$name ?? null;
-            }
-            public function __set(string $name, string $value)
-            {
-                $this->$name = $value;
-            }
+            public function __get(string $name) { return $this->$name ?? null; }
+            public function __set(string $name, string $value) { $this->$name = $value; }
         };
 
         $svc = $this->makeService(configSettings: $configSettings);
 
-        $this->expectException(\Exception::class);
+        $this->expectException(ThemeException::class);
         $this->expectExceptionMessage('Invalid theme name.');
         $svc->deleteTheme('!!!');
     }
 
     public function testDeleteThemeActiveThemeThrows(): void
     {
-        $base = $this->getBasePath();
-        $docRoot = $this->makeTempDir() . '/public';
-        $_SERVER['DOCUMENT_ROOT'] = $docRoot;
-        if (!is_dir($_SERVER['DOCUMENT_ROOT'])) {
-            mkdir($_SERVER['DOCUMENT_ROOT'], 0777, true);
-        }
-
         $configSettings = new class extends ConfigSettings {
             public string $theme = '';
             public function __construct() {}
-            public function __get(string $name)
-            {
-                return $this->$name ?? null;
-            }
-            public function __set(string $name, string $value)
-            {
-                $this->$name = $value;
-            }
+            public function __get(string $name) { return $this->$name ?? null; }
+            public function __set(string $name, string $value) { $this->$name = $value; }
         };
         $configSettings->theme = 'active';
 
         $svc = $this->makeService(configSettings: $configSettings);
-        $this->expectException(\Exception::class);
+        $this->expectException(ThemeException::class);
         $this->expectExceptionMessage('Cannot delete the active theme.');
         $svc->deleteTheme('active');
     }
@@ -516,14 +402,8 @@ final class AdminServiceTest extends TestCase
         $configSettings = new class extends ConfigSettings {
             public string $theme = '';
             public function __construct() {}
-            public function __get(string $name)
-            {
-                return $this->$name ?? null;
-            }
-            public function __set(string $name, string $value)
-            {
-                $this->$name = $value;
-            }
+            public function __get(string $name) { return $this->$name ?? null; }
+            public function __set(string $name, string $value) { $this->$name = $value; }
         };
         $configSettings->theme = 'active';
 
@@ -534,8 +414,6 @@ final class AdminServiceTest extends TestCase
         mkdir($publicDir, 0777, true);
         $this->tempPaths[] = $resourcesDir;
         $this->tempPaths[] = $publicDir;
-        file_put_contents($resourcesDir . '/file.txt', 'x');
-        file_put_contents($publicDir . '/file.txt', 'y');
 
         $svc = $this->makeService(configSettings: $configSettings);
         $svc->deleteTheme($theme);

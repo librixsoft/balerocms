@@ -33,9 +33,9 @@ class AdminPagesModel
 
     public function updatePage(int $id, array $data): bool
     {
-        $sql = "UPDATE page SET 
-        virtual_title = ?, 
-        static_url = ?, 
+        $sql = "UPDATE page SET
+        virtual_title = ?,
+        static_url = ?,
         virtual_content = ?,
         visible = ?,
         sort_order = ?
@@ -84,9 +84,7 @@ class AdminPagesModel
             $this->model->getDb()->query($sql);
             $this->model->getDb()->get();
 
-            $rows = $this->model->getDb()->getRows() ?? [];
-
-            return $rows;
+            return $this->model->getDb()->getRows() ?? [];
         } catch (Throwable $e) {
             throw new ModelException("Error fetching virtual pages: " . $e->getMessage(), previous: $e);
         }
